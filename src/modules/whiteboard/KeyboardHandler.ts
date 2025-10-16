@@ -158,6 +158,14 @@ export class KeyboardHandler {
         e.preventDefault();
         if (card) this.flipCard(card);
         break;
+
+      case 'h': // H - Move to hand
+        e.preventDefault();
+        if (card) {
+          this.callbacks.onMoveToHand(card);
+          this.removeCard(card.id);
+        }
+        break;
     }
   }
 
@@ -182,16 +190,65 @@ export class KeyboardHandler {
           e.preventDefault();
           dockState.moveHandCardToExile(dockState.hoveredHandCardId);
           break;
+
+        case 't': // T - Move to top of deck
+          e.preventDefault();
+          dockState.moveHandCardToDeckTop(dockState.hoveredHandCardId);
+          break;
+
+        case 'y': // Y - Move to bottom of deck
+          e.preventDefault();
+          dockState.moveHandCardToDeckBottom(dockState.hoveredHandCardId);
+          break;
       }
     } else if (dockState.hoveredPileType) {
       // Pile shortcuts (top card)
       const topCard = dockState.getTopPileCard(dockState.hoveredPileType);
       if (!topCard) return;
 
+      const pileType = dockState.hoveredPileType;
+
       switch (key) {
         case 'z': // Z - Play top card to battlefield
           e.preventDefault();
-          dockState.movePileCardToBattlefield(topCard, dockState.hoveredPileType);
+          dockState.movePileCardToBattlefield(topCard, pileType);
+          break;
+
+        case 'h': // H - Move top card to hand
+          e.preventDefault();
+          dockState.movePileCardToHand(topCard, pileType);
+          break;
+
+        case 's': // S - Move top card to exile
+          // Skip if already in exile
+          if (pileType !== 'exile') {
+            e.preventDefault();
+            dockState.movePileCardToExile(topCard, pileType);
+          }
+          break;
+
+        case 'd': // D - Move top card to discard
+          // Skip if already in discard
+          if (pileType !== 'discard') {
+            e.preventDefault();
+            dockState.movePileCardToDiscard(topCard, pileType);
+          }
+          break;
+
+        case 't': // T - Move top card to top of deck
+          // Skip if already in deck (would be redundant)
+          if (pileType !== 'deck') {
+            e.preventDefault();
+            dockState.movePileCardToDeckTop(topCard, pileType);
+          }
+          break;
+
+        case 'y': // Y - Move top card to bottom of deck
+          // Skip if already in deck
+          if (pileType !== 'deck') {
+            e.preventDefault();
+            dockState.movePileCardToDeckBottom(topCard, pileType);
+          }
           break;
       }
     }
