@@ -503,3 +503,78 @@ body {
   color: #6b7280;
   font-size: 18px;
 }
+
+/* Card Counters */
+.card-counters {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.card-counter {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 2px solid #fbbf24;
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.counter-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fbbf24;
+  font-family: 'Courier New', monospace;
+  min-width: 16px;
+  text-align: center;
+}
+
+.counter-controls {
+  display: none;
+  gap: 2px;
+}
+
+.card-counter:hover .counter-controls {
+  display: flex;
+}
+
+.counter-btn {
+  width: 18px;
+  height: 18px;
+  background-color: #2d2d2d;
+  color: #fbbf24;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.counter-btn:hover {
+  background-color: #fbbf24;
+  color: #000000;
+}
+
+.counter-btn:active {
+  transform: scale(0.9);
+}
+
+.counter-plus {
+  order: 1;
+}
+
+.counter-minus {
+  order: 2;
+}

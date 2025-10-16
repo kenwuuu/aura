@@ -23,12 +23,12 @@ export class OpponentHealthDisplay {
       const yPlayerState = this.yDoc.getMap(`player-${playerId}`);
 
       yPlayerState.observe(() => {
-        const health = yPlayerState.get('health') ?? 20;
+        const health = (yPlayerState.get('health') as number | undefined) ?? 20;
         this.updateOpponentHealth(playerId, health);
       });
 
       // Initial render
-      const health = yPlayerState.get('health') ?? 20;
+      const health = (yPlayerState.get('health') as number | undefined) ?? 20;
       this.updateOpponentHealth(playerId, health);
     };
 
@@ -103,7 +103,7 @@ export class OpponentHealthDisplay {
 
   private modifyOpponentHealth(playerId: string, delta: number): void {
     const yPlayerState = this.yDoc.getMap(`player-${playerId}`);
-    const currentHealth = yPlayerState.get('health') ?? 20;
+    const currentHealth = (yPlayerState.get('health') as number | undefined) ?? 20;
     yPlayerState.set('health', currentHealth + delta);
   }
 

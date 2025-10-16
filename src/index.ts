@@ -1,6 +1,6 @@
 import * as Y from 'yjs';
 import { Deck } from './modules/deck';
-import { Whiteboard } from './modules/whiteboard';
+import { Whiteboard, KeyboardHandlerCallbacks } from './modules/whiteboard';
 import { WebRTCProvider } from './modules/webrtc';
 import { Player } from './modules/player';
 import { GameResourcesDock, OpponentHealthDisplay } from './modules/gameResourcesDock';
@@ -83,6 +83,43 @@ class AuraApp {
 
     this.setupEventListeners();
     this.setupConnectionStatus();
+    this.setupKeyboardCallbacks();
+  }
+
+  private setupKeyboardCallbacks(): void {
+    const callbacks: KeyboardHandlerCallbacks = {
+      onMoveToHand: (card) => {
+        // Remove from battlefield and add to hand
+        const hand = this.localPlayer.getState().hand;
+        this.localPlayer['yPlayerState'].set('hand', [...hand, card]);
+      },
+      onMoveToDeckTop: (card) => {
+        this.localPlayer.moveCardToDeckTop(card);
+      },
+      onMoveToDeckBottom: (card) => {
+        this.localPlayer.moveCardToDeckBottom(card);
+      },
+      onMoveToGraveyard: (card) => {
+        this.localPlayer.moveCardToDiscard(card);
+      },
+      onMoveToExile: (card) => {
+        this.localPlayer.moveCardToExile(card);
+      },
+      onDrawCard: () => {
+        this.localPlayer.drawCard();
+      },
+      onShuffleDeck: () => {
+        this.localPlayer.shuffleDeck();
+      },
+      onUntapAll: () => {
+        console.log('Untapping all cards');
+      },
+      onEndTurn: () => {
+        console.log('End turn - not yet implemented');
+      },
+    };
+
+    this.whiteboard.setKeyboardCallbacks(callbacks);
   }
 
   private generateRoomId(): string {

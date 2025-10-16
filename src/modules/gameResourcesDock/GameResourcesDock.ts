@@ -16,6 +16,8 @@ export class GameResourcesDock {
     health: HTMLElement;
   } | null = null;
   private draggedCard: { card: Card; element: HTMLElement } | null = null;
+  private hoveredHandCardId: string | null = null;
+  private hoveredPileType: 'deck' | 'exile' | 'discard' | null = null;
 
   constructor(
     container: HTMLElement,
@@ -30,6 +32,7 @@ export class GameResourcesDock {
     this.render();
     this.setupEventListeners();
     this.setupDragDropZones();
+    this.setupKeyboardShortcuts();
   }
 
   private render(): void {
@@ -66,6 +69,16 @@ export class GameResourcesDock {
 
     pile.appendChild(labelEl);
     pile.appendChild(count);
+
+    // Hover tracking for keyboard shortcuts
+    pile.addEventListener('mouseenter', () => {
+      this.hoveredPileType = type as 'deck' | 'exile' | 'discard';
+      this.hoveredHandCardId = null;
+    });
+
+    pile.addEventListener('mouseleave', () => {
+      this.hoveredPileType = null;
+    });
 
     // Click to view pile
     pile.onclick = () => this.viewPile(type as 'exile' | 'discard');
@@ -113,13 +126,22 @@ export class GameResourcesDock {
       this.onDrawCard();
     };
 
+    const searchButton = document.createElement('button');
+    searchButton.className = 'draw-button';
+    searchButton.textContent = 'Search';
+    searchButton.onclick = (e) => {
+      e.stopPropagation();
+      this.searchDeck();
+    };
+
     deck.appendChild(labelEl);
     deck.appendChild(count);
     deck.appendChild(drawButton);
+    deck.appendChild(searchButton);
 
     // Click deck to view it
     deck.onclick = (e) => {
-      if (e.target !== drawButton) {
+      if (e.target !== drawButton && e.target !== searchButton) {
         this.viewPile('deck');
       }
     };
@@ -245,6 +267,16 @@ export class GameResourcesDock {
 
       cardEl.appendChild(cardNumber);
 
+      // Hover tracking for keyboard shortcuts
+      cardEl.addEventListener('mouseenter', () => {
+        this.hoveredHandCardId = card.id;
+        this.hoveredPileType = null;
+      });
+
+      cardEl.addEventListener('mouseleave', () => {
+        this.hoveredHandCardId = null;
+      });
+
       // Drag events
       cardEl.addEventListener('dragstart', (e) => {
         this.draggedCard = { card, element: cardEl };
@@ -282,6 +314,107 @@ export class GameResourcesDock {
     }
 
     this.pileViewer.show(cards, pileType);
+  }
+
+  private searchDeck(): void {
+    const cards = this.player.getDeckCards();
+
+    this.pileViewer.show(cards, 'deck-search', {
+      onPlayToBattlefield: (card) => {
+        // Remove card from deck
+        this.player['deck'].removeCard(card.id);
+        this.player['yPlayerState'].set('deckCardCount', this.player['deck'].getCardCount());
+
+        // Dispatch event to play card to battlefield
+        const event = new CustomEvent('playCard', {
+          detail: { card, playerId: this.player['playerId'] }
+        });
+        window.dispatchEvent(event);
+      },
+      onMoveToHand: (card) => {
+        // Remove card from deck
+        this.player['deck'].removeCard(card.id);
+        this.player['yPlayerState'].set('deckCardCount', this.player['deck'].getCardCount());
+
+        // Add to hand
+        const hand = this.player.getState().hand;
+        this.player['yPlayerState'].set('hand', [...hand, card]);
+      }
+    });
+  }
+
+  private setupKeyboardShortcuts(): void {
+    // Expose hover state for external keyboard handlers
+    (window as any).getGameResourcesDockHoverState = () => {
+      return {
+        hoveredHandCardId: this.hoveredHandCardId,
+        hoveredPileType: this.hoveredPileType,
+        getHandCard: (cardId: string) => {
+          const hand = this.player.getState().hand;
+          return hand.find(c => c.id === cardId) || null;
+        },
+        getTopPileCard: (pileType: 'deck' | 'exile' | 'discard') => {
+          const state = this.player.getState();
+          let cards: Card[] = [];
+          if (pileType === 'deck') {
+            cards = this.player.getDeckCards();
+          } else if (pileType === 'exile') {
+            cards = state.exilePile;
+          } else if (pileType === 'discard') {
+            cards = state.discardPile;
+          }
+          return cards.length > 0 ? cards[cards.length - 1] : null;
+        },
+        playHandCardToBattlefield: (cardId: string) => {
+          const hand = this.player.getState().hand;
+          const card = hand.find(c => c.id === cardId);
+          if (card) {
+            this.player.playCardFromHand(cardId);
+          }
+        },
+        moveHandCardToDiscard: (cardId: string) => {
+          const hand = this.player.getState().hand;
+          const card = hand.find(c => c.id === cardId);
+          if (card) {
+            this.player.moveCardToDiscard(card);
+            this.player.playCardFromHand(cardId);
+          }
+        },
+        moveHandCardToExile: (cardId: string) => {
+          const hand = this.player.getState().hand;
+          const card = hand.find(c => c.id === cardId);
+          if (card) {
+            this.player.moveCardToExile(card);
+            this.player.playCardFromHand(cardId);
+          }
+        },
+        movePileCardToBattlefield: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
+          if (pileType === 'deck') {
+            const drawnCard = this.player.drawCard();
+            if (drawnCard) {
+              const event = new CustomEvent('playCard', {
+                detail: { card: drawnCard, playerId: this.player['playerId'] }
+              });
+              window.dispatchEvent(event);
+            }
+          } else {
+            // Remove from pile and play
+            const state = this.player.getState();
+            let pile: Card[] = pileType === 'exile' ? state.exilePile : state.discardPile;
+            const index = pile.findIndex(c => c.id === card.id);
+            if (index !== -1) {
+              pile.splice(index, 1);
+              this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
+
+              const event = new CustomEvent('playCard', {
+                detail: { card, playerId: this.player['playerId'] }
+              });
+              window.dispatchEvent(event);
+            }
+          }
+        }
+      };
+    };
   }
 
   public destroy(): void {

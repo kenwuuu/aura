@@ -55,6 +55,14 @@ export class Deck {
     return this.cards.length;
   }
 
+  public removeCard(cardId: string): Card | null {
+    const index = this.cards.findIndex(c => c.id === cardId);
+    if (index !== -1) {
+      return this.cards.splice(index, 1)[0];
+    }
+    return null;
+  }
+
   public getConfig(): DeckConfig {
     return { ...this.config };
   }

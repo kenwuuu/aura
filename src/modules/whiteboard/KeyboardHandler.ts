@@ -41,6 +41,49 @@ export class KeyboardHandler {
     const key = e.key.toLowerCase();
     const card = this.hoveredCardId ? this.yCards.get(this.hoveredCardId) : null;
 
+    // Check if GameResourcesDock has a hovered card/pile
+    const getDockState = (window as any).getGameResourcesDockHoverState;
+    const dockState = getDockState ? getDockState() : null;
+
+    // If there's a battlefield card, prioritize it
+    if (card) {
+      this.handleBattlefieldCardShortcuts(key, card, e);
+      return;
+    }
+
+    // Otherwise check GameResourcesDock hover state
+    if (dockState && (dockState.hoveredHandCardId || dockState.hoveredPileType)) {
+      this.handleDockShortcuts(key, dockState, e);
+      return;
+    }
+
+    // Global shortcuts (no hover needed)
+    switch (key) {
+      case 'c': // C - Draw card
+        e.preventDefault();
+        this.callbacks.onDrawCard();
+        break;
+
+      case 'x': // X - Untap all
+        e.preventDefault();
+        this.callbacks.onUntapAll();
+        this.untapAllCards();
+        break;
+
+      case 'v': // V - Shuffle deck
+        e.preventDefault();
+        this.callbacks.onShuffleDeck();
+        break;
+
+      case 'e': // E - End turn (boilerplate)
+        e.preventDefault();
+        this.callbacks.onEndTurn();
+        console.log('End turn - not yet implemented');
+        break;
+    }
+  }
+
+  private handleBattlefieldCardShortcuts(key: string, card: WhiteboardCard, e: KeyboardEvent): void {
     switch (key) {
       case ' ': // Space - Tap/Untap
         e.preventDefault();
@@ -115,6 +158,42 @@ export class KeyboardHandler {
         e.preventDefault();
         if (card) this.flipCard(card);
         break;
+    }
+  }
+
+  private handleDockShortcuts(key: string, dockState: any, e: KeyboardEvent): void {
+    if (dockState.hoveredHandCardId) {
+      // Hand card shortcuts
+      const card = dockState.getHandCard(dockState.hoveredHandCardId);
+      if (!card) return;
+
+      switch (key) {
+        case 'z': // Z - Play from hand to battlefield
+          e.preventDefault();
+          dockState.playHandCardToBattlefield(dockState.hoveredHandCardId);
+          break;
+
+        case 'd': // D - Move to graveyard
+          e.preventDefault();
+          dockState.moveHandCardToDiscard(dockState.hoveredHandCardId);
+          break;
+
+        case 's': // S - Move to exile
+          e.preventDefault();
+          dockState.moveHandCardToExile(dockState.hoveredHandCardId);
+          break;
+      }
+    } else if (dockState.hoveredPileType) {
+      // Pile shortcuts (top card)
+      const topCard = dockState.getTopPileCard(dockState.hoveredPileType);
+      if (!topCard) return;
+
+      switch (key) {
+        case 'z': // Z - Play top card to battlefield
+          e.preventDefault();
+          dockState.movePileCardToBattlefield(topCard, dockState.hoveredPileType);
+          break;
+      }
     }
   }
 

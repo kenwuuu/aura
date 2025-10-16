@@ -117,6 +117,25 @@ export class Whiteboard {
     if (!cardElement) {
       cardElement = this.createCardElement(card);
       this.container.appendChild(cardElement);
+    } else {
+      // Update existing card (for counters, flip state, etc.)
+      cardElement.style.backgroundColor = card.isFlipped ? '#4a4a4a' : '#2d2d2d';
+
+      // Update counters
+      const existingCounters = cardElement.querySelector('.card-counters');
+      if (existingCounters) {
+        existingCounters.remove();
+      }
+
+      if (card.counters && card.counters.length > 0) {
+        const countersContainer = document.createElement('div');
+        countersContainer.className = 'card-counters';
+        card.counters.forEach((counterValue, index) => {
+          const counter = this.createCounterElement(card, index, counterValue);
+          countersContainer.appendChild(counter);
+        });
+        cardElement.appendChild(countersContainer);
+      }
     }
 
     this.updateCardPosition(cardElement, card);
@@ -129,7 +148,7 @@ export class Whiteboard {
     cardElement.style.position = 'absolute';
     cardElement.style.width = '63px';
     cardElement.style.height = '88px';
-    cardElement.style.backgroundColor = '#2d2d2d';
+    cardElement.style.backgroundColor = card.isFlipped ? '#4a4a4a' : '#2d2d2d';
     cardElement.style.border = '2px solid #4a4a4a';
     cardElement.style.borderRadius = '8px';
     cardElement.style.cursor = 'grab';
@@ -142,9 +161,79 @@ export class Whiteboard {
     badge.textContent = `#${card.cardNumber}`;
     cardElement.appendChild(badge);
 
+    // Add counters container
+    if (card.counters && card.counters.length > 0) {
+      const countersContainer = document.createElement('div');
+      countersContainer.className = 'card-counters';
+      card.counters.forEach((counterValue, index) => {
+        const counter = this.createCounterElement(card, index, counterValue);
+        countersContainer.appendChild(counter);
+      });
+      cardElement.appendChild(countersContainer);
+    }
+
+    // Track hover for keyboard shortcuts
+    cardElement.addEventListener('mouseenter', () => {
+      this.keyboardHandler.setHoveredCard(card.id);
+    });
+
+    cardElement.addEventListener('mouseleave', () => {
+      this.keyboardHandler.setHoveredCard(null);
+    });
+
     cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
 
     return cardElement;
+  }
+
+  private createCounterElement(card: WhiteboardCard, index: number, value: number): HTMLElement {
+    const counter = document.createElement('div');
+    counter.className = 'card-counter';
+    counter.dataset.counterIndex = index.toString();
+
+    const valueEl = document.createElement('div');
+    valueEl.className = 'counter-value';
+    valueEl.textContent = value.toString();
+
+    const controls = document.createElement('div');
+    controls.className = 'counter-controls';
+
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'counter-btn counter-plus';
+    plusBtn.textContent = '+';
+    plusBtn.onclick = (e) => {
+      e.stopPropagation();
+      this.modifyCounter(card, index, 1);
+    };
+
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'counter-btn counter-minus';
+    minusBtn.textContent = '−';
+    minusBtn.onclick = (e) => {
+      e.stopPropagation();
+      this.modifyCounter(card, index, -1);
+    };
+
+    controls.appendChild(plusBtn);
+    controls.appendChild(minusBtn);
+
+    counter.appendChild(controls);
+    counter.appendChild(valueEl);
+
+    return counter;
+  }
+
+  private modifyCounter(card: WhiteboardCard, index: number, delta: number): void {
+    const updatedCounters = [...card.counters];
+    updatedCounters[index] = Math.max(0, updatedCounters[index] + delta);
+
+    // Remove counter if it reaches 0
+    if (updatedCounters[index] === 0) {
+      updatedCounters.splice(index, 1);
+    }
+
+    const updatedCard = { ...card, counters: updatedCounters };
+    this.yCards.set(card.id, updatedCard);
   }
 
   private updateCardPosition(element: HTMLElement, card: WhiteboardCard): void {
