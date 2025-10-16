@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "yjs": "^13.6.10",
-    "y-webrtc": "^10.3.0"
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.27"
   },
+  "private": true,
   "devDependencies": {
-    "typescript": "^5.5.3",
-    "vite": "^5.0.0"
-  },
-  "private": true
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10"
+  }
 }
