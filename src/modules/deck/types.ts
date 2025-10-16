@@ -6,7 +6,7 @@ export interface Card {
   rotation: number;
   isTapped: boolean;
   isFlipped: boolean;
-  counters: number;
+  counters: number[]; // Array of counter values
 }
 
 export interface DeckConfig {

@@ -22,8 +22,18 @@ export class Deck {
         y: 100,
         rotation: 0,
         isTapped: false,
+        isFlipped: false,
+        counters: [],
       });
     }
+  }
+
+  public addCardToTop(card: Card): void {
+    this.cards.push(card);
+  }
+
+  public addCardToBottom(card: Card): void {
+    this.cards.unshift(card);
   }
 
   public getCards(): Card[] {

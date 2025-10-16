@@ -1,5 +1,6 @@
 import { Card } from '../deck';
 import { WhiteboardCard, WhiteboardConfig, DragState } from './types';
+import { KeyboardHandler, KeyboardHandlerCallbacks } from './KeyboardHandler';
 import * as Y from 'yjs';
 
 export class Whiteboard {
@@ -9,6 +10,8 @@ export class Whiteboard {
   private dragState: DragState = { cardId: null, offsetX: 0, offsetY: 0 };
   private yCards: Y.Map<WhiteboardCard>;
   private maxZIndex: number = 0;
+  private keyboardHandler: KeyboardHandler;
+  private keyboardCallbacks?: KeyboardHandlerCallbacks;
 
   constructor(
     container: HTMLElement,
@@ -22,6 +25,24 @@ export class Whiteboard {
     this.setupContainer();
     this.setupYjsSync();
     this.attachEventListeners();
+
+    // Initialize keyboard handler with empty callbacks (will be set by app)
+    this.keyboardHandler = new KeyboardHandler(this.yCards, {
+      onMoveToHand: () => {},
+      onMoveToDeckTop: () => {},
+      onMoveToDeckBottom: () => {},
+      onMoveToGraveyard: () => {},
+      onMoveToExile: () => {},
+      onDrawCard: () => {},
+      onShuffleDeck: () => {},
+      onUntapAll: () => {},
+      onEndTurn: () => {},
+    });
+  }
+
+  public setKeyboardCallbacks(callbacks: KeyboardHandlerCallbacks): void {
+    this.keyboardCallbacks = callbacks;
+    this.keyboardHandler = new KeyboardHandler(this.yCards, callbacks);
   }
 
   private setupContainer(): void {
