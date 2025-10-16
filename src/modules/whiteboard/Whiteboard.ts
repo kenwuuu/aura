@@ -13,14 +13,10 @@ export class Whiteboard {
   constructor(
     container: HTMLElement,
     yDoc: Y.Doc,
-    config: Partial<WhiteboardConfig> = {}
+    config: WhiteboardConfig
   ) {
     this.container = container;
-    this.config = {
-      backgroundColor: config.backgroundColor ?? '#1a1a1a',
-      width: config.width ?? window.innerWidth,
-      height: config.height ?? window.innerHeight,
-    };
+    this.config = config;
 
     this.yCards = yDoc.getMap('cards');
     this.setupContainer();
@@ -43,6 +39,10 @@ export class Whiteboard {
         if (change.action === 'add' || change.action === 'update') {
           const card = this.yCards.get(key);
           if (card) {
+            // Update maxZIndex if this card has a higher zIndex
+            if (card.zIndex > this.maxZIndex) {
+              this.maxZIndex = card.zIndex;
+            }
             this.updateCardElement(card);
           }
         } else if (change.action === 'delete') {
@@ -51,19 +51,39 @@ export class Whiteboard {
       });
     });
 
-    // Load existing cards
+    // Load existing cards and find max zIndex
     this.yCards.forEach((card) => {
+      if (card.zIndex > this.maxZIndex) {
+        this.maxZIndex = card.zIndex;
+      }
       this.updateCardElement(card);
     });
   }
 
-  public addCard(card: Card): void {
+  public addCard(card: Card, ownerId: string): void {
     const whiteboardCard: WhiteboardCard = {
       ...card,
       zIndex: ++this.maxZIndex,
+      ownerId,
     };
 
     this.yCards.set(card.id, whiteboardCard);
+  }
+
+  // Transform coordinates for opponent's view
+  private transformCoordinates(card: WhiteboardCard): { x: number; y: number } {
+    if (card.ownerId === this.config.localPlayerId) {
+      // Local player's cards stay as-is
+      return { x: card.x, y: card.y };
+    } else {
+      // Opponent's cards are mirrored vertically only (not horizontally)
+      // Left/right stays the same, but top becomes bottom
+      return {
+        x: card.x, // Keep X the same
+        // y: this.config.height - card.y - 88, // Flip Y axis only (88 is card height)
+        y: card.y, // Flip Y axis only (88 is card height)
+      };
+    }
   }
 
   private updateCardElement(card: WhiteboardCard): void {
@@ -95,14 +115,21 @@ export class Whiteboard {
     cardElement.style.userSelect = 'none';
     cardElement.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.3)';
 
+    // Add card number badge
+    const badge = document.createElement('div');
+    badge.className = 'card-number-badge-battlefield';
+    badge.textContent = `#${card.cardNumber}`;
+    cardElement.appendChild(badge);
+
     cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
 
     return cardElement;
   }
 
   private updateCardPosition(element: HTMLElement, card: WhiteboardCard): void {
-    element.style.left = `${card.x}px`;
-    element.style.top = `${card.y}px`;
+    const { x, y } = this.transformCoordinates(card);
+    element.style.left = `${x}px`;
+    element.style.top = `${y}px`;
     element.style.transform = `rotate(${card.rotation}deg) ${card.isTapped ? 'rotate(90deg)' : ''}`;
     element.style.zIndex = card.zIndex.toString();
   }

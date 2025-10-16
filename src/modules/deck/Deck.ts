@@ -16,7 +16,8 @@ export class Deck {
   private initializeDeck(): void {
     for (let i = 0; i < this.config.initialCardCount; i++) {
       this.cards.push({
-        id: `card-${i}`,
+        id: `card-${Math.random().toString(36).substring(2, 11)}`,
+        cardNumber: i + 1, // Start from 1
         x: 100,
         y: 100,
         rotation: 0,

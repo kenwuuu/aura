@@ -2,16 +2,24 @@ import * as Y from 'yjs';
 import { Deck } from './modules/deck';
 import { Whiteboard } from './modules/whiteboard';
 import { WebRTCProvider } from './modules/webrtc';
+import { Player } from './modules/player';
+import { GameResourcesDock, OpponentHealthDisplay } from './modules/gameResourcesDock';
 import './style.css';
 
 class AuraApp {
   private yDoc: Y.Doc;
   private webrtcProvider: WebRTCProvider;
   private whiteboard: Whiteboard;
-  private deck: Deck;
+  private localPlayer: Player;
+  private localDock: GameResourcesDock;
+  private opponentHealthDisplay: OpponentHealthDisplay;
+  private playerId: string;
 
   constructor() {
     this.yDoc = new Y.Doc();
+
+    // Generate unique player ID
+    this.playerId = `player-${Math.random().toString(36).substring(2, 9)}`;
 
     // Get room name from URL or generate a random one
     const urlParams = new URLSearchParams(window.location.search);
@@ -27,20 +35,53 @@ class AuraApp {
       roomName,
     });
 
-    // Initialize deck
-    this.deck = new Deck({
+    // Initialize local player deck
+    const localDeck = new Deck({
       initialCardCount: 60,
     });
 
+    // Initialize local player
+    this.localPlayer = new Player(this.playerId, this.yDoc, localDeck, {
+      initialHealth: 20,
+    });
+
     // Initialize whiteboard
-    const container = document.getElementById('whiteboard');
-    if (!container) {
+    const whiteboardContainer = document.getElementById('whiteboard');
+    if (!whiteboardContainer) {
       throw new Error('Whiteboard container not found');
     }
 
-    this.whiteboard = new Whiteboard(container, this.yDoc);
+    this.whiteboard = new Whiteboard(whiteboardContainer, this.yDoc, {
+      backgroundColor: '#1a1a1a',
+      width: window.innerWidth,
+      height: window.innerHeight,
+      localPlayerId: this.playerId,
+    });
 
-    this.setupUI();
+    // Initialize local player's resource dock
+    const dockContainer = document.getElementById('local-dock');
+    if (!dockContainer) {
+      throw new Error('Local dock container not found');
+    }
+
+    this.localDock = new GameResourcesDock(dockContainer, this.localPlayer, {
+      position: 'bottom',
+      playerId: this.playerId,
+    });
+
+    // Initialize opponent health display
+    const opponentHealthContainer = document.getElementById('opponent-health-container');
+    if (!opponentHealthContainer) {
+      throw new Error('Opponent health container not found');
+    }
+
+    this.opponentHealthDisplay = new OpponentHealthDisplay(
+      opponentHealthContainer,
+      this.yDoc,
+      this.playerId
+    );
+
+    this.setupEventListeners();
     this.setupConnectionStatus();
   }
 
@@ -48,39 +89,39 @@ class AuraApp {
     return `mtg-${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  private setupUI(): void {
-    const drawButton = document.getElementById('draw-card');
-    const shuffleButton = document.getElementById('shuffle-deck');
-    const deckCount = document.getElementById('deck-count');
+  private setupEventListeners(): void {
+    const whiteboardContainer = document.getElementById('whiteboard');
 
-    if (drawButton) {
-      drawButton.addEventListener('click', () => {
-        const card = this.deck.drawCard();
+    // Setup whiteboard as a drop zone
+    if (whiteboardContainer) {
+      whiteboardContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer!.dropEffect = 'move';
+      });
+
+      whiteboardContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const cardId = e.dataTransfer?.getData('text/plain');
+        if (!cardId) return;
+
+        // Try to play the card from hand
+        const card = this.localPlayer.playCardFromHand(cardId);
         if (card) {
-          // Place card in center of whiteboard
-          card.x = window.innerWidth / 2 - 31.5;
-          card.y = window.innerHeight / 2 - 44;
-          this.whiteboard.addCard(card);
-          this.updateDeckCount();
+          // Place card at drop position
+          card.x = e.clientX - 31.5; // Center card on cursor
+          card.y = e.clientY - 44;
+          this.whiteboard.addCard(card, this.playerId);
         }
       });
     }
 
-    if (shuffleButton) {
-      shuffleButton.addEventListener('click', () => {
-        this.deck.shuffleDeck();
-        console.log('Deck shuffled');
-      });
-    }
-
-    this.updateDeckCount();
-  }
-
-  private updateDeckCount(): void {
-    const deckCount = document.getElementById('deck-count');
-    if (deckCount) {
-      deckCount.textContent = `Cards in deck: ${this.deck.getCardCount()}`;
-    }
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (whiteboardContainer) {
+        whiteboardContainer.style.width = `${window.innerWidth}px`;
+        whiteboardContainer.style.height = `${window.innerHeight}px`;
+      }
+    });
   }
 
   private setupConnectionStatus(): void {
@@ -106,6 +147,8 @@ class AuraApp {
 
   public destroy(): void {
     this.whiteboard.destroy();
+    this.localDock.destroy();
+    this.opponentHealthDisplay.destroy();
     this.webrtcProvider.destroy();
   }
 }
