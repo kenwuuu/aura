@@ -1,14 +1,20 @@
 {
   "name": "aura",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "description": "Magic: The Gathering collaboration app with WebRTC and Yjs",
+  "type": "module",
   "scripts": {
-    "build": "tsc"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
-  "dependencies": {},
+  "dependencies": {
+    "yjs": "^13.6.10",
+    "y-webrtc": "^10.3.0"
+  },
   "devDependencies": {
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "vite": "^5.0.0"
   },
   "private": true
 }
