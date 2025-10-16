@@ -13,7 +13,7 @@ export class WebRTCProvider {
     this.config = {
       roomName: config.roomName,
       signalingServers: config.signalingServers ?? [
-        'wss://y-webrtc-ckynwnzncc.now.sh',
+        'wss://y-webrtc-eu-production-1328.up.railway.app',
       ],
       iceServers: config.iceServers ?? [
         { urls: 'stun:stun.l.google.com:19302' },
