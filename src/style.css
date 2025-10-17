@@ -519,10 +519,11 @@ body {
   background-color: rgba(0, 0, 0, 0.9);
   border: 2px solid #fbbf24;
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 4px 4px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   pointer-events: auto;
 }
 
@@ -533,24 +534,16 @@ body {
   font-family: 'Courier New', monospace;
   min-width: 16px;
   text-align: center;
-}
-
-.counter-controls {
-  display: none;
-  gap: 2px;
-}
-
-.card-counter:hover .counter-controls {
-  display: flex;
+  order: 2;
 }
 
 .counter-btn {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 16px;
   background-color: #2d2d2d;
   color: #fbbf24;
   border: 1px solid #fbbf24;
-  border-radius: 4px;
+  border-radius: 3px;
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
@@ -576,7 +569,7 @@ body {
 }
 
 .counter-minus {
-  order: 2;
+  order: 3;
 }
 
 /* Modal Styles */

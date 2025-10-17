@@ -3,6 +3,9 @@ import { WhiteboardCard, WhiteboardConfig, DragState } from './types';
 import { KeyboardHandler, KeyboardHandlerCallbacks } from './KeyboardHandler';
 import { CardPreview } from '../cardPreview';
 import * as Y from 'yjs';
+import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import { Counter } from '../../components';
 
 export class Whiteboard {
   private container: HTMLElement;
@@ -229,45 +232,29 @@ export class Whiteboard {
   }
 
   private createCounterElement(card: WhiteboardCard, index: number, value: number): HTMLElement {
-    const counter = document.createElement('div');
-    counter.className = 'card-counter';
-    counter.dataset.counterIndex = index.toString();
+    const counterContainer = document.createElement('div');
 
-    const valueEl = document.createElement('div');
-    valueEl.className = 'counter-value';
-    valueEl.textContent = value.toString();
+    // Render React Counter component
+    const root = createRoot(counterContainer);
+    root.render(
+      React.createElement(Counter, {
+        value,
+        index,
+        onIncrement: () => this.modifyCounter(card.id, index, 1),
+        onDecrement: () => this.modifyCounter(card.id, index, -1),
+      })
+    );
 
-    const controls = document.createElement('div');
-    controls.className = 'counter-controls';
-
-    const plusBtn = document.createElement('button');
-    plusBtn.className = 'counter-btn counter-plus';
-    plusBtn.textContent = '+';
-    plusBtn.onclick = (e) => {
-      e.stopPropagation();
-      this.modifyCounter(card, index, 1);
-    };
-
-    const minusBtn = document.createElement('button');
-    minusBtn.className = 'counter-btn counter-minus';
-    minusBtn.textContent = '−';
-    minusBtn.onclick = (e) => {
-      e.stopPropagation();
-      this.modifyCounter(card, index, -1);
-    };
-
-    controls.appendChild(plusBtn);
-    controls.appendChild(minusBtn);
-
-    counter.appendChild(controls);
-    counter.appendChild(valueEl);
-
-    return counter;
+    return counterContainer;
   }
 
-  private modifyCounter(card: WhiteboardCard, index: number, delta: number): void {
+  private modifyCounter(cardId: string, index: number, delta: number): void {
+    // Get the latest card from Yjs to avoid stale closures
+    const card = this.yCards.get(cardId);
+    if (!card) return;
+
     const updatedCounters = [...card.counters];
-    updatedCounters[index] = Math.max(0, updatedCounters[index] + delta);
+    updatedCounters[index] = updatedCounters[index] + delta;
 
     // Remove counter if it reaches 0
     if (updatedCounters[index] === 0) {
@@ -275,7 +262,7 @@ export class Whiteboard {
     }
 
     const updatedCard = { ...card, counters: updatedCounters };
-    this.yCards.set(card.id, updatedCard);
+    this.yCards.set(cardId, updatedCard);
   }
 
   private updateCardPosition(element: HTMLElement, card: WhiteboardCard): void {

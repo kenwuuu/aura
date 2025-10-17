@@ -108,7 +108,12 @@ export class KeyboardHandler {
 
       case 'u': // U - Add counter
         e.preventDefault();
-        if (card) this.addCounter(card);
+        if (card) this.addPositiveCounter(card);
+        break;
+
+      case 'i': // U - Add counter
+        e.preventDefault();
+        if (card) this.addNegativeCounter(card);
         break;
 
       case 'c': // C - Draw card
@@ -259,8 +264,13 @@ export class KeyboardHandler {
     this.yCards.set(card.id, updatedCard);
   }
 
-  private addCounter(card: WhiteboardCard): void {
+  private addPositiveCounter(card: WhiteboardCard): void {
     const updatedCard = { ...card, counters: [...card.counters, 1] };
+    this.yCards.set(card.id, updatedCard);
+  }
+
+  private addNegativeCounter(card: WhiteboardCard): void {
+    const updatedCard = { ...card, counters: [...card.counters, -1] };
     this.yCards.set(card.id, updatedCard);
   }
 
