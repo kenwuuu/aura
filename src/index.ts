@@ -1,9 +1,13 @@
 import * as Y from 'yjs';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { Deck } from './modules/deck';
 import { Whiteboard, KeyboardHandlerCallbacks } from './modules/whiteboard';
 import { WebRTCProvider } from './modules/webrtc';
 import { Player } from './modules/player';
 import { GameResourcesDock, OpponentHealthDisplay } from './modules/gameResourcesDock';
+import { DeckManager } from './components';
+import { SavedDeck } from './modules/deck/types';
 import './style.css';
 
 class AuraApp {
@@ -84,6 +88,7 @@ class AuraApp {
     this.setupEventListeners();
     this.setupConnectionStatus();
     this.setupKeyboardCallbacks();
+    this.setupDeckManager();
   }
 
   private setupKeyboardCallbacks(): void {
@@ -180,6 +185,37 @@ class AuraApp {
         }
       }
     });
+  }
+
+  private setupDeckManager(): void {
+    const deckManagerRoot = document.getElementById('deck-manager-root');
+    if (!deckManagerRoot) {
+      throw new Error('Deck manager root not found');
+    }
+
+    const root = createRoot(deckManagerRoot);
+    root.render(
+      React.createElement(DeckManager, {
+        onDeckSelected: (deck: SavedDeck) => this.loadDeck(deck),
+      })
+    );
+  }
+
+  private loadDeck(savedDeck: SavedDeck): void {
+    console.log(`Loading deck: ${savedDeck.metadata.name} (${savedDeck.cards.length} cards)`);
+
+    // Create a new deck with the imported cards
+    const newDeck = new Deck({
+      initialCardCount: savedDeck.cards.length,
+    }, savedDeck.cards);
+
+    // Update the player's deck
+    this.localPlayer['deck'] = newDeck;
+
+    // Update deck count in Yjs state
+    this.localPlayer['yPlayerState'].set('deckCardCount', newDeck.getCardCount());
+
+    console.log(`Deck "${savedDeck.metadata.name}" loaded successfully!`);
   }
 
   public destroy(): void {

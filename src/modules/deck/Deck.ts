@@ -4,13 +4,19 @@ export class Deck {
   private config: DeckConfig;
   private cards: Card[] = [];
 
-  constructor(config: Partial<DeckConfig> = {}) {
+  constructor(config: Partial<DeckConfig> = {}, cards?: Card[]) {
     this.config = {
       cardWidth: config.cardWidth ?? 63,
       cardHeight: config.cardHeight ?? 88,
       initialCardCount: config.initialCardCount ?? 60,
     };
-    this.initializeDeck();
+
+    // Use provided cards if available, otherwise initialize with blank cards
+    if (cards && cards.length > 0) {
+      this.cards = [...cards];
+    } else {
+      this.initializeDeck();
+    }
   }
 
   private initializeDeck(): void {

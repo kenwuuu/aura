@@ -2,6 +2,7 @@ import { Player, PlayerState } from '../player';
 import { GameResourcesDockConfig } from './types';
 import { Card } from '../deck';
 import { PileViewer } from './PileViewer';
+import { CardPreview } from '../cardPreview';
 
 export class GameResourcesDock {
   private container: HTMLElement;
@@ -18,6 +19,9 @@ export class GameResourcesDock {
   private draggedCard: { card: Card; element: HTMLElement } | null = null;
   private hoveredHandCardId: string | null = null;
   private hoveredPileType: 'deck' | 'exile' | 'discard' | null = null;
+  private handZoomLevel: number = 1;
+  private zoomControls?: HTMLElement;
+  private cardPreview: CardPreview;
 
   constructor(
     container: HTMLElement,
@@ -28,8 +32,11 @@ export class GameResourcesDock {
     this.player = player;
     this.config = config;
     this.pileViewer = new PileViewer();
+    this.handZoomLevel = parseFloat(localStorage.getItem('hand-zoom') || '1');
+    this.cardPreview = new CardPreview();
 
     this.render();
+    this.setupZoomControls();
     this.setupEventListeners();
     this.setupDragDropZones();
     this.setupKeyboardShortcuts();
@@ -90,15 +97,10 @@ export class GameResourcesDock {
     const hand = document.createElement('div');
     hand.className = 'hand-container';
 
-    const label = document.createElement('div');
-    label.className = 'hand-label';
-    label.textContent = 'Hand';
-
     const cards = document.createElement('div');
     cards.className = 'hand-cards';
     cards.dataset.hand = this.config.playerId;
 
-    hand.appendChild(label);
     hand.appendChild(cards);
 
     return hand;
@@ -260,21 +262,42 @@ export class GameResourcesDock {
       cardEl.dataset.cardId = card.id;
       cardEl.draggable = true;
 
-      // Display card number
-      const cardNumber = document.createElement('div');
-      cardNumber.className = 'card-number-badge';
-      cardNumber.textContent = `#${card.cardNumber}`;
+      // Apply zoom level to card
+      this.applyHandZoomToCard(cardEl);
 
-      cardEl.appendChild(cardNumber);
+      // Check if card has image
+      if (card.images?.front?.normal) {
+        const img = document.createElement('img');
+        img.src = card.images.front.normal;
+        img.alt = card.name || `Card #${card.cardNumber}`;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '8px';
+        img.style.pointerEvents = 'none';
+        cardEl.appendChild(img);
+      } else {
+        // Fallback: Display card number
+        const cardNumber = document.createElement('div');
+        cardNumber.className = 'card-number-badge';
+        cardNumber.textContent = `#${card.cardNumber}`;
+        cardEl.appendChild(cardNumber);
+      }
 
-      // Hover tracking for keyboard shortcuts
-      cardEl.addEventListener('mouseenter', () => {
+      // Hover tracking for keyboard shortcuts and card preview
+      cardEl.addEventListener('mouseenter', (e: MouseEvent) => {
         this.hoveredHandCardId = card.id;
         this.hoveredPileType = null;
+        this.cardPreview.show(card, e);
+      });
+
+      cardEl.addEventListener('mousemove', (e: MouseEvent) => {
+        this.cardPreview.updatePosition(e);
       });
 
       cardEl.addEventListener('mouseleave', () => {
         this.hoveredHandCardId = null;
+        this.cardPreview.hide();
       });
 
       // Drag events
@@ -511,10 +534,74 @@ export class GameResourcesDock {
     };
   }
 
+  private setupZoomControls(): void {
+    const controls = document.createElement('div');
+    controls.className = 'zoom-controls hand-zoom-controls';
+    controls.style.position = 'fixed';
+    controls.style.bottom = '200px';
+    controls.style.left = '20px'; // Left side for hand zoom
+    controls.style.zIndex = '1000';
+    controls.style.display = 'flex';
+    controls.style.flexDirection = 'column';
+    controls.style.gap = '8px';
+
+    const zoomInBtn = document.createElement('button');
+    zoomInBtn.className = 'zoom-button';
+    zoomInBtn.textContent = '+';
+    zoomInBtn.title = 'Zoom In Hand Cards';
+    zoomInBtn.onclick = () => this.adjustHandZoom(0.1);
+
+    const zoomOutBtn = document.createElement('button');
+    zoomOutBtn.className = 'zoom-button';
+    zoomOutBtn.textContent = '−';
+    zoomOutBtn.title = 'Zoom Out Hand Cards';
+    zoomOutBtn.onclick = () => this.adjustHandZoom(-0.1);
+
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'zoom-button';
+    resetBtn.textContent = '1×';
+    resetBtn.title = 'Reset Hand Zoom';
+    resetBtn.onclick = () => this.setHandZoom(1);
+
+    controls.appendChild(zoomInBtn);
+    controls.appendChild(resetBtn);
+    controls.appendChild(zoomOutBtn);
+
+    document.body.appendChild(controls);
+    this.zoomControls = controls;
+  }
+
+  private adjustHandZoom(delta: number): void {
+    const newZoom = Math.max(0.5, Math.min(2.5, this.handZoomLevel + delta));
+    this.setHandZoom(newZoom);
+  }
+
+  private setHandZoom(zoom: number): void {
+    this.handZoomLevel = zoom;
+    localStorage.setItem('hand-zoom', zoom.toString());
+
+    // Re-render hand with new zoom
+    const state = this.player.getState();
+    this.updateHandDisplay(state.hand);
+  }
+
+  private applyHandZoomToCard(cardEl: HTMLElement): void {
+    const baseWidth = 63;
+    const baseHeight = 88;
+    const width = baseWidth * this.handZoomLevel;
+    const height = baseHeight * this.handZoomLevel;
+
+    cardEl.style.width = `${width}px`;
+    cardEl.style.height = `${height}px`;
+  }
+
   public destroy(): void {
     if (this.elements) {
       this.container.innerHTML = '';
       this.elements = null;
+    }
+    if (this.zoomControls) {
+      this.zoomControls.remove();
     }
     this.pileViewer.close();
   }

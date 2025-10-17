@@ -17,7 +17,7 @@ export class Player {
     this.playerId = playerId;
     this.deck = deck;
     this.config = {
-      initialHealth: config.initialHealth ?? 20,
+      initialHealth: config.initialHealth ?? 40,
     };
 
     this.yPlayerState = yDoc.getMap(`player-${playerId}`);
