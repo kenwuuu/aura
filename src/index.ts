@@ -10,6 +10,7 @@ import { DeckManager } from './components';
 import { SavedDeck } from './modules/deck/types';
 import { TokenService } from './services/scryfall';
 import { CardPreview } from './modules/cardPreview';
+import { SessionManager } from './services/SessionManager';
 import './style.css';
 import {CARD_HEIGHT, CARD_WIDTH} from "./constants";
 
