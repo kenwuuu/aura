@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { Deck } from './modules/deck';
 import { Whiteboard, KeyboardHandlerCallbacks } from './modules/whiteboard';
 import { WebRTCProvider } from './modules/webrtc';
+import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/webrtc/persistence';
 import { Player } from './modules/player';
 import { GameResourcesDock, OpponentHealthDisplay } from './modules/gameResourcesDock';
 import { DeckManager } from './components';
@@ -27,8 +28,9 @@ class AuraApp {
   constructor() {
     this.yDoc = new Y.Doc();
 
-    // Generate unique player ID
-    this.playerId = `player-${Math.random().toString(36).substring(2, 9)}`;
+    // Get or create persistent player ID (survives page reloads)
+    this.playerId = getOrCreatePlayerId();
+    console.log('Player ID:', this.playerId);
 
     // Get room name from URL or generate a random one
     const urlParams = new URLSearchParams(window.location.search);
@@ -39,9 +41,13 @@ class AuraApp {
       window.history.replaceState({}, '', `?room=${roomName}`);
     }
 
-    // Initialize WebRTC provider
+    // Get or create persistent peer ID for WebRTC
+    const peerId = getOrCreatePeerId();
+
+    // Initialize WebRTC provider with persistence
     this.webrtcProvider = new WebRTCProvider(this.yDoc, {
       roomName,
+      peerId, // Pass persistent peer ID
     });
 
     // Initialize local player deck
