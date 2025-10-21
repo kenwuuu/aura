@@ -520,6 +520,24 @@ export class MultiPlayerBoardManager {
   private attachEventListeners(): void {
     document.addEventListener('mousemove', (e) => this.onMouseMove(e));
     document.addEventListener('mouseup', () => this.onMouseUp());
+    window.addEventListener('resize', () => this.recenterAllBoards());
+  }
+
+  /**
+   * Recenter all player board containers based on current window dimensions
+   */
+  private recenterAllBoards(): void {
+    const left = (window.innerWidth - BOARD_WIDTH) / 2;
+    const top = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
+
+    this.playerContainers.forEach((container) => {
+      container.style.left = `${left}px`;
+      container.style.top = `${top}px`;
+    });
+
+    // Also update main container dimensions
+    this.mainContainer.style.width = `${window.innerWidth}px`;
+    this.mainContainer.style.height = `${window.innerHeight}px`;
   }
 
   public tapCard(cardId: string): void {

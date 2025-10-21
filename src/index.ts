@@ -216,14 +216,6 @@ class AuraApp {
         }
       });
     }
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-      if (whiteboardContainer) {
-        whiteboardContainer.style.width = `${window.innerWidth}px`;
-        whiteboardContainer.style.height = `${window.innerHeight}px`;
-      }
-    });
   }
 
   private setupConnectionStatus(): void {
