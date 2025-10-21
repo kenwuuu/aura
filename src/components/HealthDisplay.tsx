@@ -59,6 +59,15 @@ export const HealthDisplay: React.FC<HealthDisplayProps> = ({
     }
   };
 
+  const handleClick = () => {
+    // Emit custom event for pinning opponent board
+    if (variant === 'opponent' && playerId) {
+      window.dispatchEvent(new CustomEvent('opponentBoardPin', {
+        detail: { playerId }
+      }));
+    }
+  };
+
   return (
     <>
       <div
@@ -66,6 +75,7 @@ export const HealthDisplay: React.FC<HealthDisplayProps> = ({
         data-player-id={playerId}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       >
         <div className={variant === 'local' ? styles.healthLabel : styles.opponentHealthLabel}>
           {label}

@@ -20,6 +20,13 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
 }) => {
   const [opponents, setOpponents] = useState<OpponentData[]>([]);
 
+  // Notify MultiPlayerBoardManager when opponent count changes
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('opponentCountChanged', {
+      detail: { opponentCount: opponents.length }
+    }));
+  }, [opponents.length]);
+
   useEffect(() => {
     const updateOpponents = () => {
       const opponentsList: OpponentData[] = [];
