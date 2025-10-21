@@ -24,6 +24,12 @@ export class KeyboardHandler {
   private readonly localPlayerId: string;
   private handleKeyDownBound: (e: KeyboardEvent) => void;
 
+  // Copy tracking for smart offset positioning
+  private lastCopiedCardId: string | null = null;
+  private lastCopyTime: number = 0;
+  private copyOffsetMultiplier: number = 0;
+  private readonly COPY_RESET_DELAY = 1500; // 1.5 seconds
+
   constructor(yCards: Y.Map<WhiteboardCard>, callbacks: KeyboardHandlerCallbacks, localPlayerId: string) {
     this.yCards = yCards;
     this.callbacks = callbacks;
@@ -327,11 +333,26 @@ export class KeyboardHandler {
   }
 
   private createCopy(card: WhiteboardCard): void {
+    const now = Date.now();
+
+    // Reset multiplier if copying a different card OR if enough time passed
+    if (this.lastCopiedCardId !== card.id ||
+        now - this.lastCopyTime > this.COPY_RESET_DELAY) {
+      this.copyOffsetMultiplier = 0;
+    }
+
+    this.copyOffsetMultiplier++;
+    this.lastCopiedCardId = card.id;
+    this.lastCopyTime = now;
+
+    const offset = 20 * this.copyOffsetMultiplier;
+
     const newCard: WhiteboardCard = {
       ...card,
       id: `card-${Math.random().toString(36).substring(2, 11)}`,
-      x: card.x + 20,
-      y: card.y + 20,
+      ownerId: this.localPlayerId,
+      x: card.x + offset,
+      y: card.y + offset,
       counters: [...card.counters],
     };
     this.yCards.set(newCard.id, newCard);

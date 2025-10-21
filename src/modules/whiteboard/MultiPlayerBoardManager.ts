@@ -442,25 +442,22 @@ export class MultiPlayerBoardManager {
       cardElement.appendChild(countersContainer);
     }
 
-    // Only enable interactions for local player's cards
-    if (card.ownerId === this.localPlayerId) {
-      // Track hover for keyboard shortcuts and card preview
-      cardElement.addEventListener('mouseenter', (e: MouseEvent) => {
-        this.keyboardHandler.setHoveredCard(card.id);
-        this.cardPreview.show(card, e);
-      });
+    // Track hover for keyboard shortcuts and card preview
+    cardElement.addEventListener('mouseenter', (e: MouseEvent) => {
+      this.keyboardHandler.setHoveredCard(card.id);
+      this.cardPreview.show(card, e);
+    });
 
-      cardElement.addEventListener('mousemove', (e: MouseEvent) => {
-        this.cardPreview.updatePosition(e);
-      });
+    cardElement.addEventListener('mouseleave', () => {
+      this.keyboardHandler.setHoveredCard(null);
+      this.cardPreview.hide();
+    });
 
-      cardElement.addEventListener('mouseleave', () => {
-        this.keyboardHandler.setHoveredCard(null);
-        this.cardPreview.hide();
-      });
+    cardElement.addEventListener('mousemove', (e: MouseEvent) => {
+      this.cardPreview.updatePosition(e);
+    });
 
-      cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
-    }
+    cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
 
     return cardElement;
   }
