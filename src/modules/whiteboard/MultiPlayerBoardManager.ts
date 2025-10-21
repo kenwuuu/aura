@@ -133,7 +133,7 @@ export class MultiPlayerBoardManager {
     container.style.position = 'absolute';
     container.style.width = `${BOARD_WIDTH}px`;
     container.style.height = `${BOARD_HEIGHT}px`;
-    container.style.pointerEvents = isLocal ? 'auto' : 'none'; // Only local player can interact
+    container.style.pointerEvents = 'auto'; // Allow all players to interact with all cards. Set to 'none' to lock interaction to card owner only
     container.style.transition = 'opacity 0.3s ease';
 
     // Calculate centered position (same for all boards)
@@ -442,25 +442,28 @@ export class MultiPlayerBoardManager {
       cardElement.appendChild(countersContainer);
     }
 
-    // Only enable interactions for local player's cards
-    if (card.ownerId === this.localPlayerId) {
-      // Track hover for keyboard shortcuts and card preview
-      cardElement.addEventListener('mouseenter', (e: MouseEvent) => {
-        this.keyboardHandler.setHoveredCard(card.id);
-        this.cardPreview.show(card, e);
-      });
+    // Enable hover for all cards (for card preview and keyboard shortcuts)
+    cardElement.addEventListener('mouseenter', (e: MouseEvent) => {
+      this.keyboardHandler.setHoveredCard(card.id);
+      this.cardPreview.show(card, e);
+    });
 
-      cardElement.addEventListener('mousemove', (e: MouseEvent) => {
-        this.cardPreview.updatePosition(e);
-      });
+    cardElement.addEventListener('mousemove', (e: MouseEvent) => {
+      this.cardPreview.updatePosition(e);
+    });
 
-      cardElement.addEventListener('mouseleave', () => {
-        this.keyboardHandler.setHoveredCard(null);
-        this.cardPreview.hide();
-      });
+    cardElement.addEventListener('mouseleave', () => {
+      this.keyboardHandler.setHoveredCard(null);
+      this.cardPreview.hide();
+    });
 
-      cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
-    }
+    // Only enable drag for local player's cards
+    // if (card.ownerId === this.localPlayerId) {
+    //   cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
+    // } else {
+    //   // Opponent cards should show pointer cursor instead of grab
+    //   cardElement.style.cursor = 'pointer';
+    // }
 
     return cardElement;
   }
