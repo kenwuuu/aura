@@ -2,7 +2,7 @@ import * as Y from 'yjs';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { Deck } from './modules/deck';
-import { Whiteboard, KeyboardHandlerCallbacks } from './modules/whiteboard';
+import { Whiteboard, MultiPlayerBoardManager, KeyboardHandlerCallbacks } from './modules/whiteboard';
 import { WebRTCProvider } from './modules/webrtc';
 import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/webrtc/persistence';
 import { Player } from './modules/player';
@@ -18,7 +18,7 @@ import {CARD_HEIGHT, CARD_WIDTH} from "./constants";
 class AuraApp {
   private yDoc: Y.Doc;
   private webrtcProvider: WebRTCProvider;
-  private whiteboard: Whiteboard;
+  private whiteboard: MultiPlayerBoardManager;
   private localPlayer: Player;
   private localDock: GameResourcesDock;
   private opponentHealthRoot: Root | null = null;
@@ -64,18 +64,19 @@ class AuraApp {
     // Create shared card preview instance (used by both Whiteboard and GameResourcesDock)
     this.cardPreview = new CardPreview();
 
-    // Initialize whiteboard
+    // Initialize multi-player board manager
     const whiteboardContainer = document.getElementById('whiteboard');
     if (!whiteboardContainer) {
       throw new Error('Whiteboard container not found');
     }
 
-    this.whiteboard = new Whiteboard(whiteboardContainer, this.yDoc, {
-      backgroundColor: '#1a1a1a',
-      width: window.innerWidth,
-      height: window.innerHeight,
-      localPlayerId: this.playerId,
-    }, this.cardPreview);
+    this.whiteboard = new MultiPlayerBoardManager(
+      whiteboardContainer,
+      this.yDoc,
+      this.playerId,
+      '#1a1a1a', // backgroundColor
+      this.cardPreview
+    );
 
     // Initialize local player's resource dock
     const dockContainer = document.getElementById('local-dock');
