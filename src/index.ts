@@ -191,9 +191,17 @@ class AuraApp {
         // Try to play the card from hand
         const card = this.localPlayer.playCardFromHand(cardId);
         if (card) {
-          // Subtract card offsets and place card at drop position
-          card.x = e.clientX - ((CARD_WIDTH / 2) * this.whiteboard.getZoomLevel());
-          card.y = e.clientY - ((CARD_HEIGHT / 2) * this.whiteboard.getZoomLevel()) - (60);
+          // Calculate board offset (board is centered on screen)
+          const BOARD_WIDTH = 16 * CARD_WIDTH;
+          const BOARD_HEIGHT = 6.5 * CARD_HEIGHT;
+          const DOCK_HEIGHT = 160;
+          const boardLeft = (window.innerWidth - BOARD_WIDTH) / 2;
+          const boardTop = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
+
+          // Convert screen coordinates to board-relative coordinates
+          // Then subtract card center offset for proper placement under cursor
+          card.x = e.clientX - boardLeft - ((CARD_WIDTH / 2) * this.whiteboard.getZoomLevel());
+          card.y = e.clientY - boardTop - ((CARD_HEIGHT / 2) * this.whiteboard.getZoomLevel()) - 60;
           this.whiteboard.addCard(card, this.playerId);
 
           // Create tokens if this card has any associated tokens
