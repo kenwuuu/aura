@@ -75,10 +75,8 @@ body {
 }
 
 .player-board-opponent {
-  /* Opponent boards - low opacity by default, vertically flipped */
+  /* Opponent boards - low opacity by default */
   opacity: 0.25;
-  transform: scaleY(-1);
-  transform-origin: center center;
   pointer-events: none; /* Opponents' cards are not interactive */
   transition: opacity 0.3s ease;
 }

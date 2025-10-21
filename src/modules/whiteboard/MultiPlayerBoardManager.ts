@@ -8,11 +8,16 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Counter } from '../../components';
 
-interface PlayerBoardConfig {
-  playerId: string;
-  isLocal: boolean;
-  opacity: number;
-}
+// Board Layout Constants
+const BOARD_WIDTH_IN_CARDS = 16;
+const BOARD_HEIGHT_IN_CARDS = 6.5;
+const DOCK_HEIGHT = 160; // Height of bottom UI dock
+
+const BOARD_WIDTH = BOARD_WIDTH_IN_CARDS * CARD_WIDTH;
+const BOARD_HEIGHT = BOARD_HEIGHT_IN_CARDS * CARD_HEIGHT;
+
+const DEFAULT_OPPONENT_OPACITY = 0.25;
+const FOCUSED_OPACITY = 1.0;
 
 interface BoardDimensions {
   width: number;
@@ -34,11 +39,8 @@ export class MultiPlayerBoardManager {
   private cardPreview: CardPreview;
   private localPlayerId: string;
   private backgroundColor: string;
-  private boardDimensions: BoardDimensions;
-  private defaultOpponentOpacity: number = 0.25;
-  private hoveredOpponentId: string | null = null;
 
-  // Configuration for overlay vs underlay
+  // Configuration for overlay vs underlay (easy to debug/change)
   private useOverlay: boolean = true; // true = overlay, false = underlay
 
   constructor(
@@ -53,12 +55,6 @@ export class MultiPlayerBoardManager {
     this.localPlayerId = localPlayerId;
     this.backgroundColor = backgroundColor;
     this.cardPreview = cardPreview;
-
-    // Board dimensions: 16 cards wide × 6.5 cards tall
-    this.boardDimensions = {
-      width: 16 * CARD_WIDTH,
-      height: 6.5 * CARD_HEIGHT,
-    };
 
     this.yCards = yDoc.getMap('cards');
     this.zoomLevel = parseFloat(localStorage.getItem('whiteboard-zoom') || '1');
@@ -116,6 +112,10 @@ export class MultiPlayerBoardManager {
     this.mainContainer.style.overflow = 'hidden';
   }
 
+  /**
+   * Creates a board container for a player
+   * All boards are positioned at the same screen location for overlay effect
+   */
   private createPlayerContainer(playerId: string, isLocal: boolean): HTMLElement {
     // Check if container already exists
     if (this.playerContainers.has(playerId)) {
@@ -126,29 +126,25 @@ export class MultiPlayerBoardManager {
     container.className = isLocal ? 'player-board player-board-local' : 'player-board player-board-opponent';
     container.dataset.playerId = playerId;
     container.style.position = 'absolute';
-    container.style.width = `${this.boardDimensions.width}px`;
-    container.style.height = `${this.boardDimensions.height}px`;
+    container.style.width = `${BOARD_WIDTH}px`;
+    container.style.height = `${BOARD_HEIGHT}px`;
     container.style.pointerEvents = isLocal ? 'auto' : 'none'; // Only local player can interact
     container.style.transition = 'opacity 0.3s ease';
 
-    // Position the board (centered horizontally, positioned at bottom for local)
-    const left = (window.innerWidth - this.boardDimensions.width) / 2;
-    const top = window.innerHeight - this.boardDimensions.height - 160; // 160px for dock
+    // Calculate centered position (same for all boards)
+    const left = (window.innerWidth - BOARD_WIDTH) / 2;
+    const top = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
 
     container.style.left = `${left}px`;
     container.style.top = `${top}px`;
 
     if (isLocal) {
       // Local player: full opacity, normal z-index
-      container.style.opacity = '1';
+      container.style.opacity = FOCUSED_OPACITY.toString();
       container.style.zIndex = '10';
     } else {
-      // Opponent: low opacity, transformed vertically
-      container.style.opacity = this.defaultOpponentOpacity.toString();
-
-      // Apply vertical flip transformation
-      container.style.transformOrigin = 'center center';
-      container.style.transform = 'scaleY(-1)';
+      // Opponent: low opacity by default
+      container.style.opacity = DEFAULT_OPPONENT_OPACITY.toString();
 
       // Set z-index based on overlay/underlay preference
       container.style.zIndex = this.useOverlay ? '15' : '5';
@@ -232,19 +228,16 @@ export class MultiPlayerBoardManager {
     window.addEventListener('opponentBoardHover', ((event: CustomEvent) => {
       const { playerId, isHovered } = event.detail;
 
+      const container = this.playerContainers.get(playerId);
+      if (!container) return;
+
       if (isHovered) {
-        this.hoveredOpponentId = playerId;
         // Set hovered opponent board to full opacity
-        const container = this.playerContainers.get(playerId);
-        if (container) {
-          container.style.opacity = '1';
-        }
+        container.style.opacity = FOCUSED_OPACITY.toString();
       } else {
-        this.hoveredOpponentId = null;
         // Revert to default opacity
-        const container = this.playerContainers.get(playerId);
-        if (container && playerId !== this.localPlayerId) {
-          container.style.opacity = this.defaultOpponentOpacity.toString();
+        if (playerId !== this.localPlayerId) {
+          container.style.opacity = DEFAULT_OPPONENT_OPACITY.toString();
         }
       }
     }) as EventListener);
@@ -260,19 +253,26 @@ export class MultiPlayerBoardManager {
     this.yCards.set(card.id, whiteboardCard);
   }
 
+  /**
+   * Transform opponent coordinates for local rendering
+   *
+   * IMPORTANT: This only affects how WE see opponent cards on OUR screen.
+   * The coordinates in Yjs are world coordinates and never change.
+   *
+   * Local player cards: No transformation (render as-is)
+   * Opponent cards: Vertical flip (so their bottom becomes our top)
+   */
   private transformCoordinatesForOpponent(card: WhiteboardCard): { x: number; y: number } {
-    // For opponent boards that are vertically flipped via CSS scaleY(-1),
-    // we need to adjust the Y coordinate so cards appear in the correct position
-    // when the container is flipped
-
     if (card.ownerId === this.localPlayerId) {
+      // Our own cards: render at exact Yjs coordinates
       return { x: card.x, y: card.y };
     } else {
-      // Since the container is flipped with scaleY(-1), we need to invert the Y position
-      // relative to the board height
+      // Opponent cards: flip Y coordinate so their board appears inverted
+      // When opponent places at Y=0 (their top), it appears at bottom of our view
+      // When opponent places at Y=max (their bottom), it appears at top of our view
       return {
         x: card.x,
-        y: card.y + (CARD_HEIGHT * this.zoomLevel) + this.boardDimensions.height,
+        y: BOARD_HEIGHT - card.y - (CARD_HEIGHT * this.zoomLevel) - 300
       };
     }
   }
