@@ -457,13 +457,7 @@ export class MultiPlayerBoardManager {
       this.cardPreview.hide();
     });
 
-    // Only enable drag for local player's cards
-    // if (card.ownerId === this.localPlayerId) {
-    //   cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
-    // } else {
-    //   // Opponent cards should show pointer cursor instead of grab
-    //   cardElement.style.cursor = 'pointer';
-    // }
+    cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
 
     return cardElement;
   }
