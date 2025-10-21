@@ -444,6 +444,7 @@ export class MultiPlayerBoardManager {
 
     // Track hover for keyboard shortcuts and card preview
     cardElement.addEventListener('mouseenter', (e: MouseEvent) => {
+      console.log('hovering')
       this.keyboardHandler.setHoveredCard(card.id);
       this.cardPreview.show(card, e);
     });
