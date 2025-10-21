@@ -4,6 +4,8 @@ export class CardPreview {
   // Constants
   private static readonly BASE_WIDTH = 500;
   private static readonly BASE_HEIGHT = 698; // Maintain Magic card aspect ratio (~1.4:1)
+  private static DISPLAY_WIDTH = 500; // Maintain Magic card aspect ratio (~1.4:1)
+  private static DISPLAY_HEIGHT = 698; // Maintain Magic card aspect ratio (~1.4:1)
   private static readonly BORDER_RADIUS = '12px';
   private static readonly Z_INDEX = '10000';
   private static readonly BOX_SHADOW = '0 8px 16px rgba(0, 0, 0, 0.6)';
@@ -23,6 +25,7 @@ export class CardPreview {
   private zoomLevel: number = 1;
   private zoomControls?: HTMLElement;
   private currentMouseX: number = 0;
+  private currentMouseY: number = 0;
 
   constructor() {
     this.zoomLevel = parseFloat(localStorage.getItem('card-preview-zoom') || '1');
@@ -55,11 +58,11 @@ export class CardPreview {
   private updatePreviewSize(): void {
     if (!this.previewElement) return;
 
-    const width = CardPreview.BASE_WIDTH * this.zoomLevel;
-    const height = CardPreview.BASE_HEIGHT * this.zoomLevel;
+    CardPreview.DISPLAY_WIDTH = CardPreview.BASE_WIDTH * this.zoomLevel;
+    CardPreview.DISPLAY_HEIGHT = CardPreview.BASE_HEIGHT * this.zoomLevel;
 
-    this.previewElement.style.width = `${width}px`;
-    this.previewElement.style.height = `${height}px`;
+    this.previewElement.style.width = `${CardPreview.DISPLAY_WIDTH}px`;
+    this.previewElement.style.height = `${CardPreview.DISPLAY_HEIGHT}px`;
   }
 
   public show(card: Card, mouseEvent?: MouseEvent): void {
@@ -71,6 +74,7 @@ export class CardPreview {
     // Store mouse position for positioning
     if (mouseEvent) {
       this.currentMouseX = mouseEvent.clientX;
+      this.currentMouseY = mouseEvent.clientY;
       this.updatePreviewPosition();
     }
 
@@ -92,17 +96,20 @@ export class CardPreview {
 
   public updatePosition(mouseEvent: MouseEvent): void {
     this.currentMouseX = mouseEvent.clientX;
+    this.currentMouseY = mouseEvent.clientY;
     this.updatePreviewPosition();
   }
 
+  // Move preview to left side of screen if it would be blocking cursor
   private updatePreviewPosition(): void {
     if (!this.previewElement) return;
 
-    // If cursor is on right half of screen, show preview on left
-    // If cursor is on left half, show preview on right
-    const screenMidpoint = window.innerWidth / 2;
+    const isCursorUnderCard = () => {
+      return this.currentMouseX > window.innerWidth - (CardPreview.DISPLAY_WIDTH * 1.1) &&
+        this.currentMouseY < (CardPreview.DISPLAY_HEIGHT * 1.1);
+    }
 
-    if (this.currentMouseX > screenMidpoint) {
+    if (isCursorUnderCard.call(this)) {
       // Cursor on right, show preview on left
       this.previewElement.style.left = CardPreview.SIDE_OFFSET;
       this.previewElement.style.right = 'auto';
