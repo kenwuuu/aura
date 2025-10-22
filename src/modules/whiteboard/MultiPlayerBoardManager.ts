@@ -410,7 +410,6 @@ export class MultiPlayerBoardManager {
       img.style.width = '100%';
       img.style.height = '100%';
       img.style.objectFit = 'cover';
-      img.style.pointerEvents = 'none';
       cardElement.appendChild(img);
 
       // Add card number badge overlay on image
