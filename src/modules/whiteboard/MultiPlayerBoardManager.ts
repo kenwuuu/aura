@@ -133,7 +133,9 @@ export class MultiPlayerBoardManager {
     container.style.position = 'absolute';
     container.style.width = `${BOARD_WIDTH}px`;
     container.style.height = `${BOARD_HEIGHT}px`;
-    container.style.pointerEvents = 'auto'; // Allow all players to interact with all cards. Set to 'none' to lock interaction to card owner only
+    // Opponent containers: pointer-events none on container, but will enable on cards
+    // Local container: pointer-events auto for full interaction
+    container.style.pointerEvents = isLocal ? 'auto' : 'none';
     container.style.transition = 'opacity 0.3s ease';
 
     // Calculate centered position (same for all boards)
@@ -397,6 +399,7 @@ export class MultiPlayerBoardManager {
     cardElement.style.cursor = 'grab';
     cardElement.style.userSelect = 'none';
     cardElement.style.overflow = 'hidden';
+    cardElement.style.pointerEvents = 'auto';  // Enable pointer events so opponents can hover cards
 
     // Check if card has image and is not flipped
     if (card.images?.front?.normal && !card.isFlipped) {
@@ -410,7 +413,7 @@ export class MultiPlayerBoardManager {
       img.style.width = '100%';
       img.style.height = '100%';
       img.style.objectFit = 'cover';
-      img.style.pointerEvents = 'none';
+      img.style.pointerEvents = 'none';  // disable events on img so cursor targets card instead of img
       cardElement.appendChild(img);
 
       // Add card number badge overlay on image
