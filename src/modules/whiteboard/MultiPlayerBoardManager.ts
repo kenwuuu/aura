@@ -133,7 +133,7 @@ export class MultiPlayerBoardManager {
     container.style.position = 'absolute';
     container.style.width = `${BOARD_WIDTH}px`;
     container.style.height = `${BOARD_HEIGHT}px`;
-    container.style.pointerEvents = isLocal ? 'auto' : 'none'; // Only local player can interact
+    container.style.pointerEvents = 'auto'; // Allow hover events for all boards
     container.style.transition = 'opacity 0.3s ease';
 
     // Calculate centered position (same for all boards)
