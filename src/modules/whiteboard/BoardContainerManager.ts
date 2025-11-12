@@ -1,8 +1,8 @@
 import { CARD_WIDTH, CARD_HEIGHT } from '../../constants';
 
 // Board Layout Constants
-const BOARD_WIDTH_IN_CARDS = 16;
-const BOARD_HEIGHT_IN_CARDS = 6.5;
+const BOARD_WIDTH_IN_CARDS = 28;
+const BOARD_HEIGHT_IN_CARDS = 9;
 
 export const DOCK_HEIGHT = 160; // Height of bottom UI dock
 export const BOARD_WIDTH = BOARD_WIDTH_IN_CARDS * CARD_WIDTH;
@@ -40,8 +40,8 @@ export class BoardContainerManager {
    */
   private setupMainContainer(): void {
     this.mainContainer.style.backgroundColor = this.backgroundColor;
-    this.mainContainer.style.width = `${window.innerWidth}px`;
-    this.mainContainer.style.height = `${window.innerHeight}px`;
+    this.mainContainer.style.width = `${BOARD_WIDTH}px`;
+    this.mainContainer.style.height = `${BOARD_HEIGHT}px`;
     this.mainContainer.style.position = 'relative';
     this.mainContainer.style.overflow = 'hidden';
   }
@@ -133,9 +133,9 @@ export class BoardContainerManager {
       container.style.top = `${top}px`;
     });
 
-    // Also update main container dimensions
-    this.mainContainer.style.width = `${window.innerWidth}px`;
-    this.mainContainer.style.height = `${window.innerHeight}px`;
+    // Also update main container dimensions to constant board size
+    this.mainContainer.style.width = `${BOARD_WIDTH}px`;
+    this.mainContainer.style.height = `${BOARD_HEIGHT}px`;
   }
 
   /**

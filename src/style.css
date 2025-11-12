@@ -19,6 +19,7 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  background-color: rgba(10, 10, 10, 0.95);
 }
 
 #toolbar {
@@ -58,9 +59,12 @@ body {
 }
 
 #whiteboard {
-  flex: 1;
+  flex: 0 0 auto;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 /* Multi-Player Board Layers */
