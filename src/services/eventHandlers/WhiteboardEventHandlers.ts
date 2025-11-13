@@ -3,6 +3,7 @@ import { Player } from '../../modules/player';
 import { MultiPlayerBoardManager } from '../../modules/whiteboard';
 import { TokenService } from '../scryfall';
 import { CARD_HEIGHT, CARD_WIDTH } from '../../constants';
+import {getBoardLeftOffset, getBoardTopOffset} from "../../modules/whiteboard/BoardContainerManager";
 
 /**
  * Handles drag-and-drop events between the whiteboard and other game zones
@@ -51,11 +52,8 @@ export class WhiteboardEventHandlers {
       if (card) {
         // Calculate board offset (board is centered on screen)
         // todo: reference BoardContainerManager instead of hardcoding magic numbers
-        const BOARD_WIDTH = 16 * CARD_WIDTH;
-        const BOARD_HEIGHT = 6.5 * CARD_HEIGHT;
-        const DOCK_HEIGHT = 160;
-        const boardLeft = (window.innerWidth - BOARD_WIDTH) / 2;
-        const boardTop = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
+        const boardLeft = getBoardLeftOffset();
+        const boardTop = getBoardTopOffset();
 
         // Convert screen coordinates to board-relative coordinates
         // Then subtract card center offset for proper placement under cursor
