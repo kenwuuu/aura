@@ -57,10 +57,7 @@ export class Player {
     const deckCards = this.deck.getCards();
 
     if (deckCards.length > 0) {  // TODO: change logic based on if deck is commander or not
-      // use sleep to emphasize that commander is being drawn
-      await new Promise(r => setTimeout(r, 300));
-
-      // bring commander to hand
+      // move commander to hand
       const commander = deckCards[deckCards.length - 1];
       this.deck.removeCard(commander.id);
       this.deck.addCardToTop(commander);
@@ -68,12 +65,10 @@ export class Player {
 
       this.deck.shuffleDeck();
 
-      await new Promise(r => setTimeout(r, 450));
-
       // draw 7
       for (let i = 0; i < 7; i++) {
         this.drawCard()
-        await new Promise(r => setTimeout(r, 50));
+        await new Promise(r => setTimeout(r, 20));
       }
     }
   }
