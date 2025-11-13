@@ -3,10 +3,10 @@
 ### Features
 - Made card tooltip interactive, try clicking it!
 - Improve board positioning by removing inverted boards
-- Added lines to split board into 4 'playmats'
+- Add lines to split board into 4 'playmats'
 
 ### Bug fixes
-- Fixed a bug with the default Krenko deck where identical cards could be controlled by another player that owned one.
+- Fix a bug with the default Krenko deck where identical cards could be controlled by another player that owned one.
 
 ---
 
