@@ -12,7 +12,7 @@ import { createRoot, Root } from 'react-dom/client';
 import { CardCounter } from '../../components';
 import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
 
-const DEFAULT_OPPONENT_OPACITY = 0.25;
+const DEFAULT_OPPONENT_OPACITY = 1.0;
 const FOCUSED_OPACITY = 1.0;
 
 export class MultiPlayerBoardManager {
