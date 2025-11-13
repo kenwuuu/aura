@@ -46,6 +46,57 @@ export class KeyboardHandler {
     return this.hoveredCardId;
   }
 
+  /**
+   * Execute a hotkey action programmatically
+   * @param key - The key to simulate (e.g., 'c', 'Space', 'f', '+  or  =')
+   * @param cardId - Optional card ID to use as context (if null, uses hovered card)
+   */
+  public executeHotkey(key: string, cardId: string | null = null): void {
+    // Normalize key (handle special cases and display strings)
+    let normalizedKey = key.toLowerCase().trim();
+    
+    // Handle display strings from hotkeys.ts
+    if (normalizedKey === 'space') {
+      normalizedKey = ' ';
+    } else if (normalizedKey.includes('+') || normalizedKey.includes('=')) {
+      // Handle '+  or  =' -> use '='
+      normalizedKey = '=';
+    } else if (normalizedKey.includes('-') || normalizedKey.includes('_')) {
+      // Handle '-  or  _' -> use '-'
+      normalizedKey = '-';
+    } else {
+      // For regular keys, use first character (handles 'C' -> 'c')
+      normalizedKey = normalizedKey.charAt(0);
+    }
+
+    // Use provided cardId or fall back to hovered card
+    const targetCardId = cardId ?? this.hoveredCardId;
+    const card = targetCardId ? this.yCards.get(targetCardId) : null;
+
+    // Create a mock keyboard event for compatibility
+    const mockEvent = {
+      key: normalizedKey,
+      preventDefault: () => {},
+      target: document.body,
+    } as KeyboardEvent;
+
+    // Temporarily set hovered card if provided
+    const originalHoveredCard = this.hoveredCardId;
+    if (cardId !== null) {
+      this.hoveredCardId = cardId;
+    }
+
+    try {
+      // Execute the action
+      this.handleKeyDown(mockEvent);
+    } finally {
+      // Restore original hovered card
+      if (cardId !== null) {
+        this.hoveredCardId = originalHoveredCard;
+      }
+    }
+  }
+
   private attachListeners(): void {
     document.addEventListener('keydown', this.handleKeyDownBound);
   }
