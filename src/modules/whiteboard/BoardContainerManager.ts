@@ -10,8 +10,22 @@ export const BOARD_WIDTH = BOARD_WIDTH_IN_CARDS * CARD_WIDTH;
 export const BOARD_HEIGHT = BOARD_HEIGHT_IN_CARDS * CARD_HEIGHT;
 export const DEFAULT_OPPONENT_OPACITY = 0.25;
 export const FOCUSED_OPACITY = 1.0;
-export const BOARD_LEFT_OFFSET_TO_CENTER = (window.innerWidth - BOARD_WIDTH) / 2;
-export const BOARD_TOP_OFFSET_TO_CENTER = (window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2;
+
+/**
+ * Calculate the left offset to center the board horizontally
+ * @returns The left pixel offset from the viewport edge
+ */
+export function getBoardLeftOffset(): number {
+  return (window.innerWidth - BOARD_WIDTH) / 2;
+}
+
+/**
+ * Calculate the top offset to center the board vertically
+ * @returns The top pixel offset from the viewport edge
+ */
+export function getBoardTopOffset(): number {
+  return ((window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2) - 46;
+}
 
 /**
  * Manages player board container lifecycle and positioning
@@ -77,8 +91,8 @@ export class BoardContainerManager {
     container.style.transition = 'opacity 0.3s ease';
 
     // Calculate centered position (same for all boards)
-    const left = BOARD_LEFT_OFFSET_TO_CENTER;
-    const top = BOARD_TOP_OFFSET_TO_CENTER;
+    const left = getBoardLeftOffset();
+    const top = getBoardTopOffset();
 
     container.style.left = `${left}px`;
     container.style.top = `${top}px`;
@@ -130,8 +144,8 @@ export class BoardContainerManager {
    * Recenter all player board containers based on current window dimensions
    */
   recenterAll(): void {
-    const left = BOARD_LEFT_OFFSET_TO_CENTER;
-    const top = BOARD_TOP_OFFSET_TO_CENTER;
+    const left = getBoardLeftOffset();
+    const top = getBoardTopOffset();
 
     this.playerContainers.forEach((container) => {
       container.style.left = `${left}px`;

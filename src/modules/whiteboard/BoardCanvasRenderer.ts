@@ -1,4 +1,4 @@
-import {BOARD_WIDTH, BOARD_HEIGHT, DOCK_HEIGHT, BOARD_TOP_OFFSET_TO_CENTER, BOARD_LEFT_OFFSET_TO_CENTER} from './BoardContainerManager';
+import {BOARD_WIDTH, BOARD_HEIGHT, getBoardLeftOffset, getBoardTopOffset} from './BoardContainerManager';
 
 
 /**
@@ -60,9 +60,9 @@ export class BoardCanvasRenderer {
    * Draw horizontal and vertical center lines on the board
    */
   private drawCenterLines(): void {
-    // Calculate board center position
-    const boardLeft = BOARD_LEFT_OFFSET_TO_CENTER;
-    const boardTop = BOARD_TOP_OFFSET_TO_CENTER;
+    // Get board center position
+    const boardLeft = getBoardLeftOffset();
+    const boardTop = getBoardTopOffset();
     const boardCenterX = boardLeft + BOARD_WIDTH / 2;
     const boardCenterY = boardTop + BOARD_HEIGHT / 2;
 
