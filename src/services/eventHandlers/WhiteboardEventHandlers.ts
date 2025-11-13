@@ -50,7 +50,7 @@ export class WhiteboardEventHandlers {
       const card = this.localPlayer.removeCardFromHand(cardId);
       if (card) {
         // Calculate board offset (board is centered on screen)
-        // todo: this is incorrect, reference BoardContainerManager instead of hardcoding magic numbers
+        // todo: reference BoardContainerManager instead of hardcoding magic numbers
         const BOARD_WIDTH = 16 * CARD_WIDTH;
         const BOARD_HEIGHT = 6.5 * CARD_HEIGHT;
         const DOCK_HEIGHT = 160;

@@ -26,7 +26,6 @@ export class MultiPlayerBoardManager {
   private zoomController: ZoomController;
   private cardPreview: CardPreview;
   private localPlayerId: string;
-  private backgroundColor: string;
   private tooltipManager: TooltipManager;
   // Track mouse movement to distinguish clicks from drags
   private mouseDownPosition: { x: number; y: number; cardId: string } | null = null;
@@ -270,7 +269,7 @@ export class MultiPlayerBoardManager {
 
     const container = this.boardContainerManager.getContainer(card.ownerId);
     if (!container) {
-      console.warn(`No container found for player ${card.ownerId}`);
+      console.warn(`No board container found for player ${card.ownerId}`);
       return;
     }
 
@@ -278,6 +277,7 @@ export class MultiPlayerBoardManager {
       `[data-card-id="${card.id}"]`
     ) as HTMLElement;
 
+    // place card
     if (!cardElement) {
       cardElement = this.createCardElement(card);
       container.appendChild(cardElement);
@@ -660,14 +660,6 @@ export class MultiPlayerBoardManager {
     document.addEventListener('mousemove', (e) => this.onMouseMove(e));
     document.addEventListener('mouseup', (e) => this.onMouseUp(e));
     window.addEventListener('resize', () => this.boardContainerManager.recenterAll());
-  }
-
-  public tapCard(cardId: string): void {
-    const card = this.cards.get(cardId);
-    if (!card) return;
-
-    const updatedCard = { ...card, isTapped: !card.isTapped };
-    this.yCards.set(cardId, updatedCard);
   }
 
   private setupZoomControls(): void {
