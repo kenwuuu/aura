@@ -73,7 +73,7 @@ export class BoardContainerManager {
 
     // Calculate centered position (same for all boards)
     const left = (window.innerWidth - BOARD_WIDTH) / 2;
-    const top = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
+    const top = (window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2;
 
     container.style.left = `${left}px`;
     container.style.top = `${top}px`;
@@ -126,7 +126,7 @@ export class BoardContainerManager {
    */
   recenterAll(): void {
     const left = (window.innerWidth - BOARD_WIDTH) / 2;
-    const top = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
+    const top = (window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2;
 
     this.playerContainers.forEach((container) => {
       container.style.left = `${left}px`;
