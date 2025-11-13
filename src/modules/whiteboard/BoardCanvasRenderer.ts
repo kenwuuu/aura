@@ -68,7 +68,7 @@ export class BoardCanvasRenderer {
 
     // Set line style
     this.ctx.strokeStyle = 'white';
-    this.ctx.globalAlpha = 1.0;
+    this.ctx.globalAlpha = .3;
     this.ctx.lineWidth = 1;
 
     // Draw vertical center line
