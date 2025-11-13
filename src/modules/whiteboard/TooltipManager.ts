@@ -103,6 +103,7 @@ export class TooltipManager {
    */
   showOnHover(cardId: string, mouseX: number, mouseY: number): void {
     this.clearHoverTimeout();
+    this.clearHideTimeout(); // Cancel tooltip hide when moving cursor to new card
 
     this.hoverTimeout = window.setTimeout(() => {
       this.show(cardId, mouseX, mouseY, false);
@@ -157,7 +158,6 @@ export class TooltipManager {
     this.clearTimeouts();
     if (!this.tooltipRoot) return;
     this.clickedCardId = null;
-    this.clickPosition = null;
     this.tooltipRoot.render(null);
   }
 
