@@ -24,7 +24,7 @@ export function getBoardLeftOffset(): number {
  * @returns The top pixel offset from the viewport edge
  */
 export function getBoardTopOffset(): number {
-  return ((window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2) - 46;
+  return ((window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2) - 38;  // 38 is a magic number that helps center directly in the middle of top menu bar and game dock
 }
 
 /**
