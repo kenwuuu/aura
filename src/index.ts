@@ -7,8 +7,9 @@ import { WebRTCProvider } from './modules/webrtc';
 import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/webrtc/persistence';
 import { Player } from './modules/player';
 import { GameResourcesDock } from './modules/gameResourcesDock';
-import { DeckManager, WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal } from './components';
+import { DeckManager, WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal, TurnSystem } from './components';
 import { OpponentHealthList } from './components/OpponentHealthList';
+import { TurnManager } from './services/turnManager';
 import { SavedDeck } from './modules/deck/types';
 import { TokenService } from './services/scryfall';
 import { ScryfallApiService } from './services/scryfall/ScryfallApiService';
@@ -56,6 +57,8 @@ class AuraApp {
   private scryfallApiService: ScryfallApiService;
   private roomManager: RoomManager;
   private eventHandlers: WhiteboardEventHandlers | null = null;
+  private turnManager: TurnManager;
+  private turnSystemRoot: Root | null = null;
 
   constructor() {
     this.yDoc = new Y.Doc();
@@ -86,6 +89,15 @@ class AuraApp {
     this.localPlayer = new Player(this.playerId, this.yDoc, localDeck, {
       initialHealth: 40,
     });
+
+    // Initialize turn manager
+    this.turnManager = new TurnManager(this.yDoc);
+    
+    // Initialize player order (will set first player as active if none exists)
+    // This ensures turn system is ready from the start
+    setTimeout(() => {
+      this.turnManager.initializePlayerOrder();
+    }, 100); // Small delay to ensure all players have joined
 
     // Create shared card preview instance (used by both Whiteboard and GameResourcesDock)
     this.cardPreview = new CardPreview();
@@ -145,28 +157,73 @@ class AuraApp {
     this.setupHelpModal();
     this.setupHotkeyHintsModal();
     this.setupAddCardModal();
+    this.setupTurnSystem();
+    this.setupTurnStateObserver();
   }
 
   private setupKeyboardCallbacks(): void {
     const callbacks: KeyboardHandlerCallbacks = {
       onMoveToHand: (card) => {
-        // Remove from battlefield and add to hand
-        const hand = this.localPlayer.getState().hand;
-        this.localPlayer['yPlayerState'].set('hand', [...hand, card]);
+        // Remove WhiteboardCard-specific properties
+        const { zIndex, ownerId, ...baseCard } = card as any;
+        const cardOwnerId = (card as any).ownerId;
+        
+        // Add to the card owner's hand
+        const yOwnerState = this.yDoc.getMap(`player-${cardOwnerId}`);
+        const hand = (yOwnerState.get('hand') as any[]) ?? [];
+        yOwnerState.set('hand', [...hand, baseCard]);
       },
       onMoveToDeckTop: (card) => {
-        this.localPlayer.moveCardToDeckTop(card);
-        DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
+        // Remove WhiteboardCard-specific properties
+        const { zIndex, ownerId, ...baseCard } = card as any;
+        const cardOwnerId = (card as any).ownerId;
+        
+        // Only move to deck if it's the local player's card (deck is local-only)
+        if (cardOwnerId === this.playerId) {
+          this.localPlayer.moveCardToDeckTop(baseCard);
+          DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
+        } else {
+          // For opponent cards, move to exile instead (deck is local-only)
+          const yOwnerState = this.yDoc.getMap(`player-${cardOwnerId}`);
+          const exilePile = (yOwnerState.get('exilePile') as any[]) ?? [];
+          yOwnerState.set('exilePile', [...exilePile, baseCard]);
+        }
       },
       onMoveToDeckBottom: (card) => {
-        this.localPlayer.moveCardToDeckBottom(card);
-        DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
+        // Remove WhiteboardCard-specific properties
+        const { zIndex, ownerId, ...baseCard } = card as any;
+        const cardOwnerId = (card as any).ownerId;
+        
+        // Only move to deck if it's the local player's card (deck is local-only)
+        if (cardOwnerId === this.playerId) {
+          this.localPlayer.moveCardToDeckBottom(baseCard);
+          DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
+        } else {
+          // For opponent cards, move to exile instead (deck is local-only)
+          const yOwnerState = this.yDoc.getMap(`player-${cardOwnerId}`);
+          const exilePile = (yOwnerState.get('exilePile') as any[]) ?? [];
+          yOwnerState.set('exilePile', [...exilePile, baseCard]);
+        }
       },
       onMoveToGraveyard: (card) => {
-        this.localPlayer.moveCardToDiscard(card);
+        // Remove WhiteboardCard-specific properties
+        const { zIndex, ownerId, ...baseCard } = card as any;
+        const cardOwnerId = (card as any).ownerId;
+        
+        // Add to the card owner's discard pile
+        const yOwnerState = this.yDoc.getMap(`player-${cardOwnerId}`);
+        const discardPile = (yOwnerState.get('discardPile') as any[]) ?? [];
+        yOwnerState.set('discardPile', [...discardPile, baseCard]);
       },
       onMoveToExile: (card) => {
-        this.localPlayer.moveCardToExile(card);
+        // Remove WhiteboardCard-specific properties
+        const { zIndex, ownerId, ...baseCard } = card as any;
+        const cardOwnerId = (card as any).ownerId;
+        
+        // Add to the card owner's exile pile
+        const yOwnerState = this.yDoc.getMap(`player-${cardOwnerId}`);
+        const exilePile = (yOwnerState.get('exilePile') as any[]) ?? [];
+        yOwnerState.set('exilePile', [...exilePile, baseCard]);
       },
       onDrawCard: () => {
         this.localPlayer.drawCard();
@@ -213,9 +270,54 @@ class AuraApp {
       this.whiteboard,
       this.tokenService,
       this.playerId,
-      () => DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck())
+      () => DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck()),
+      this.turnManager
     );
     this.eventHandlers.setupEventListeners();
+
+    // Listen for playCard events (from dock/piles) and check turn/priority
+    window.addEventListener('playCard', ((event: CustomEvent) => {
+      const { card, playerId } = event.detail;
+      
+      // Check if player can move cards from dock to battlefield
+      if (!this.turnManager.canMoveFromDockToBattlefield(playerId)) {
+        console.warn('Cannot play card: not active player and no priority');
+        alert('You must be the active player or have priority to play cards from your dock to the battlefield.');
+        return;
+      }
+
+      // Set default position if not set (center of screen)
+      if (card.x === undefined || card.y === undefined) {
+        const CARD_WIDTH = 63;
+        const CARD_HEIGHT = 88;
+        const BOARD_WIDTH = 16 * CARD_WIDTH;
+        const BOARD_HEIGHT = 6.5 * CARD_HEIGHT;
+        const DOCK_HEIGHT = 160;
+        const boardLeft = (window.innerWidth - BOARD_WIDTH) / 2;
+        const boardTop = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
+        
+        card.x = BOARD_WIDTH / 2;
+        card.y = BOARD_HEIGHT / 2;
+      }
+
+      // Add card to battlefield
+      this.whiteboard.addCard(card, playerId);
+
+      // Search for and create any tokens related to card
+      if (card.scryfallId) {
+        this.tokenService.createTokensForCard(
+          card.scryfallId,
+          { x: card.x, y: card.y }
+        ).then(result => {
+          result.tokens.forEach(token => {
+            this.whiteboard.addCard(token, playerId);
+          });
+          if (result.errors.length > 0) {
+            console.warn(`Token creation errors for ${card.name}:`, result.errors);
+          }
+        });
+      }
+    }) as EventListener);
   }
 
   private setupConnectionStatus(): void {
@@ -468,11 +570,83 @@ class AuraApp {
     root.render(React.createElement(PatchNotesContainer));
   }
 
+  private setupTurnSystem(): void {
+    const turnSystemContainer = document.createElement('div');
+    turnSystemContainer.id = 'turn-system-root';
+    document.body.appendChild(turnSystemContainer);
+
+    this.turnSystemRoot = createRoot(turnSystemContainer);
+    this.turnSystemRoot.render(
+      React.createElement(TurnSystem, {
+        turnManager: this.turnManager,
+        localPlayerId: this.playerId,
+        onPassTurn: () => this.handlePassTurn(),
+        onTakePriority: () => this.handleTakePriority(),
+        onEndPriority: () => this.handleEndPriority(),
+      })
+    );
+  }
+
+  private setupTurnStateObserver(): void {
+    // Observe turn state changes to handle turn start logic
+    let previousActivePlayerId: string | null = null;
+    
+    // Initialize with current active player if one exists
+    const initialState = this.turnManager.getTurnState();
+    if (initialState.activePlayerId) {
+      previousActivePlayerId = initialState.activePlayerId;
+    }
+
+    this.turnManager.onTurnStateChange((state) => {
+      // Check if active player changed (turn started)
+      if (state.activePlayerId && state.activePlayerId !== previousActivePlayerId) {
+        this.handleTurnStart(state.activePlayerId);
+        previousActivePlayerId = state.activePlayerId;
+      }
+    });
+  }
+
+  private handleTurnStart(activePlayerId: string): void {
+    const yCards = this.yDoc.getMap('cards');
+
+    // Untap all cards for the active player
+    this.turnManager.untapAllCardsForPlayer(activePlayerId, yCards);
+
+    // Draw a card for the active player (if it's the local player)
+    if (activePlayerId === this.playerId) {
+      this.localPlayer.drawCard();
+      DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
+    }
+  }
+
+  private handlePassTurn(): void {
+    const previousActivePlayerId = this.turnManager.getTurnState().activePlayerId;
+    this.turnManager.passTurn();
+    
+    // Get the new active player after passing turn
+    const newState = this.turnManager.getTurnState();
+    if (newState.activePlayerId && newState.activePlayerId !== previousActivePlayerId) {
+      // Manually trigger turn start to ensure it happens immediately
+      this.handleTurnStart(newState.activePlayerId);
+    }
+  }
+
+  private handleTakePriority(): void {
+    this.turnManager.takePriority(this.playerId);
+  }
+
+  private handleEndPriority(): void {
+    this.turnManager.endPriority(this.playerId);
+  }
+
   public destroy(): void {
     this.whiteboard.destroy();
     this.localDock.destroy();
     if (this.opponentHealthRoot) {
       this.opponentHealthRoot.unmount();
+    }
+    if (this.turnSystemRoot) {
+      this.turnSystemRoot.unmount();
     }
     this.webrtcProvider.destroy();
     this.cardPreview.destroy();

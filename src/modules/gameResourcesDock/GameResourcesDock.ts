@@ -621,6 +621,11 @@ export class GameResourcesDock {
           const card = hand.find(c => c.id === cardId);
           if (card) {
             this.player.removeCardFromHand(cardId);
+            // Dispatch playCard event to add card to battlefield (will check turn/priority in listener)
+            const event = new CustomEvent('playCard', {
+              detail: { card, playerId: this.player['playerId'] }
+            });
+            window.dispatchEvent(event);
           }
         },
         moveHandCardToDiscard: (cardId: string) => {

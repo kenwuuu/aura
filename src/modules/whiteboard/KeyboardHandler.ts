@@ -168,8 +168,9 @@ export class KeyboardHandler {
       return;
     }
 
-    // Return if hovered card is owned by an opponent (not by user)
-    if (card.ownerId !== this.localPlayerId) return;
+    // Allow all players to interact with any card on the battlefield
+    // (tap/untap, counters, move to zones)
+    // Only restriction is moving cards FROM dock TO battlefield (handled elsewhere)
 
     switch (key) {
       case ' ': // Space - Tap/Untap
@@ -196,7 +197,7 @@ export class KeyboardHandler {
         if (card) this.addPositiveCounter(card);
         break;
 
-      case 'i': // U - Add counter
+      case 'i': // I - Remove counter
         if (card) this.addNegativeCounter(card);
         break;
 

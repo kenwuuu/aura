@@ -2,6 +2,7 @@ import * as Y from 'yjs';
 import { Player } from '../../modules/player';
 import { MultiPlayerBoardManager } from '../../modules/whiteboard';
 import { TokenService } from '../scryfall';
+import { TurnManager } from '../turnManager';
 import { CARD_HEIGHT, CARD_WIDTH } from '../../constants';
 
 /**
@@ -14,7 +15,8 @@ export class WhiteboardEventHandlers {
     private whiteboard: MultiPlayerBoardManager,
     private tokenService: TokenService,
     private playerId: string,
-    private onDeckChange: () => void
+    private onDeckChange: () => void,
+    private turnManager: TurnManager
   ) {}
 
   /**
@@ -45,6 +47,13 @@ export class WhiteboardEventHandlers {
       e.preventDefault();
       const cardId = e.dataTransfer?.getData('text/plain');
       if (!cardId) return;
+
+      // Check if player can move cards from dock to battlefield
+      if (!this.turnManager.canMoveFromDockToBattlefield(this.playerId)) {
+        console.warn('Cannot play card: not active player and no priority');
+        alert('You must be the active player or have priority to play cards from your hand to the battlefield.');
+        return;
+      }
 
       // Try to play the card from hand
       const card = this.localPlayer.removeCardFromHand(cardId);
@@ -95,22 +104,35 @@ export class WhiteboardEventHandlers {
       const yCards = this.yDoc.getMap('cards');
       const card = yCards.get(cardId) as any;
 
-      if (!card || card.ownerId !== this.playerId) return;
+      if (!card) return;
+
+      // Allow any player to move any card from battlefield to zones
+      const cardOwnerId = card.ownerId;
 
       // Remove WhiteboardCard-specific properties (zIndex, ownerId) to get base Card
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { zIndex, ownerId, ...baseCard } = card;
 
-      // Add card to the appropriate pile
+      // Get the owner's player state
+      const yOwnerState = this.yDoc.getMap(`player-${cardOwnerId}`);
+
+      // Add card to the appropriate pile of the card owner
       if (destination === 'hand') {
-        this.localPlayer.putCardInHand(baseCard as any);
+        const hand = (yOwnerState.get('hand') as any[]) ?? [];
+        yOwnerState.set('hand', [...hand, baseCard]);
       } else if (destination === 'exile') {
-        this.localPlayer.moveCardToExile(baseCard as any);
+        const exilePile = (yOwnerState.get('exilePile') as any[]) ?? [];
+        yOwnerState.set('exilePile', [...exilePile, baseCard]);
       } else if (destination === 'discard') {
-        this.localPlayer.moveCardToDiscard(baseCard as any);
+        const discardPile = (yOwnerState.get('discardPile') as any[]) ?? [];
+        yOwnerState.set('discardPile', [...discardPile, baseCard]);
       } else if (destination === 'deck') {
-        this.localPlayer.moveCardToDeckTop(baseCard as any);
-        this.onDeckChange(); // Notify that deck changed
+        // For deck, we can't directly modify it since it's local-only
+        // This would require access to the owner's Deck instance
+        // For now, we'll add to exile as a fallback
+        const exilePile = (yOwnerState.get('exilePile') as any[]) ?? [];
+        yOwnerState.set('exilePile', [...exilePile, baseCard]);
+        console.warn('Moving to deck requires owner to be local player - moved to exile instead');
       }
 
       // Remove card from battlefield

@@ -1,0 +1,90 @@
+.container {
+  position: fixed;
+  top: 60px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 1000;
+  min-width: 200px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.activePlayerSection {
+  margin-bottom: 12px;
+}
+
+.activePlayerLabel {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.activePlayerName {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.activePlayerNameLocal {
+  color: #4ade80;
+}
+
+.activePlayerNameOpponent {
+  color: #fbbf24;
+}
+
+.actionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.button {
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.buttonPassTurn {
+  composes: button;
+  background-color: #3b82f6;
+}
+
+.buttonPassTurn:hover {
+  background-color: #2563eb;
+}
+
+.buttonTakePriority {
+  composes: button;
+  background-color: #10b981;
+}
+
+.buttonTakePriority:hover {
+  background-color: #059669;
+}
+
+.buttonEndPriority {
+  composes: button;
+  background-color: #ef4444;
+}
+
+.buttonEndPriority:hover {
+  background-color: #dc2626;
+}
+
+.priorityStatus {
+  margin-top: 12px;
+  padding: 8px;
+  background-color: rgba(16, 185, 129, 0.2);
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
