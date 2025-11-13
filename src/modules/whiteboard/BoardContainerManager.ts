@@ -1,4 +1,5 @@
 import { CARD_WIDTH, CARD_HEIGHT } from '../../constants';
+import { BoardCanvasRenderer } from './BoardCanvasRenderer';
 
 // Board Layout Constants
 const BOARD_WIDTH_IN_CARDS = 16;
@@ -9,6 +10,8 @@ export const BOARD_WIDTH = BOARD_WIDTH_IN_CARDS * CARD_WIDTH;
 export const BOARD_HEIGHT = BOARD_HEIGHT_IN_CARDS * CARD_HEIGHT;
 export const DEFAULT_OPPONENT_OPACITY = 0.25;
 export const FOCUSED_OPACITY = 1.0;
+export const BOARD_LEFT_OFFSET_TO_CENTER = (window.innerWidth - BOARD_WIDTH) / 2;
+export const BOARD_TOP_OFFSET_TO_CENTER = (window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2;
 
 /**
  * Manages player board container lifecycle and positioning
@@ -20,6 +23,7 @@ export class BoardContainerManager {
   private backgroundColor: string;
   // Configuration for overlay vs underlay (easy to debug/change)
   private useOverlay: boolean = true; // true = overlay, false = underlay
+  private readonly canvasRenderer: BoardCanvasRenderer;
 
   constructor(
     mainContainer: HTMLElement,
@@ -33,6 +37,7 @@ export class BoardContainerManager {
     this.useOverlay = useOverlay;
 
     this.setupMainContainer();
+    this.canvasRenderer = new BoardCanvasRenderer(mainContainer);
   }
 
   /**
@@ -72,8 +77,8 @@ export class BoardContainerManager {
     container.style.transition = 'opacity 0.3s ease';
 
     // Calculate centered position (same for all boards)
-    const left = (window.innerWidth - BOARD_WIDTH) / 2;
-    const top = (window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2;
+    const left = BOARD_LEFT_OFFSET_TO_CENTER;
+    const top = BOARD_TOP_OFFSET_TO_CENTER;
 
     container.style.left = `${left}px`;
     container.style.top = `${top}px`;
@@ -125,8 +130,8 @@ export class BoardContainerManager {
    * Recenter all player board containers based on current window dimensions
    */
   recenterAll(): void {
-    const left = (window.innerWidth - BOARD_WIDTH) / 2;
-    const top = (window.innerHeight - DOCK_HEIGHT - BOARD_HEIGHT) / 2;
+    const left = BOARD_LEFT_OFFSET_TO_CENTER;
+    const top = BOARD_TOP_OFFSET_TO_CENTER;
 
     this.playerContainers.forEach((container) => {
       container.style.left = `${left}px`;
@@ -136,6 +141,9 @@ export class BoardContainerManager {
     // Also update main container dimensions
     this.mainContainer.style.width = `${window.innerWidth}px`;
     this.mainContainer.style.height = `${window.innerHeight}px`;
+
+    // Update canvas renderer
+    this.canvasRenderer.onResize();
   }
 
   /**
@@ -153,10 +161,18 @@ export class BoardContainerManager {
   }
 
   /**
+   * Get the canvas renderer (for drawing center lines, playmats, etc.)
+   */
+  getCanvasRenderer(): BoardCanvasRenderer {
+    return this.canvasRenderer;
+  }
+
+  /**
    * Clean up all containers
    */
   destroy(): void {
     this.playerContainers.forEach((container) => container.remove());
     this.playerContainers.clear();
+    this.canvasRenderer.destroy();
   }
 }
