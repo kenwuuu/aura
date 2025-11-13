@@ -344,7 +344,7 @@ class AuraApp {
       initialCardCount: savedDeck.cards.length,
     }, savedDeck.cards);
 
-    // Update the player's deck
+    // Update the player state with deck
     this.localPlayer.loadNewDeck(newDeck).then(() => {
       // Update deck count in Yjs state
       this.localPlayer['yPlayerState'].set('deckCardCount', newDeck.getCardCount());

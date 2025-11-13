@@ -48,9 +48,6 @@ export class BoardCanvasRenderer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Draw all layers in order
-    // Future: this.drawBackgroundImage();
-    // Future: this.drawPlaymat();
-    // Future: this.drawPlayAreas();
     if (this.showCenterLines) {
       this.drawCenterLines();
     }
