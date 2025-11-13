@@ -102,6 +102,9 @@ export class KeyboardHandler {
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
+    // Ignore if modifier keys are held
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    
     // Ignore if typing in an input
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       return;
