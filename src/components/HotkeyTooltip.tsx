@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { HotkeyContext, getHotkeysForContext } from '../data/hotkeys';
+import { HotkeyContext, getHotkeysForContext, HotkeyDefinition } from '../data/hotkeys';
 
 interface HotkeyTooltipProps {
   context: HotkeyContext;
   mouseX: number;
   mouseY: number;
   isMouseDown?: boolean;
+  onHotkeyClick?: (hotkey: HotkeyDefinition) => void;
 }
 
 const TOOLTIP_DELAY = 500;
@@ -16,8 +17,8 @@ const styles = {
     backgroundColor: '#1a1a1a',
     border: '1px solid #3d3d3d',
     borderRadius: '6px',
-    padding: '8px 12px',
-    pointerEvents: 'none',
+    padding: '4px',
+    pointerEvents: 'auto',
     zIndex: 10000,
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.6)',
     maxWidth: '280px',
@@ -26,8 +27,15 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    marginBottom: '4px',
+    marginBottom: '0px',
     fontSize: '12px',
+    padding: '6px 8px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s ease',
+  } as React.CSSProperties,
+  hotkeyRowHover: {
+    backgroundColor: '#2d2d2d',
   } as React.CSSProperties,
   hotkeyRowLast: {
     marginBottom: '0px',
@@ -47,21 +55,11 @@ const styles = {
   } as React.CSSProperties,
 };
 
-export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, mouseY, isMouseDown = false }) => {
+export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, mouseY, isMouseDown = false, onHotkeyClick }) => {
   const [position, setPosition] = useState({ x: mouseX, y: mouseY });
-  const [isVisible, setIsVisible] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const hotkeys = getHotkeysForContext(context);
-
-  // Handle visibility delay
-  useEffect(() => {
-    setIsVisible(false);
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, TOOLTIP_DELAY);
-
-    return () => clearTimeout(timer);
-  }, [context]);
 
   useEffect(() => {
     // Wait for tooltip to be rendered so we can get its actual dimensions
@@ -88,12 +86,19 @@ export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, m
     }
 
     setPosition({ x, y });
-  }, [mouseX, mouseY, hotkeys.length, isVisible]);
+  }, [mouseX, mouseY, hotkeys.length]);
 
-  // Hide tooltip when mouse is down (dragging) or during delay
-  if (hotkeys.length === 0 || isMouseDown || !isVisible) {
+  // Hide tooltip when mouse is down (dragging)
+  if (hotkeys.length === 0 || isMouseDown) {
     return null;
   }
+
+  const handleHotkeyClick = (hotkey: HotkeyDefinition, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onHotkeyClick) {
+      onHotkeyClick(hotkey);
+    }
+  };
 
   return (
     <div
@@ -103,6 +108,7 @@ export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, m
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
+      onClick={(e) => e.stopPropagation()}
     >
       {hotkeys.map((hotkey, index) => (
         <div
@@ -110,7 +116,11 @@ export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, m
           style={{
             ...styles.hotkeyRow,
             ...(index === hotkeys.length - 1 ? styles.hotkeyRowLast : {}),
+            ...(hoveredIndex === index ? styles.hotkeyRowHover : {}),
           }}
+          onMouseEnter={() => setHoveredIndex(index)}
+          onMouseLeave={() => setHoveredIndex(null)}
+          onClick={(e) => handleHotkeyClick(hotkey, e)}
         >
           <span style={styles.hotkeyKey}>{hotkey.key}</span>
           <span style={styles.hotkeyAction}>{hotkey.shortDescription}</span>

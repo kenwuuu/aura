@@ -21,11 +21,13 @@ export interface KeyboardHandlerCallbacks {
   onMoveToDeckBottom: (card: WhiteboardCard) => void;
   onMoveToGraveyard: (card: WhiteboardCard) => void;
   onMoveToExile: (card: WhiteboardCard) => void;
+  onDeleteCard: (card: WhiteboardCard) => void;
   onDrawCard: () => void;
   onShuffleDeck: () => void;
   onUntapAll: () => void;
   onEndTurn: () => void;
   onHideCardPreview: () => void;
+  onHideCardTooltip: () => void;
   onMulligan: () => void;
   loseHealth: () => void;
   gainHealth: () => void;
@@ -60,11 +62,65 @@ export class KeyboardHandler {
     return this.hoveredCardId;
   }
 
+  /**
+   * Execute a hotkey action programmatically
+   * @param key - The key to simulate (e.g., 'c', 'Space', 'f', '+  or  =')
+   * @param cardId - Optional card ID to use as context (if null, uses hovered card)
+   */
+  public executeHotkey(key: string, cardId: string | null = null): void {
+    // Normalize key (handle special cases and display strings)
+    let normalizedKey = key.toLowerCase().trim();
+    
+    // Handle display strings from hotkeys.ts
+    if (normalizedKey === 'space') {
+      normalizedKey = ' ';
+    } else if (normalizedKey.includes('+') || normalizedKey.includes('=')) {
+      // Handle '+  or  =' -> use '='
+      normalizedKey = '=';
+    } else if (normalizedKey.includes('-') || normalizedKey.includes('_')) {
+      // Handle '-  or  _' -> use '-'
+      normalizedKey = '-';
+    } else {
+      // For regular keys, use first character (handles 'C' -> 'c')
+      normalizedKey = normalizedKey.charAt(0);
+    }
+
+    // Use provided cardId or fall back to hovered card
+    const targetCardId = cardId ?? this.hoveredCardId;
+    const card = targetCardId ? this.yCards.get(targetCardId) : null;
+
+    // Create a mock keyboard event for compatibility
+    const mockEvent = {
+      key: normalizedKey,
+      preventDefault: () => {},
+      target: document.body,
+    } as KeyboardEvent;
+
+    // Temporarily set hovered card if provided
+    const originalHoveredCard = this.hoveredCardId;
+    if (cardId !== null) {
+      this.hoveredCardId = cardId;
+    }
+
+    try {
+      // Execute the action
+      this.handleKeyDown(mockEvent);
+    } finally {
+      // Restore original hovered card
+      if (cardId !== null) {
+        this.hoveredCardId = originalHoveredCard;
+      }
+    }
+  }
+
   private attachListeners(): void {
     document.addEventListener('keydown', this.handleKeyDownBound);
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
+    // Ignore if modifier keys are held
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    
     // Ignore if typing in an input
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       return;
@@ -193,7 +249,7 @@ export class KeyboardHandler {
 
       case 'y': // Y - Move to bottom of deck
         if (card) {
-          this.callbacks.onHideCardPreview();
+          this.hideCardDependents();
           this.callbacks.onMoveToDeckBottom(card);
           this.removeCard(card.id);
         }
@@ -201,7 +257,7 @@ export class KeyboardHandler {
 
       case 't': // T - Move to top of deck
         if (card) {
-          this.callbacks.onHideCardPreview();
+          this.hideCardDependents();
           this.callbacks.onMoveToDeckTop(card);
           this.removeCard(card.id);
         }
@@ -217,7 +273,7 @@ export class KeyboardHandler {
 
       case 'd': // D - Move to graveyard
         if (card) {
-          this.callbacks.onHideCardPreview();
+          this.hideCardDependents();
           this.callbacks.onMoveToGraveyard(card);
           this.removeCard(card.id);
         }
@@ -225,8 +281,16 @@ export class KeyboardHandler {
 
       case 's': // S - Move to exile
         if (card) {
-          this.callbacks.onHideCardPreview();
+          this.hideCardDependents();
+
           this.callbacks.onMoveToExile(card);
+          this.removeCard(card.id);
+        }
+        break;
+
+      case 'backspace':
+        if (card) {
+          this.hideCardDependents();
           this.removeCard(card.id);
         }
         break;
@@ -237,12 +301,17 @@ export class KeyboardHandler {
 
       case 'h': // H - Move to hand
         if (card) {
-          this.callbacks.onHideCardPreview();
+          this.hideCardDependents();
           this.callbacks.onMoveToHand(card);
           this.removeCard(card.id);
         }
         break;
     }
+  }
+
+  private hideCardDependents() {
+    this.callbacks.onHideCardPreview();
+    this.callbacks.onHideCardTooltip();
   }
 
   private handleDockHotkeys(key: string, dockState: any, e: KeyboardEvent): void {

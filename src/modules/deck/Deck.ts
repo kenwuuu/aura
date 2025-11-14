@@ -13,7 +13,11 @@ export class Deck {
 
     // Use provided cards if available, otherwise initialize with blank cards
     if (cards && cards.length > 0) {
-      this.cards = [...cards];
+      // Regenerate unique IDs for all cards to prevent collisions when multiple players use the same deck
+      this.cards = cards.map(card => ({
+        ...card,
+        id: `card-${Math.random().toString(36).substring(2, 11)}`,
+      }));
     } else {
       this.initializeDeck();
     }

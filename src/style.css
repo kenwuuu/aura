@@ -831,6 +831,17 @@ body {
   border-color: #2563eb;
 }
 
+.toolbar-button.discord {
+  background-color: #5865F2;
+  border-color: #5865F2;
+  padding: 8px 12px;
+}
+
+.toolbar-button.discord:hover {
+  background-color: #4752C4;
+  border-color: #4752C4;
+}
+
 /* Zoom Controls */
 .zoom-controls {
   background-color: rgba(10, 10, 10, 0.9);

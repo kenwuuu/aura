@@ -12,7 +12,7 @@ import { createRoot, Root } from 'react-dom/client';
 import { CardCounter } from '../../components';
 import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
 
-const DEFAULT_OPPONENT_OPACITY = 0.25;
+const DEFAULT_OPPONENT_OPACITY = 1.0;
 const FOCUSED_OPACITY = 1.0;
 
 export class MultiPlayerBoardManager {
@@ -26,8 +26,11 @@ export class MultiPlayerBoardManager {
   private zoomController: ZoomController;
   private cardPreview: CardPreview;
   private localPlayerId: string;
-  private backgroundColor: string;
   private tooltipManager: TooltipManager;
+  // Track mouse movement to distinguish clicks from drags
+  private mouseDownPosition: { x: number; y: number; cardId: string } | null = null;
+  private readonly DRAG_THRESHOLD = 5; // pixels
+  private isDragging: boolean = false;
 
   // Opponent opacity state management
   private pinnedOpponentId: string | null = null;
@@ -67,10 +70,6 @@ export class MultiPlayerBoardManager {
     this.attachEventListeners();
     this.setupOpponentHoverListener();
 
-    // Initialize tooltip manager
-    this.tooltipManager = new TooltipManager();
-    this.tooltipManager.setup();
-
     // Initialize keyboard handler with empty callbacks (will be set by app)
     this.keyboardHandler = new KeyboardHandler(
       this.yCards,
@@ -80,17 +79,26 @@ export class MultiPlayerBoardManager {
         onMoveToDeckBottom: () => {},
         onMoveToGraveyard: () => {},
         onMoveToExile: () => {},
+        onDeleteCard: () => {},
         onDrawCard: () => {},
         onShuffleDeck: () => {},
         onUntapAll: () => {},
         onEndTurn: () => {},
         onHideCardPreview: () => this.cardPreview.hide(),
+        onHideCardTooltip: () => this.tooltipManager.hide(),
         onMulligan: () => {},
         loseHealth: () => {},
         gainHealth: () => {},
       },
       this.localPlayerId
     );
+
+    // Initialize tooltip manager with hotkey click handler
+    this.tooltipManager = new TooltipManager();
+    this.tooltipManager.setup((hotkey, cardId) => {
+      // Execute the hotkey action for the specified card
+      this.keyboardHandler.executeHotkey(hotkey.key, cardId);
+    });
   }
 
   public setKeyboardCallbacks(callbacks: KeyboardHandlerCallbacks): void {
@@ -101,6 +109,7 @@ export class MultiPlayerBoardManager {
       {
         ...callbacks,
         onHideCardPreview: () => this.cardPreview.hide(),
+        onHideCardTooltip: () => this.tooltipManager.hide(),
       },
       this.localPlayerId
     );
@@ -263,7 +272,7 @@ export class MultiPlayerBoardManager {
 
     const container = this.boardContainerManager.getContainer(card.ownerId);
     if (!container) {
-      console.warn(`No container found for player ${card.ownerId}`);
+      console.warn(`No board container found for player ${card.ownerId}`);
       return;
     }
 
@@ -271,6 +280,7 @@ export class MultiPlayerBoardManager {
       `[data-card-id="${card.id}"]`
     ) as HTMLElement;
 
+    // place card
     if (!cardElement) {
       cardElement = this.createCardElement(card);
       container.appendChild(cardElement);
@@ -412,14 +422,17 @@ export class MultiPlayerBoardManager {
       cardElement.appendChild(countersContainer);
     }
 
-    // Enable hover for all cards (for card preview and keyboard shortcuts)
+    // Enable hover for card preview (still works on hover)
     cardElement.addEventListener('mouseenter', (e: MouseEvent) => {
       this.keyboardHandler.setHoveredCard(card.id);
       // Get latest card state from Yjs to avoid stale closures
       const latestCard = this.yCards.get(card.id) || card;
       this.cardPreview.show(latestCard);
-      // Trigger hotkey tooltips
-      this.tooltipManager.update(true);
+
+      // Show tooltip menu on hover for local player's cards (delayed)
+      if (card.ownerId === this.localPlayerId) {
+        this.tooltipManager.showOnHover(card.id, e.clientX, e.clientY);
+      }
     });
 
     cardElement.addEventListener('mousemove', (e: MouseEvent) => {
@@ -429,11 +442,34 @@ export class MultiPlayerBoardManager {
     cardElement.addEventListener('mouseleave', () => {
       this.keyboardHandler.setHoveredCard(null);
       this.cardPreview.hide();
-      // Hide tooltip when not hovering a card
-      this.tooltipManager.update(false);
+      this.tooltipManager.hideOnLeave();
     });
 
-    cardElement.addEventListener('mousedown', (e) => this.onMouseDown(e, card.id));
+    // Handle click for tooltip menu (distinguish from drag)
+    cardElement.addEventListener('click', (e: MouseEvent) => {
+      // Only show menu if this was a click (not a drag) and it's the same card
+      if (this.mouseDownPosition && this.mouseDownPosition.cardId === card.id) {
+        const dx = Math.abs(e.clientX - this.mouseDownPosition.x);
+        const dy = Math.abs(e.clientY - this.mouseDownPosition.y);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // If mouse moved less than threshold and wasn't dragging, treat as click
+        if (distance < this.DRAG_THRESHOLD && !this.isDragging && card.ownerId === this.localPlayerId) {
+          // Show tooltip menu
+          this.tooltipManager.show(card.id, e.clientX, e.clientY);
+        }
+      }
+      // Always clear drag state after click handler
+      this.mouseDownPosition = null;
+      this.isDragging = false;
+    });
+
+    cardElement.addEventListener('mousedown', (e) => {
+      // Store mouse down position to detect drags
+      this.mouseDownPosition = { x: e.clientX, y: e.clientY, cardId: card.id };
+      this.isDragging = false;
+      this.onMouseDown(e, card.id);
+    });
 
     return cardElement;
   }
@@ -555,6 +591,16 @@ export class MultiPlayerBoardManager {
     const card = this.cards.get(this.dragState.cardId);
     if (!card || card.ownerId !== this.localPlayerId) return;
 
+    // Check if we've moved enough to consider this a drag
+    if (this.mouseDownPosition && !this.isDragging) {
+      const dx = Math.abs(e.clientX - this.mouseDownPosition.x);
+      const dy = Math.abs(e.clientY - this.mouseDownPosition.y);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance >= this.DRAG_THRESHOLD) {
+        this.isDragging = true;
+      }
+    }
+
     const x = e.clientX - this.dragState.offsetX;
     const y = e.clientY - this.dragState.offsetY;
 
@@ -583,6 +629,8 @@ export class MultiPlayerBoardManager {
 
             // Clear drag state and return early (card will be removed from battlefield)
             this.dragState = { cardId: null, offsetX: 0, offsetY: 0 };
+            this.mouseDownPosition = null;
+            this.isDragging = false;
             return;
           }
         }
@@ -601,20 +649,20 @@ export class MultiPlayerBoardManager {
     }
 
     this.dragState = { cardId: null, offsetX: 0, offsetY: 0 };
+    
+    // If we were dragging, clear the mouseDownPosition immediately
+    // Otherwise, let the click handler clear it (so it can detect clicks)
+    if (this.isDragging || !this.mouseDownPosition) {
+      this.mouseDownPosition = null;
+      this.isDragging = false;
+    }
+    // If not dragging and mouseDownPosition exists, the click handler will clear it
   }
 
   private attachEventListeners(): void {
     document.addEventListener('mousemove', (e) => this.onMouseMove(e));
     document.addEventListener('mouseup', (e) => this.onMouseUp(e));
     window.addEventListener('resize', () => this.boardContainerManager.recenterAll());
-  }
-
-  public tapCard(cardId: string): void {
-    const card = this.cards.get(cardId);
-    if (!card) return;
-
-    const updatedCard = { ...card, isTapped: !card.isTapped };
-    this.yCards.set(cardId, updatedCard);
   }
 
   private setupZoomControls(): void {

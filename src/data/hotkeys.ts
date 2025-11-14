@@ -90,6 +90,12 @@ export const HOTKEYS: HotkeyDefinition[] = [
     longDescription: 'Create copy of card',
   },
   {
+    key: 'Backspace',
+    context: ['battlefield'],
+    shortDescription: 'Delete card',
+    longDescription: 'Delete a card',
+  },
+  {
     key: 'H',
     context: ['battlefield', 'deck', 'exile', 'discard'],
     shortDescription: 'To hand',

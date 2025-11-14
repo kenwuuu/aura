@@ -1,0 +1,38 @@
+{
+  "consentModal":{
+    "title":"",
+    "description":"I hate cookies as much as you. I am only using them for error reporting and performance monitoring.",
+    "closeIconLabel":"",
+    "acceptAllBtn":"Accept non-marketing cookies",
+    "acceptNecessaryBtn":"Reject all",
+    "showPreferencesBtn":"Manage preferences"
+  },
+  "preferencesModal":{
+    "title":"Consent Preferences",
+    "closeIconLabel":"Close modal",
+    "acceptAllBtn":"Accept all",
+    "acceptNecessaryBtn":"Reject all",
+    "savePreferencesBtn":"Save preferences",
+    "serviceCounterLabel":"Service|Services",
+    "sections":[
+      {
+        "title":"Cookie Usage",
+        "description":"We use cookies to store your decks and your game room so we don't have to use a server for it. We also use cookies for error and performance tracking. We don't have any marketing or ad cookies."
+      },
+      {
+        "title":"Necessary Cookies <span class=\"pm__badge\">Always Enabled</span>",
+        "description":"Used to store decks, hand, room ID, and current board state. ",
+        "linkedCategory":"necessary"
+      },
+      {
+        "title":"Error Logging & Analytics",
+        "description":"Used to alert me when someone runs into a bug and allows me to see what led to the bug. Also allows me to track how many people use the site.",
+        "linkedCategory":"analytics"
+      },
+      {
+        "title":"More information",
+        "description":"For any query in relation to my policy on cookies and your choices, please contact me on <a class=\"cc__link\" href=\"https://discord.gg/PgH2gVZYKq\">Discord</a>."
+      }
+    ]
+  }
+}

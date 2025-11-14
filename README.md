@@ -2,6 +2,8 @@
 
 A serverless web app for playing cards built on React, WebRTC, and Yjs. And hopefully Tailwind and shadcn in the future.
 
+Play [here](http://aura-dqp.pages.dev)
+
 ## Contributing
 
 Want to help? Head over to the [Discord](https://discord.gg/PgH2gVZYKq) first to make sure we're taking 

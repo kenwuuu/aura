@@ -20,6 +20,7 @@ describe('KeyboardHandler - Copy Offset Logic', () => {
       onMoveToDeckBottom: vi.fn(),
       onMoveToGraveyard: vi.fn(),
       onMoveToExile: vi.fn(),
+      onDeleteCard: vi.fn(),
       onDrawCard: vi.fn(),
       onShuffleDeck: vi.fn(),
       onUntapAll: vi.fn(),

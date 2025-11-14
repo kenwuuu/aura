@@ -23,17 +23,20 @@ import { DEFAULT_DECK } from './data/defaultDeck';
 import { CARD_WIDTH, CARD_HEIGHT } from './constants';
 import { BOARD_WIDTH, BOARD_HEIGHT, DOCK_HEIGHT } from './modules/whiteboard/BoardContainerManager';
 import './style.css';
-
 import * as Sentry from "@sentry/react";
 
 Sentry.init({
+  environment: process.env.NODE_ENV || "development",
   dsn: "https://beb5f109e66475063b4650877bc1c6a1@o4510353682006016.ingest.de.sentry.io/4510353685610576",
   // Setting this option to true will send default PII data to Sentry.
   // For example, automatic IP address collection on events
   sendDefaultPii: true,
   integrations: [
     Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration()
+    Sentry.replayIntegration({
+      maskAllText: false,
+      blockAllMedia: false,
+    })
   ],
   // Tracing
   tracesSampleRate: 1.0, //  Capture 100% of the transactions
@@ -157,6 +160,7 @@ class AuraApp {
     this.setupKeyboardCallbacks();
     this.setupDeckManager();
     this.setupHelpModal();
+    this.setupDiscordButton();
     this.setupHotkeyHintsModal();
     this.setupAddCardModal();
     this.setupTurnSystem();
@@ -227,6 +231,10 @@ class AuraApp {
         const exilePile = (yOwnerState.get('exilePile') as any[]) ?? [];
         yOwnerState.set('exilePile', [...exilePile, baseCard]);
       },
+      onDeleteCard: (_card) => {
+        // Card deletion is handled directly in KeyboardHandler via removeCard
+        // This callback exists for potential future use
+      },
       onDrawCard: () => {
         this.localPlayer.drawCard();
         DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
@@ -242,6 +250,9 @@ class AuraApp {
         console.log('End turn - not yet implemented');
       },
       onHideCardPreview: () => {
+        // Handled by Whiteboard internally
+      },
+      onHideCardTooltip: () => {
         // Handled by Whiteboard internally
       },
       onMulligan: () => {
@@ -440,7 +451,7 @@ class AuraApp {
       initialCardCount: savedDeck.cards.length,
     }, savedDeck.cards);
 
-    // Update the player's deck
+    // Update the player state with deck
     this.localPlayer.loadNewDeck(newDeck).then(() => {
       // Update deck count in Yjs state
       this.localPlayer['yPlayerState'].set('deckCardCount', newDeck.getCardCount());
@@ -485,6 +496,32 @@ class AuraApp {
 
     const root = createRoot(helpRoot);
     root.render(React.createElement(HelpButton));
+  }
+
+  private setupDiscordButton(): void {
+    const discordRoot = document.getElementById('discord-root');
+    if (!discordRoot) {
+      throw new Error('Discord root not found');
+    }
+
+    const DiscordButton: React.FC = () => {
+      return React.createElement(
+        'button',
+        {
+          className: 'toolbar-button discord',
+          onClick: () => window.open('https://discord.gg/PgH2gVZYKq', '_blank'),
+          'aria-label': 'Join Discord Server',
+        },
+        React.createElement('img', {
+          src: '/assets/Discord-Logo-White.svg',
+          alt: 'Discord',
+          style: { height: '16px' },
+        })
+      );
+    };
+
+    const root = createRoot(discordRoot);
+    root.render(React.createElement(DiscordButton));
   }
 
   private setupHotkeyHintsModal(): void {

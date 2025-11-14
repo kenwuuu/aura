@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { marked } from 'marked';
 import helpContent from '../content/help.md?raw';
 
 interface HelpModalProps {
@@ -24,177 +25,67 @@ const styles = {
   } as React.CSSProperties,
 };
 
-/**
- * Simple markdown parser for basic formatting
- * Supports: headers, bold, code blocks, lists, and paragraphs
- */
-function parseMarkdown(md: string): React.ReactNode[] {
-  const lines = md.split('\n');
-  const elements: React.ReactNode[] = [];
-  let currentList: string[] = [];
-  let listKey = 0;
-  let elementKey = 0;
+// Configure custom renderer with inline styles
+const renderer = new marked.Renderer();
 
-  const flushList = () => {
-    if (currentList.length > 0) {
-      elements.push(
-        <ul key={`list-${listKey++}`} style={{ marginBottom: '16px', paddingLeft: '24px' }}>
-          {currentList.map((item, idx) => (
-            <li key={idx} style={{ marginBottom: '8px' }}>
-              {parseInlineFormatting(item)}
-            </li>
-          ))}
-        </ul>
-      );
-      currentList = [];
-    }
+renderer.heading = ({ tokens, depth }) => {
+  const text = tokens.map(t => t.raw).join('');
+  const styles: Record<number, string> = {
+    1: 'font-size: 28px; font-weight: bold; margin-bottom: 16px; margin-top: 24px; color: #f9fafb; border-bottom: 2px solid #3d3d3d; padding-bottom: 8px;',
+    2: 'font-size: 22px; font-weight: bold; margin-bottom: 12px; margin-top: 24px; color: #f3f4f6;',
+    3: 'font-size: 18px; font-weight: bold; margin-bottom: 10px; margin-top: 20px; color: #d0d0d0;',
   };
+  return `<h${depth} style="${styles[depth] || ''}">${text}</h${depth}>`;
+};
 
-  const parseInlineFormatting = (text: string): React.ReactNode[] => {
-    const parts: React.ReactNode[] = [];
-    let remaining = text;
-    let key = 0;
+renderer.paragraph = ({ tokens }) => {
+  const text = tokens.map(t => t.raw).join('');
+  return `<p style="margin-bottom: 12px;">${text}</p>`;
+};
 
-    while (remaining) {
-      // Bold (**text**)
-      const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
-      if (boldMatch) {
-        const beforeBold = remaining.substring(0, boldMatch.index);
-        if (beforeBold) parts.push(beforeBold);
-        parts.push(
-          <strong key={`bold-${key++}`} style={{ fontWeight: 'bold', color: '#60a5fa' }}>
-            {boldMatch[1]}
-          </strong>
-        );
-        remaining = remaining.substring((boldMatch.index || 0) + boldMatch[0].length);
-        continue;
-      }
+renderer.list = ({ ordered, items }) => {
+  const tag = ordered ? 'ol' : 'ul';
+  const itemsHtml = items.map(item => {
+    // Parse the tokens properly to render inline formatting
+    const content = marked.parser(item.tokens);
+    return `<li style="margin-bottom: 8px;">${content}</li>`;
+  }).join('');
+  return `<${tag} style="margin-bottom: 16px; padding-left: 24px;">${itemsHtml}</${tag}>`;
+};
 
-      // Code (`code`)
-      const codeMatch = remaining.match(/`([^`]+)`/);
-      if (codeMatch) {
-        const beforeCode = remaining.substring(0, codeMatch.index);
-        if (beforeCode) parts.push(beforeCode);
-        parts.push(
-          <code
-            key={`code-${key++}`}
-            style={{
-              backgroundColor: '#1f2937',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              fontFamily: "'Courier New', monospace",
-              fontSize: '13px',
-              color: '#10b981',
-            }}
-          >
-            {codeMatch[1]}
-          </code>
-        );
-        remaining = remaining.substring((codeMatch.index || 0) + codeMatch[0].length);
-        continue;
-      }
+renderer.listitem = ({ text }) => {
+  // This won't be called since we handle it in the list renderer
+  return `<li style="margin-bottom: 8px;">${text}</li>`;
+};
 
-      // No more formatting, add the rest
-      parts.push(remaining);
-      break;
-    }
+renderer.strong = ({ tokens }) => {
+  const text = tokens.map(t => t.raw).join('');
+  return `<strong style="font-weight: bold; color: #60a5fa;">${text}</strong>`;
+};
 
-    return parts;
-  };
+renderer.codespan = ({ text }) => {
+  return `<code style="background-color: #1f2937; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; color: #10b981;">${text}</code>`;
+};
 
-  lines.forEach((line) => {
-    // H1
-    if (line.startsWith('# ')) {
-      flushList();
-      elements.push(
-        <h1
-          key={`h1-${elementKey++}`}
-          style={{
-            fontSize: '28px',
-            fontWeight: 'bold',
-            marginBottom: '16px',
-            marginTop: '24px',
-            color: '#f9fafb',
-            borderBottom: '2px solid #3d3d3d',
-            paddingBottom: '8px',
-          }}
-        >
-          {line.substring(2)}
-        </h1>
-      );
-      return;
-    }
+renderer.code = ({ text }) => {
+  return `<pre style="background-color: #1f2937; padding: 12px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px;"><code>${text}</code></pre>`;
+};
 
-    // H2
-    if (line.startsWith('## ')) {
-      flushList();
-      elements.push(
-        <h2
-          key={`h2-${elementKey++}`}
-          style={{
-            fontSize: '22px',
-            fontWeight: 'bold',
-            marginBottom: '12px',
-            marginTop: '24px',
-            color: '#f3f4f6',
-          }}
-        >
-          {line.substring(3)}
-        </h2>
-      );
-      return;
-    }
+renderer.hr = () => {
+  return `<hr style="margin-bottom: 20px; border: none; border-top: 1px solid #3d3d3d;">`;
+};
 
-    // H3
-    if (line.startsWith('### ')) {
-      flushList();
-      elements.push(
-        <h3
-          key={`h3-${elementKey++}`}
-          style={{
-            fontSize: '18px',
-            fontWeight: 'bold',
-            marginBottom: '10px',
-            marginTop: '20px',
-            color: '#60a5fa',
-          }}
-        >
-          {line.substring(4)}
-        </h3>
-      );
-      return;
-    }
-
-    // List item
-    if (line.startsWith('- ')) {
-      currentList.push(line.substring(2));
-      return;
-    }
-
-    // Empty line
-    if (line.trim() === '') {
-      flushList();
-      return;
-    }
-
-    // Regular paragraph
-    flushList();
-    elements.push(
-      <p key={`p-${elementKey++}`} style={{ marginBottom: '12px' }}>
-        {parseInlineFormatting(line)}
-      </p>
-    );
-  });
-
-  flushList(); // Flush any remaining list items
-
-  return elements;
-}
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+  renderer,
+});
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
-  const content = parseMarkdown(helpContent);
+  // Parse markdown to HTML using marked
+  const htmlContent = useMemo(() => marked.parse(helpContent), []);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -207,7 +98,11 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
         </div>
         <div className="modal-body">
           <div style={styles.scrollContainer}>
-            <div style={styles.content}>{content}</div>
+            <div
+              className="markdown-content"
+              style={styles.content}
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
           </div>
         </div>
       </div>

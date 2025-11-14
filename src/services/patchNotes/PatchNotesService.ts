@@ -5,25 +5,21 @@
  * Users will see the patch notes modal on their first visit after a version update.
  */
 export class PatchNotesService {
-  private static readonly STORAGE_KEY = 'aura-last-seen-patch-notes-version';
+  private static readonly STORAGE_KEY = 'aura-last-seen-patch-notes-v2';
 
   // Update this version whenever you add new patch notes
   // Format: YYYYMMDD for easy comparison
-  private static readonly CURRENT_VERSION = '20251111';
+  private static readonly CURRENT_VERSION = 20251113.4;
 
   /**
    * Check if the user should see the patch notes modal
    * Returns true if there are new patch notes since their last visit
    */
   static shouldShowPatchNotes(): boolean {
-    const lastSeenVersion = localStorage.getItem(this.STORAGE_KEY);
+    const lastSeenVersion = parseFloat(<string>localStorage.getItem(this.STORAGE_KEY));
 
     // First time user or new version available
-    if (!lastSeenVersion || lastSeenVersion < this.CURRENT_VERSION) {
-      return true;
-    }
-
-    return false;
+    return !lastSeenVersion || lastSeenVersion < this.CURRENT_VERSION;
   }
 
   /**
@@ -31,29 +27,7 @@ export class PatchNotesService {
    * Call this when the user closes the patch notes modal
    */
   static markPatchNotesAsSeen(): void {
-    localStorage.setItem(this.STORAGE_KEY, this.CURRENT_VERSION);
+    localStorage.setItem(this.STORAGE_KEY, String(this.CURRENT_VERSION));
     console.log(`Patch notes version ${this.CURRENT_VERSION} marked as seen`);
-  }
-
-  /**
-   * Reset the patch notes tracking (useful for testing)
-   */
-  static resetTracking(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
-    console.log('Patch notes tracking reset');
-  }
-
-  /**
-   * Get the current patch notes version
-   */
-  static getCurrentVersion(): string {
-    return this.CURRENT_VERSION;
-  }
-
-  /**
-   * Get the last seen version by the user
-   */
-  static getLastSeenVersion(): string | null {
-    return localStorage.getItem(this.STORAGE_KEY);
   }
 }

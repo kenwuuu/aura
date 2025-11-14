@@ -1,0 +1,38 @@
+{
+  "consentModal":{
+    "title":"",
+    "description":"Je déteste les cookies autant que toi. Je les utilise uniquement pour le suivi des erreurs et des performances.",
+    "closeIconLabel":"",
+    "acceptAllBtn":"Accepter les cookies non marketing",
+    "acceptNecessaryBtn":"Tout refuser",
+    "showPreferencesBtn":"Gérer les préférences"
+  },
+  "preferencesModal":{
+    "title":"Préférences de cookies",
+    "closeIconLabel":"Fermer la fenêtre",
+    "acceptAllBtn":"Tout accepter",
+    "acceptNecessaryBtn":"Tout refuser",
+    "savePreferencesBtn":"Enregistrer les préférences",
+    "serviceCounterLabel":"Service|Services",
+    "sections":[
+      {
+        "title":"Utilisation des cookies",
+        "description":"Nous utilisons des cookies pour stocker tes decks et ta salle de jeu, afin de ne pas avoir besoin d’un serveur. Nous utilisons également des cookies pour le suivi des erreurs et des performances. Nous n’avons aucun cookie publicitaire ou marketing."
+      },
+      {
+        "title":"Cookies nécessaires <span class=\"pm__badge\">Toujours activés</span>",
+        "description":"Utilisés pour enregistrer les decks, la main, l’ID de la salle et l’état actuel du plateau.",
+        "linkedCategory":"necessary"
+      },
+      {
+        "title":"Journalisation des erreurs & Analytique",
+        "description":"Utilisés pour m’avertir lorsqu’un bug se produit et pour comprendre ce qui l’a causé. Permettent aussi de savoir combien de personnes utilisent le site.",
+        "linkedCategory":"analytics"
+      },
+      {
+        "title":"Plus d’informations",
+        "description":"Pour toute question concernant ma politique sur les cookies et tes choix, contacte-moi sur <a class=\"cc__link\" href=\"https://discord.gg/PgH2gVZYKq\">Discord</a>."
+      }
+    ]
+  }
+}

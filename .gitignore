@@ -11,5 +11,7 @@ yarn-error.log*
 .vscode/*
 /signaling_server/node_modules/
 
+.env
+
 # Sentry Config File
 .env.sentry-build-plugin

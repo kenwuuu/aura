@@ -1,10 +1,18 @@
+# Can't see cards? Wonky board?
+Try zooming out on your browser by pressing `Ctrl -` (Windows/Linux) or `Cmd -` (Mac). Reset zoom with `Ctrl 0` or `Cmd 0`.
+
+# Need more help?
+Join our Discord (https://discord.gg/PgH2gVZYKq) and reach out!
+
 # Getting Started
 
 ## Inviting Friends to Play
 
 To play with friends, simply **copy your browser's URL** and send it to them. When they open the link, they'll join your game room automatically.
 
-Example: `https://yoursite.com/?room=mtg-abc123`
+Example: `https://aura-dqp.pages.dev/?room=mtg-abc123`
+
+---
 
 ## Importing Decks
 We support Moxfield's MTGO export format. We can't promise that anything else will work. The format is: 
@@ -13,6 +21,8 @@ We support Moxfield's MTGO export format. We can't promise that anything else wi
 ### Commander and Command Zone
 To have your commander drawn into your hand automatically, place your commander as the last card in your import list.
 We plan to support deck editing in the near future.
+
+---
 
 ## Multiplayer Features
 
@@ -25,6 +35,8 @@ We plan to support deck editing in the near future.
 ### Adding Opponent Counters
 
 Hover an opponent and click the **+** on the left side of their health box.
+
+---
 
 ## Zoom Controls
 
@@ -44,6 +56,8 @@ The app has three separate zoom controls located around the screen:
 - Controls the size of all cards on the battlefield
 - **+** to zoom in, **−** to zoom out
 - Click the zoom level to reset to 1.0×
+
+---
 
 ## Basic Gameplay
 
@@ -78,6 +92,8 @@ When hovering a card:
 - **X** - Untap all your cards
 - **+ or =** - Gain 1 life
 - **- or _** - Lose 1 life
+
+---
 
 ## Viewing Piles
 

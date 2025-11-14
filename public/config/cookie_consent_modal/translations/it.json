@@ -1,0 +1,38 @@
+{
+  "consentModal":{
+    "title":"",
+    "description":"Odio i cookie tanto quanto te. Li uso solo per la segnalazione degli errori e il monitoraggio delle prestazioni.",
+    "closeIconLabel":"",
+    "acceptAllBtn":"Accetta i cookie non di marketing",
+    "acceptNecessaryBtn":"Rifiuta tutto",
+    "showPreferencesBtn":"Gestisci preferenze"
+  },
+  "preferencesModal":{
+    "title":"Preferenze dei cookie",
+    "closeIconLabel":"Chiudi finestra",
+    "acceptAllBtn":"Accetta tutto",
+    "acceptNecessaryBtn":"Rifiuta tutto",
+    "savePreferencesBtn":"Salva preferenze",
+    "serviceCounterLabel":"Servizio|Servizi",
+    "sections":[
+      {
+        "title":"Uso dei cookie",
+        "description":"Usiamo i cookie per salvare i tuoi mazzi e la tua stanza di gioco, così non abbiamo bisogno di un server. Usiamo anche i cookie per monitorare errori e prestazioni. Non abbiamo cookie pubblicitari o di marketing."
+      },
+      {
+        "title":"Cookie necessari <span class=\"pm__badge\">Sempre attivi</span>",
+        "description":"Usati per salvare mazzi, mano, ID della stanza e stato attuale del gioco.",
+        "linkedCategory":"necessary"
+      },
+      {
+        "title":"Registrazione errori e analisi",
+        "description":"Usati per avvisarmi quando qualcuno trova un bug e per capire cosa lo ha causato. Mi permettono anche di sapere quante persone usano il sito.",
+        "linkedCategory":"analytics"
+      },
+      {
+        "title":"Maggiori informazioni",
+        "description":"Per qualsiasi domanda sulla mia politica dei cookie o sulle tue scelte, contattami su <a class=\"cc__link\" href=\"https://discord.gg/PgH2gVZYKq\">Discord</a>."
+      }
+    ]
+  }
+}

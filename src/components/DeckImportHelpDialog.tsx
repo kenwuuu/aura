@@ -147,7 +147,7 @@ COMMANDER:
             <div style={styles.sectionTitle}>Supported Formats</div>
             <ul style={styles.ul}>
               <li>Simple quantity + name format (e.g., "4 Lightning Bolt")</li>
-              <li>Set codes in parentheses (e.g., "4 Lightning Bolt (M10)")</li>
+              {/*<li>Set codes in parentheses (e.g., "4 Lightning Bolt (M10)")</li>*/}
               <li>Blank lines between cards (ignored)</li>
             </ul>
           </div>
