@@ -38,7 +38,7 @@ export const TurnSystem: React.FC<TurnSystemProps> = ({
       return playerNames.get(playerId)!;
     }
     // Use first 8 characters of player ID as display name
-    return playerId.substring(0, 8);
+    return playerId.substring(0, 9);
   };
 
   const isActivePlayer = turnManager.isActivePlayer(localPlayerId);

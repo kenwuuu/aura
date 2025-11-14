@@ -48,12 +48,14 @@ export class WhiteboardEventHandlers {
       const cardId = e.dataTransfer?.getData('text/plain');
       if (!cardId) return;
 
-      // Check if player can move cards from dock to battlefield
-      if (!this.turnManager.canMoveFromDockToBattlefield(this.playerId)) {
-        console.warn('Cannot play card: not active player and no priority');
-        alert('You must be the active player or have priority to play cards from your hand to the battlefield.');
-        return;
-      }
+      // Check if player can move cards from dock to battlefield (disabled for now)
+      // TODO: Re-enable this check when room settings are implemented
+      
+      // if (!this.turnManager.canMoveFromDockToBattlefield(this.playerId)) {
+      //   console.warn('Cannot play card: not active player and no priority');
+      //   alert('You must be the active player or have priority to play cards from your hand to the battlefield.');
+      //   return;
+      // }
 
       // Try to play the card from hand
       const card = this.localPlayer.removeCardFromHand(cardId);

@@ -20,6 +20,8 @@ import { RoomManager } from './services/roomManager';
 import { WhiteboardEventHandlers } from './services/eventHandlers';
 import { PatchNotesService } from './services/patchNotes';
 import { DEFAULT_DECK } from './data/defaultDeck';
+import { CARD_WIDTH, CARD_HEIGHT } from './constants';
+import { BOARD_WIDTH, BOARD_HEIGHT, DOCK_HEIGHT } from './modules/whiteboard/BoardContainerManager';
 import './style.css';
 
 import * as Sentry from "@sentry/react";
@@ -286,16 +288,8 @@ class AuraApp {
         return;
       }
 
-      // Set default position if not set (center of screen)
+      // Set default position if not set (center of board)
       if (card.x === undefined || card.y === undefined) {
-        const CARD_WIDTH = 63;
-        const CARD_HEIGHT = 88;
-        const BOARD_WIDTH = 16 * CARD_WIDTH;
-        const BOARD_HEIGHT = 6.5 * CARD_HEIGHT;
-        const DOCK_HEIGHT = 160;
-        const boardLeft = (window.innerWidth - BOARD_WIDTH) / 2;
-        const boardTop = window.innerHeight - BOARD_HEIGHT - DOCK_HEIGHT;
-        
         card.x = BOARD_WIDTH / 2;
         card.y = BOARD_HEIGHT / 2;
       }
@@ -608,15 +602,6 @@ class AuraApp {
 
   private handleTurnStart(activePlayerId: string): void {
     const yCards = this.yDoc.getMap('cards');
-
-    // Untap all cards for the active player
-    this.turnManager.untapAllCardsForPlayer(activePlayerId, yCards);
-
-    // Draw a card for the active player (if it's the local player)
-    if (activePlayerId === this.playerId) {
-      this.localPlayer.drawCard();
-      DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
-    }
   }
 
   private handlePassTurn(): void {

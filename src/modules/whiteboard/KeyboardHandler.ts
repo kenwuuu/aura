@@ -1,6 +1,20 @@
 import { WhiteboardCard } from './types';
 import * as Y from 'yjs';
 
+/**
+ * Untap all cards owned by a specific player
+ * @param playerId The ID of the player whose cards should be untapped
+ * @param yCards The Yjs map containing all cards
+ */
+export function untapAllCardsForPlayer(playerId: string, yCards: Y.Map<any>): void {
+  yCards.forEach((card: any, cardId: string) => {
+    if (card.ownerId === playerId && card.isTapped) {
+      const updatedCard = { ...card, isTapped: false };
+      yCards.set(cardId, updatedCard);
+    }
+  });
+}
+
 export interface KeyboardHandlerCallbacks {
   onMoveToHand: (card: WhiteboardCard) => void;
   onMoveToDeckTop: (card: WhiteboardCard) => void;
@@ -372,12 +386,7 @@ export class KeyboardHandler {
   }
 
   private untapAllCards(): void {
-    this.yCards.forEach((card, cardId) => {
-      if (card.ownerId === this.localPlayerId && card.isTapped) {
-        const updatedCard = { ...card, isTapped: false };
-        this.yCards.set(cardId, updatedCard);
-      }
-    });
+    untapAllCardsForPlayer(this.localPlayerId, this.yCards);
   }
 
   public destroy(): void {

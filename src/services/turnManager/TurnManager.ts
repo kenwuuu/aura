@@ -1,4 +1,5 @@
 import * as Y from 'yjs';
+import { untapAllCardsForPlayer as untapCardsForPlayer } from '../../modules/whiteboard/KeyboardHandler';
 
 export interface TurnState {
   activePlayerId: string | null;
@@ -46,6 +47,7 @@ export class TurnManager {
    */
   public initializePlayerOrder(): void {
     const currentOrder = this.yTurnState.get('playerOrder') ?? [];
+    const currentActivePlayerId = this.yTurnState.get('activePlayerId');
     
     // Get all players from Yjs
     const allPlayers: string[] = [];
@@ -64,10 +66,17 @@ export class TurnManager {
       const sortedPlayers = [...allPlayers].sort();
       this.yTurnState.set('playerOrder', sortedPlayers);
       
-      // If no active player is set, set the first player as active
-      if (!this.yTurnState.get('activePlayerId') && sortedPlayers.length > 0) {
+      // Preserve current active player if they're still in the game
+      // Only set a new active player if there isn't one or if current active player left
+      if (currentActivePlayerId && sortedPlayers.includes(currentActivePlayerId)) {
+        // Keep current active player
+        this.yTurnState.set('activePlayerId', currentActivePlayerId);
+      } else if (!currentActivePlayerId && sortedPlayers.length > 0) {
+        // No active player set, set first player as active
         this.yTurnState.set('activePlayerId', sortedPlayers[0]);
       }
+      // If current active player left the game, leave activePlayerId as is (or null)
+      // The turn system will need to handle this case separately
     }
   }
 
@@ -154,7 +163,7 @@ export class TurnManager {
    */
   public endPriority(playerId: string): void {
     const playersWithPriority = this.yTurnState.get('playersWithPriority') ?? [];
-    const updated = playersWithPriority.filter(id => id !== playerId);
+    const updated = playersWithPriority.filter((id: string) => id !== playerId);
     this.yTurnState.set('playersWithPriority', updated);
   }
 
@@ -191,12 +200,7 @@ export class TurnManager {
    * Untap all cards owned by a player
    */
   public untapAllCardsForPlayer(playerId: string, yCards: Y.Map<any>): void {
-    yCards.forEach((card: any, cardId: string) => {
-      if (card.ownerId === playerId && card.isTapped) {
-        const updatedCard = { ...card, isTapped: false };
-        yCards.set(cardId, updatedCard);
-      }
-    });
+    untapCardsForPlayer(playerId, yCards);
   }
 }
 
