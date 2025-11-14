@@ -7,9 +7,9 @@ import { WebRTCProvider } from './modules/webrtc';
 import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/webrtc/persistence';
 import { Player } from './modules/player';
 import { GameResourcesDock } from './modules/gameResourcesDock';
-import { DeckManager, WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal, TurnSystem } from './components';
+import { DeckManager, WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal } from './components';
 import { OpponentHealthList } from './components/OpponentHealthList';
-import { TurnManager } from './services/turnManager';
+import { TurnManager, TurnSystemService } from './services/turnManager';
 import { SavedDeck } from './modules/deck/types';
 import { TokenService } from './services/scryfall';
 import { ScryfallApiService } from './services/scryfall/ScryfallApiService';
@@ -63,7 +63,7 @@ class AuraApp {
   private roomManager: RoomManager;
   private eventHandlers: WhiteboardEventHandlers | null = null;
   private turnManager: TurnManager;
-  private turnSystemRoot: Root | null = null;
+  private turnSystemService: TurnSystemService;
 
   constructor() {
     this.yDoc = new Y.Doc();
@@ -98,11 +98,9 @@ class AuraApp {
     // Initialize turn manager
     this.turnManager = new TurnManager(this.yDoc);
     
-    // Initialize player order (will set first player as active if none exists)
-    // This ensures turn system is ready from the start
-    setTimeout(() => {
-      this.turnManager.initializePlayerOrder();
-    }, 100); // Small delay to ensure all players have joined
+    // Initialize turn system service (handles UI setup and event handling)
+    this.turnSystemService = new TurnSystemService(this.turnManager, this.yDoc, this.playerId);
+    this.turnSystemService.initializePlayerOrder();
 
     // Create shared card preview instance (used by both Whiteboard and GameResourcesDock)
     this.cardPreview = new CardPreview();
@@ -163,8 +161,8 @@ class AuraApp {
     this.setupDiscordButton();
     this.setupHotkeyHintsModal();
     this.setupAddCardModal();
-    this.setupTurnSystem();
-    this.setupTurnStateObserver();
+    this.turnSystemService.setupTurnSystem();
+    this.turnSystemService.setupTurnStateObserver();
   }
 
   private setupKeyboardCallbacks(): void {
@@ -601,65 +599,6 @@ class AuraApp {
     root.render(React.createElement(PatchNotesContainer));
   }
 
-  private setupTurnSystem(): void {
-    const turnSystemContainer = document.createElement('div');
-    turnSystemContainer.id = 'turn-system-root';
-    document.body.appendChild(turnSystemContainer);
-
-    this.turnSystemRoot = createRoot(turnSystemContainer);
-    this.turnSystemRoot.render(
-      React.createElement(TurnSystem, {
-        turnManager: this.turnManager,
-        localPlayerId: this.playerId,
-        onPassTurn: () => this.handlePassTurn(),
-        onTakePriority: () => this.handleTakePriority(),
-        onEndPriority: () => this.handleEndPriority(),
-      })
-    );
-  }
-
-  private setupTurnStateObserver(): void {
-    // Observe turn state changes to handle turn start logic
-    let previousActivePlayerId: string | null = null;
-    
-    // Initialize with current active player if one exists
-    const initialState = this.turnManager.getTurnState();
-    if (initialState.activePlayerId) {
-      previousActivePlayerId = initialState.activePlayerId;
-    }
-
-    this.turnManager.onTurnStateChange((state) => {
-      // Check if active player changed (turn started)
-      if (state.activePlayerId && state.activePlayerId !== previousActivePlayerId) {
-        this.handleTurnStart(state.activePlayerId);
-        previousActivePlayerId = state.activePlayerId;
-      }
-    });
-  }
-
-  private handleTurnStart(activePlayerId: string): void {
-    const yCards = this.yDoc.getMap('cards');
-  }
-
-  private handlePassTurn(): void {
-    const previousActivePlayerId = this.turnManager.getTurnState().activePlayerId;
-    this.turnManager.passTurn();
-    
-    // Get the new active player after passing turn
-    const newState = this.turnManager.getTurnState();
-    if (newState.activePlayerId && newState.activePlayerId !== previousActivePlayerId) {
-      // Manually trigger turn start to ensure it happens immediately
-      this.handleTurnStart(newState.activePlayerId);
-    }
-  }
-
-  private handleTakePriority(): void {
-    this.turnManager.takePriority(this.playerId);
-  }
-
-  private handleEndPriority(): void {
-    this.turnManager.endPriority(this.playerId);
-  }
 
   public destroy(): void {
     this.whiteboard.destroy();
@@ -667,9 +606,7 @@ class AuraApp {
     if (this.opponentHealthRoot) {
       this.opponentHealthRoot.unmount();
     }
-    if (this.turnSystemRoot) {
-      this.turnSystemRoot.unmount();
-    }
+    this.turnSystemService.destroy();
     this.webrtcProvider.destroy();
     this.cardPreview.destroy();
   }
