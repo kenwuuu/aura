@@ -23,6 +23,8 @@
  * you MUST remove both .reverse() calls to prevent displaying cards in the wrong order.
  */
 
+import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
 import { Card } from '../../deck';
 import { SearchBar } from './SearchBar';
 import { SortControl } from './SortControl';
@@ -52,6 +54,17 @@ export class DeckPileViewer {
   private sortControl: SortControl | null = null;
   private gridContainer: HTMLElement | null = null;
 
+  // Tooltip
+  private tooltipRoot: Root | null = null;
+  private tooltipContainer: HTMLElement | null = null;
+  private hoverTimeout: number | null = null;
+  private hideTimeout: number | null = null;
+  private isTooltipHovered: boolean = false;
+  private tooltipCardId: string | null = null;
+  private currentMouseX: number = 0;
+  private currentMouseY: number = 0;
+  private clickOutsideHandler: ((e: MouseEvent) => void) | null = null;
+
   // Current state
   private currentSortOrder: string = 'top-to-bottom';
   private currentSearchQuery: string = '';
@@ -70,6 +83,7 @@ export class DeckPileViewer {
     this.modal = this.createModal();
     document.body.appendChild(this.modal);
 
+    this.setupTooltip();
     this.attachGlobalListeners();
     this.renderCards();
   }
@@ -130,11 +144,7 @@ export class DeckPileViewer {
 
     header.appendChild(title);
 
-    // Add subtitle with keyboard shortcuts
-    const subtitle = document.createElement('div');
-    subtitle.className = 'deck-pile-viewer-subtitle';
-    subtitle.textContent = 'Hover card and move to... \nH: Hand • D: Discard • S: Exile • T: Deck Top • Y: Deck Bottom';
-    header.appendChild(subtitle);
+
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'deck-pile-viewer-close';
@@ -246,11 +256,33 @@ export class DeckPileViewer {
             cardElement?.focus();
           }
         },
+        onClick: (card) => {
+          // Show tooltip on click
+          const cardElement = this.gridContainer?.querySelector(`[data-card-id="${card.id}"]`) as HTMLElement;
+          if (cardElement) {
+            const rect = cardElement.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            this.showTooltip(card.id, x, y, true);
+          }
+        },
       });
 
       const cardElement = cardItem.getElement();
       // Make card focusable for keyboard shortcuts
       cardElement.tabIndex = 0;
+      
+      // Add mouse move tracking for hover tooltip
+      cardElement.addEventListener('mousemove', (e) => {
+        this.currentMouseX = e.clientX;
+        this.currentMouseY = e.clientY;
+        this.showTooltipOnHover(card.id);
+      });
+      
+      cardElement.addEventListener('mouseleave', () => {
+        this.hideTooltipOnLeave();
+      });
+
       this.gridContainer!.appendChild(cardElement);
     });
   }
@@ -315,12 +347,220 @@ export class DeckPileViewer {
     }
   }
 
+  private setupTooltip(): void {
+    // Create tooltip container
+    this.tooltipContainer = document.createElement('div');
+    this.tooltipContainer.className = 'deck-pile-viewer-tooltip-container';
+    document.body.appendChild(this.tooltipContainer);
+    this.tooltipRoot = createRoot(this.tooltipContainer);
+
+    // Track tooltip hover to prevent premature hiding
+    this.tooltipContainer.addEventListener('mouseenter', () => {
+      this.isTooltipHovered = true;
+      if (this.hideTimeout !== null) {
+        clearTimeout(this.hideTimeout);
+        this.hideTimeout = null;
+      }
+    });
+
+    this.tooltipContainer.addEventListener('mouseleave', () => {
+      this.isTooltipHovered = false;
+      this.scheduleHide();
+    });
+
+    // Setup click outside handler
+    this.clickOutsideHandler = this.handleClickOutside.bind(this);
+    document.addEventListener('click', this.clickOutsideHandler, true);
+  }
+
+  private handleClickOutside(e: MouseEvent): void {
+    if (!this.tooltipCardId || !this.tooltipContainer) return;
+
+    const target = e.target as HTMLElement;
+    // Check if click is outside the tooltip container
+    if (!this.tooltipContainer.contains(target)) {
+      // Check if click is on the card that opened the tooltip
+      const cardElement = target.closest('[data-card-id]');
+      if (cardElement && cardElement.getAttribute('data-card-id') === this.tooltipCardId) {
+        // Don't handle clicks on the card itself - card click handler will handle toggle
+        return;
+      }
+      // Hide tooltip if clicking anywhere else
+      this.hideTooltip();
+    }
+  }
+
+  private getAvailableActions(): Array<{ key: string; label: string; action: () => void }> {
+    const actions: Array<{ key: string; label: string; action: () => void }> = [];
+
+    if (!this.hoveredCard) return actions;
+
+    // H - Move to hand (always available)
+    if (this.callbacks.onMoveToHand) {
+      actions.push({
+        key: 'H',
+        label: 'Hand',
+        action: () => {
+          this.callbacks.onMoveToHand!(this.hoveredCard!);
+          this.hideTooltip();
+        },
+      });
+    }
+
+    // D - Move to discard (only if not already in discard)
+    if (this.callbacks.onMoveToDiscard && this.pileType !== 'discard') {
+      actions.push({
+        key: 'D',
+        label: 'Discard',
+        action: () => {
+          this.callbacks.onMoveToDiscard!(this.hoveredCard!);
+          this.hideTooltip();
+        },
+      });
+    }
+
+    // S - Move to exile (only if not already in exile)
+    if (this.callbacks.onMoveToExile && this.pileType !== 'exile') {
+      actions.push({
+        key: 'S',
+        label: 'Exile',
+        action: () => {
+          this.callbacks.onMoveToExile!(this.hoveredCard!);
+          this.hideTooltip();
+        },
+      });
+    }
+
+    // T - Move to deck top (available for all pile types, including deck)
+    if (this.callbacks.onMoveToDeckTop) {
+      actions.push({
+        key: 'T',
+        label: 'Deck Top',
+        action: () => {
+          this.callbacks.onMoveToDeckTop!(this.hoveredCard!);
+          this.hideTooltip();
+        },
+      });
+    }
+
+    // Y - Move to deck bottom (available for all pile types, including deck)
+    if (this.callbacks.onMoveToDeckBottom) {
+      actions.push({
+        key: 'Y',
+        label: 'Deck Bottom',
+        action: () => {
+          this.callbacks.onMoveToDeckBottom!(this.hoveredCard!);
+          this.hideTooltip();
+        },
+      });
+    }
+
+    return actions;
+  }
+
+  private showTooltip(cardId: string, x: number, y: number, pinned: boolean = false): void {
+    this.clearTimeouts();
+    if (!this.tooltipRoot || !this.hoveredCard) return;
+
+    // Toggle tooltip if clicking the same card
+    if (this.tooltipCardId === cardId && pinned) {
+      this.hideTooltip();
+      return;
+    }
+
+    this.tooltipCardId = cardId;
+    const actions = this.getAvailableActions();
+
+    if (actions.length === 0) {
+      this.hideTooltip();
+      return;
+    }
+
+    this.tooltipRoot.render(
+      React.createElement(DeckPileViewerTooltip, {
+        actions,
+        mouseX: x,
+        mouseY: y,
+      })
+    );
+  }
+
+  private showTooltipOnHover(cardId: string): void {
+    this.clearHoverTimeout();
+    this.clearHideTimeout();
+
+    this.hoverTimeout = window.setTimeout(() => {
+      if (this.hoveredCard && this.hoveredCard.id === cardId) {
+        this.showTooltip(cardId, this.currentMouseX, this.currentMouseY, false);
+      }
+    }, 500);
+  }
+
+  private hideTooltipOnLeave(): void {
+    this.clearHoverTimeout();
+    if (!this.isTooltipHovered) {
+      this.scheduleHide();
+    }
+  }
+
+  private scheduleHide(): void {
+    this.clearHideTimeout();
+    this.hideTimeout = window.setTimeout(() => {
+      if (!this.isTooltipHovered) {
+        this.hideTooltip();
+      }
+    }, 200);
+  }
+
+  private clearTimeouts(): void {
+    this.clearHoverTimeout();
+    this.clearHideTimeout();
+  }
+
+  private clearHoverTimeout(): void {
+    if (this.hoverTimeout !== null) {
+      clearTimeout(this.hoverTimeout);
+      this.hoverTimeout = null;
+    }
+  }
+
+  private clearHideTimeout(): void {
+    if (this.hideTimeout !== null) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
+  }
+
+  private hideTooltip(): void {
+    this.clearTimeouts();
+    if (!this.tooltipRoot) return;
+    this.tooltipCardId = null;
+    this.tooltipRoot.render(null);
+  }
+
   public close(): void {
     if (this.modal) {
       // Clean up keyboard handler
       const handler = (this.modal as any)._keyHandler;
       if (handler) {
         document.removeEventListener('keydown', handler);
+      }
+
+      // Clean up tooltip
+      this.hideTooltip();
+      if (this.tooltipContainer) {
+        if (this.clickOutsideHandler) {
+          document.removeEventListener('click', this.clickOutsideHandler, true);
+          this.clickOutsideHandler = null;
+        }
+        if (this.tooltipContainer.parentElement) {
+          this.tooltipContainer.parentElement.removeChild(this.tooltipContainer);
+        }
+        if (this.tooltipRoot) {
+          this.tooltipRoot.unmount();
+          this.tooltipRoot = null;
+        }
+        this.tooltipContainer = null;
       }
 
       if (this.modal.parentElement) {
@@ -337,3 +577,117 @@ export class DeckPileViewer {
     }
   }
 }
+
+// Tooltip component for DeckPileViewer
+interface DeckPileViewerTooltipProps {
+  actions: Array<{ key: string; label: string; action: () => void }>;
+  mouseX: number;
+  mouseY: number;
+}
+
+const DeckPileViewerTooltip: React.FC<DeckPileViewerTooltipProps> = ({ actions, mouseX, mouseY }) => {
+  const [position, setPosition] = React.useState({ x: mouseX, y: mouseY });
+  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
+  const tooltipRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!tooltipRef.current) return;
+
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
+    const tooltipWidth = tooltipRect.width;
+    const tooltipHeight = tooltipRect.height;
+
+    const offsetX = 15;
+    const offsetY = 15;
+
+    let x = mouseX + offsetX;
+    let y = mouseY + offsetY;
+
+    if (x + tooltipWidth > window.innerWidth) {
+      x = mouseX - tooltipWidth - offsetX;
+    }
+    if (y + tooltipHeight > window.innerHeight) {
+      y = mouseY - tooltipHeight - offsetY;
+    }
+
+    setPosition({ x, y });
+  }, [mouseX, mouseY, actions.length]);
+
+  const tooltipStyles: React.CSSProperties = {
+    position: 'fixed',
+    backgroundColor: '#1a1a1a',
+    border: '1px solid #3d3d3d',
+    borderRadius: '6px',
+    padding: '4px',
+    pointerEvents: 'auto',
+    zIndex: 10000,
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.6)',
+    left: `${position.x}px`,
+    top: `${position.y}px`,
+  };
+
+  const rowStyles: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '0px',
+    fontSize: '12px',
+    padding: '6px 8px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s ease',
+  };
+
+  return React.createElement(
+    'div',
+    {
+      ref: tooltipRef,
+      style: tooltipStyles,
+      onClick: (e: React.MouseEvent) => e.stopPropagation(),
+    },
+    actions.map((action, index) =>
+      React.createElement(
+        'div',
+        {
+          key: `${action.key}-${index}`,
+          style: {
+            ...rowStyles,
+            ...(index === actions.length - 1 ? { marginBottom: '0px' } : {}),
+            ...(hoveredIndex === index ? { backgroundColor: '#2d2d2d' } : {}),
+          },
+          onMouseEnter: () => setHoveredIndex(index),
+          onMouseLeave: () => setHoveredIndex(null),
+          onClick: (e: React.MouseEvent) => {
+            e.stopPropagation();
+            action.action();
+          },
+        },
+        React.createElement(
+          'span',
+          {
+            style: {
+              fontFamily: "'Courier New', monospace",
+              fontWeight: 'bold',
+              color: '#3b82f6',
+              fontSize: '12px',
+              minWidth: '50px',
+              flexShrink: 0,
+            },
+          },
+          action.key
+        ),
+        React.createElement(
+          'span',
+          {
+            style: {
+              color: '#e5e7eb',
+              fontSize: '12px',
+              whiteSpace: 'nowrap',
+            },
+          },
+          action.label
+        )
+      )
+    )
+  );
+};
