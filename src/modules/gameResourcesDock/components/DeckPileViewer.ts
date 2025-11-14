@@ -368,26 +368,30 @@ export class DeckPileViewer {
       this.scheduleHide();
     });
 
-    // Setup click outside handler
+    // Setup click outside handler (use bubble phase so React onClick handlers run first)
     this.clickOutsideHandler = this.handleClickOutside.bind(this);
-    document.addEventListener('click', this.clickOutsideHandler, true);
+    document.addEventListener('click', this.clickOutsideHandler, false);
   }
 
   private handleClickOutside(e: MouseEvent): void {
     if (!this.tooltipCardId || !this.tooltipContainer) return;
 
     const target = e.target as HTMLElement;
-    // Check if click is outside the tooltip container
-    if (!this.tooltipContainer.contains(target)) {
-      // Check if click is on the card that opened the tooltip
-      const cardElement = target.closest('[data-card-id]');
-      if (cardElement && cardElement.getAttribute('data-card-id') === this.tooltipCardId) {
-        // Don't handle clicks on the card itself - card click handler will handle toggle
-        return;
-      }
-      // Hide tooltip if clicking anywhere else
-      this.hideTooltip();
+    
+    // If clicking inside the tooltip container, don't hide (let the action handlers execute)
+    if (this.tooltipContainer.contains(target)) {
+      return;
     }
+    
+    // Check if click is on the card that opened the tooltip
+    const cardElement = target.closest('[data-card-id]');
+    if (cardElement && cardElement.getAttribute('data-card-id') === this.tooltipCardId) {
+      // Don't handle clicks on the card itself - card click handler will handle toggle
+      return;
+    }
+    
+    // Hide tooltip if clicking anywhere else (outside both tooltip and card)
+    this.hideTooltip();
   }
 
   private getAvailableActions(): Array<{ key: string; label: string; action: () => void }> {
@@ -395,13 +399,16 @@ export class DeckPileViewer {
 
     if (!this.hoveredCard) return actions;
 
+    // Capture card reference in closure to ensure it's available when action executes
+    const card = this.hoveredCard;
+
     // H - Move to hand (always available)
     if (this.callbacks.onMoveToHand) {
       actions.push({
         key: 'H',
         label: 'Hand',
         action: () => {
-          this.callbacks.onMoveToHand!(this.hoveredCard!);
+          this.callbacks.onMoveToHand!(card);
           this.hideTooltip();
         },
       });
@@ -413,7 +420,7 @@ export class DeckPileViewer {
         key: 'D',
         label: 'Discard',
         action: () => {
-          this.callbacks.onMoveToDiscard!(this.hoveredCard!);
+          this.callbacks.onMoveToDiscard!(card);
           this.hideTooltip();
         },
       });
@@ -425,7 +432,7 @@ export class DeckPileViewer {
         key: 'S',
         label: 'Exile',
         action: () => {
-          this.callbacks.onMoveToExile!(this.hoveredCard!);
+          this.callbacks.onMoveToExile!(card);
           this.hideTooltip();
         },
       });
@@ -437,7 +444,7 @@ export class DeckPileViewer {
         key: 'T',
         label: 'Deck Top',
         action: () => {
-          this.callbacks.onMoveToDeckTop!(this.hoveredCard!);
+          this.callbacks.onMoveToDeckTop!(card);
           this.hideTooltip();
         },
       });
@@ -449,7 +456,7 @@ export class DeckPileViewer {
         key: 'Y',
         label: 'Deck Bottom',
         action: () => {
-          this.callbacks.onMoveToDeckBottom!(this.hoveredCard!);
+          this.callbacks.onMoveToDeckBottom!(card);
           this.hideTooltip();
         },
       });
@@ -658,7 +665,9 @@ const DeckPileViewerTooltip: React.FC<DeckPileViewerTooltipProps> = ({ actions, 
           onMouseEnter: () => setHoveredIndex(index),
           onMouseLeave: () => setHoveredIndex(null),
           onClick: (e: React.MouseEvent) => {
+            e.preventDefault();
             e.stopPropagation();
+            // Execute action immediately
             action.action();
           },
         },
