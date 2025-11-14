@@ -142,7 +142,7 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
           )}
 
           {errors.length > 0 && (
-            <div className="error-container" style={{ whiteSpace: 'pre-line' }}>
+            <div className="error-container whitespace-pre-line">
               <h4>Errors:</h4>
               <ul>
                 {errors.map((error, idx) => (
@@ -163,7 +163,7 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
           <button onClick={() => setIsHelpOpen(true)} disabled={isImporting}>
             Help
           </button>
-          <div style={{ flex: 1 }} />
+          <div className="flex-1" />
           <button onClick={handleClose} disabled={isImporting}>
             Cancel
           </button>

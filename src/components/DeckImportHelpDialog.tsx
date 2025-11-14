@@ -6,129 +6,32 @@ interface DeckImportHelpDialogProps {
   onClose: () => void;
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
-  overlay: {
-    position: 'fixed',
-    inset: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    zIndex: 10001,
-    animation: 'fadeIn 150ms ease-out',
-  },
-  content: {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: '#1f1f1f',
-    border: '1px solid #3d3d3d',
-    borderRadius: '8px',
-    padding: '24px',
-    maxWidth: '500px',
-    maxHeight: '85vh',
-    overflow: 'auto',
-    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
-    zIndex: 10002,
-    animation: 'slideIn 200ms ease-out',
-  },
-  title: {
-    color: '#fff',
-    fontSize: '18px',
-    fontWeight: 600,
-    marginBottom: '16px',
-    marginTop: 0,
-  },
-  section: {
-    marginBottom: '20px',
-  },
-  sectionTitle: {
-    color: '#3b82f6',
-    fontSize: '14px',
-    fontWeight: 600,
-    marginBottom: '8px',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-  },
-  text: {
-    color: '#d1d5db',
-    fontSize: '14px',
-    lineHeight: 1.6,
-    marginBottom: '8px',
-  },
-  code: {
-    backgroundColor: '#2d2d2d',
-    border: '1px solid #4a4a4a',
-    borderRadius: '4px',
-    padding: '12px',
-    fontSize: '13px',
-    fontFamily: 'monospace',
-    color: '#e5e7eb',
-    whiteSpace: 'pre-wrap' as const,
-    marginBottom: '8px',
-  },
-  ul: {
-    color: '#d1d5db',
-    fontSize: '14px',
-    lineHeight: 1.6,
-    marginLeft: '20px',
-    marginBottom: '8px',
-  },
-  closeButton: {
-    marginTop: '16px',
-    width: '100%',
-    padding: '10px 16px',
-    fontSize: '14px',
-    fontWeight: 600,
-    borderRadius: '6px',
-    border: '1px solid #3d3d3d',
-    backgroundColor: '#3b82f6',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  iconButton: {
-    position: 'absolute' as const,
-    top: '16px',
-    right: '16px',
-    width: '32px',
-    height: '32px',
-    borderRadius: '4px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: '#9ca3af',
-    fontSize: '20px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s',
-  },
-};
 
 export function DeckImportHelpDialog({ isOpen, onClose }: DeckImportHelpDialogProps) {
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
-        <Dialog.Overlay style={styles.overlay} />
-        <Dialog.Content style={styles.content}>
-          <Dialog.Title style={styles.title}>Deck Import Guide</Dialog.Title>
-          <Dialog.Close style={styles.iconButton} onClick={(e) => { e.stopPropagation(); onClose(); }}>×</Dialog.Close>
+        <Dialog.Overlay className="fixed inset-0 bg-black/70 z-[10001] animate-[fadeIn_150ms_ease-out]" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-950 border border-slate-800 rounded-lg p-6 max-w-[500px] max-h-[85vh] overflow-auto z-[10002] animate-[slideIn_200ms_ease-out]">
+          <Dialog.Title className="text-slate-50 text-lg font-semibold mb-4 mt-0">Deck Import Guide</Dialog.Title>
+          <Dialog.Close className="absolute top-4 right-4 w-8 h-8 rounded border-none bg-transparent text-slate-400 text-xl cursor-pointer flex items-center justify-center transition-all duration-150 hover:bg-slate-800 hover:text-slate-50" onClick={(e) => { e.stopPropagation(); onClose(); }}>×</Dialog.Close>
 
-          <div style={styles.section}>
-            <div style={styles.sectionTitle}>Recommended Format</div>
-            <p style={styles.text}>
-              For best results, use the <strong style={{ color: '#fff' }}>MTGO preset</strong> from Moxfield's download button:
+          <div className="mb-5">
+            <div className="text-sky-400 text-sm font-semibold mb-2 uppercase tracking-wider">Recommended Format</div>
+            <p className="text-slate-300 text-sm leading-relaxed mb-2">
+              For best results, use the <strong className="text-slate-50">MTGO preset</strong> from Moxfield's download button:
             </p>
-            <div style={styles.code}>
+            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-3 text-[13px] font-mono text-slate-200 whitespace-pre-wrap mb-2">
               4 Lightning Bolt{'\n'}
               20 Mountain{'\n'}
               1 Bonfire of the Damned
             </div>
           </div>
 
-          <div style={styles.section}>
-            <div style={styles.sectionTitle}>Not Supported</div>
-            <p style={styles.text}>We don't support section headers like SIDEBOARD or COMMANDER:</p>
-            <div style={styles.code}>
+          <div className="mb-5">
+            <div className="text-sky-400 text-sm font-semibold mb-2 uppercase tracking-wider">Not Supported</div>
+            <p className="text-slate-300 text-sm leading-relaxed mb-2">We don't support section headers like SIDEBOARD or COMMANDER:</p>
+            <div className="bg-slate-900 border border-slate-700 rounded px-3 py-3 text-[13px] font-mono text-slate-200 whitespace-pre-wrap mb-2">
               {`1 Zuran Orb
 
 SIDEBOARD:
@@ -138,21 +41,21 @@ SIDEBOARD:
 COMMANDER:
 1 Flubs, the Fool`}
             </div>
-            <p style={styles.text}>
+            <p className="text-slate-300 text-sm leading-relaxed mb-2">
               Remove these headers before importing or the cards below them won't be recognized.
             </p>
           </div>
 
-          <div style={styles.section}>
-            <div style={styles.sectionTitle}>Supported Formats</div>
-            <ul style={styles.ul}>
+          <div className="mb-5">
+            <div className="text-sky-400 text-sm font-semibold mb-2 uppercase tracking-wider">Supported Formats</div>
+            <ul className="text-slate-300 text-sm leading-relaxed ml-5 mb-2">
               <li>Simple quantity + name format (e.g., "4 Lightning Bolt")</li>
               {/*<li>Set codes in parentheses (e.g., "4 Lightning Bolt (M10)")</li>*/}
               <li>Blank lines between cards (ignored)</li>
             </ul>
           </div>
 
-          <button style={styles.closeButton} onClick={(e) => { e.stopPropagation(); onClose(); }}>
+          <button className="mt-4 w-full px-4 py-2.5 text-sm font-semibold rounded-md border border-sky-500 bg-sky-500 text-slate-950 cursor-pointer transition-all duration-150 hover:bg-sky-400" onClick={(e) => { e.stopPropagation(); onClose(); }}>
             Got it
           </button>
         </Dialog.Content>

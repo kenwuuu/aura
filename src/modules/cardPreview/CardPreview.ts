@@ -10,7 +10,7 @@ export class CardPreview {
   private static readonly BORDER_RADIUS = '12px';
   private static readonly Z_INDEX = '10000';
   private static readonly BOX_SHADOW = '0 8px 16px rgba(0, 0, 0, 0.6)';
-  private static readonly BORDER = '2px solid #4a4a4a';
+  private static readonly BORDER = '2px solid rgb(71, 85, 105)'; // slate-600
   private static readonly CLASS_NAME = 'card-preview-popup';
   private static readonly OBJECT_FIT = 'cover';
   private static readonly POSITION_TYPE = 'fixed';

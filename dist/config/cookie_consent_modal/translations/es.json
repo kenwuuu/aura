@@ -1,0 +1,38 @@
+{
+  "consentModal":{
+    "title":"",
+    "description":"Odio las cookies tanto como tú. Solo las uso para informes de errores y seguimiento del rendimiento.",
+    "closeIconLabel":"",
+    "acceptAllBtn":"Aceptar cookies no comerciales",
+    "acceptNecessaryBtn":"Rechazar todo",
+    "showPreferencesBtn":"Gestionar preferencias"
+  },
+  "preferencesModal":{
+    "title":"Preferencias de cookies",
+    "closeIconLabel":"Cerrar ventana",
+    "acceptAllBtn":"Aceptar todo",
+    "acceptNecessaryBtn":"Rechazar todo",
+    "savePreferencesBtn":"Guardar preferencias",
+    "serviceCounterLabel":"Servicio|Servicios",
+    "sections":[
+      {
+        "title":"Uso de cookies",
+        "description":"Usamos cookies para guardar tus mazos y tu sala de juego, de modo que no necesitemos un servidor. También usamos cookies para el seguimiento de errores y rendimiento. No tenemos cookies de marketing ni de publicidad."
+      },
+      {
+        "title":"Cookies necesarias <span class=\"pm__badge\">Siempre activadas</span>",
+        "description":"Se usan para guardar mazos, mano, ID de sala y estado actual del tablero.",
+        "linkedCategory":"necessary"
+      },
+      {
+        "title":"Registro de errores y analítica",
+        "description":"Se usan para avisarme cuando alguien encuentra un error y para ver qué lo causó. También me permite saber cuántas personas usan el sitio.",
+        "linkedCategory":"analytics"
+      },
+      {
+        "title":"Más información",
+        "description":"Si tienes alguna pregunta sobre mi política de cookies o tus opciones, contáctame en <a class=\"cc__link\" href=\"https://discord.gg/PgH2gVZYKq\">Discord</a>."
+      }
+    ]
+  }
+}

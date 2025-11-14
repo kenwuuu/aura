@@ -1,0 +1,38 @@
+{
+  "consentModal": {
+    "title": "",
+    "description": "私もクッキーは好きではありません。エラーレポートとパフォーマンス監視のためだけに使用しています。",
+    "closeIconLabel": "",
+    "acceptAllBtn": "マーケティング以外のクッキーを許可",
+    "acceptNecessaryBtn": "すべて拒否",
+    "showPreferencesBtn": "設定を管理"
+  },
+  "preferencesModal": {
+    "title": "クッキー設定",
+    "closeIconLabel": "ウィンドウを閉じる",
+    "acceptAllBtn": "すべて許可",
+    "acceptNecessaryBtn": "すべて拒否",
+    "savePreferencesBtn": "設定を保存",
+    "serviceCounterLabel": "サービス|サービス",
+    "sections": [
+      {
+        "title": "クッキーの使用について",
+        "description": "デッキやゲームルームを保存するためにクッキーを使用しています。これによりサーバーを使用せずに済みます。また、エラー報告とパフォーマンス追跡のためにも使用します。マーケティングや広告用のクッキーは一切使用していません。"
+      },
+      {
+        "title": "必須クッキー <span class=\"pm__badge\">常に有効</span>",
+        "description": "デッキ、手札、ルームID、現在のボード状態を保存するために使用します。",
+        "linkedCategory": "necessary"
+      },
+      {
+        "title": "エラーログと分析",
+        "description": "バグが発生した際に通知し、原因を特定するために使用します。また、サイトの利用者数を把握することもできます。",
+        "linkedCategory": "analytics"
+      },
+      {
+        "title": "詳細情報",
+        "description": "クッキーポリシーや選択に関する質問は、<a class=\"cc__link\" href=\"https://discord.gg/PgH2gVZYKq\">Discord</a>でご連絡ください。"
+      }
+    ]
+  }
+}
