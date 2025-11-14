@@ -241,10 +241,10 @@ class AuraApp {
       if (statusElement) {
         if (status.isConnected) {
           statusElement.textContent = `Connected (${status.peersCount} peer${status.peersCount !== 1 ? 's' : ''})`;
-          statusElement.style.color = '#4ade80';
+          statusElement.className = 'text-emerald-400 text-[12px] font-medium ml-auto';
         } else {
           statusElement.textContent = 'Waiting for peers...';
-          statusElement.style.color = '#facc15';
+          statusElement.className = 'text-amber-400 text-[12px] font-medium ml-auto';
         }
       }
     });
@@ -419,7 +419,7 @@ class AuraApp {
         React.createElement('img', {
           src: '/assets/Discord-Logo-White.svg',
           alt: 'Discord',
-          style: { height: '16px' },
+          className: 'h-4',
         })
       );
     };

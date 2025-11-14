@@ -58,11 +58,10 @@ export class BoardContainerManager {
    * Setup the main container with initial styling and dimensions
    */
   private setupMainContainer(): void {
+    this.mainContainer.className = 'relative overflow-hidden';
     this.mainContainer.style.backgroundColor = this.backgroundColor;
     this.mainContainer.style.width = `${window.innerWidth}px`;
     this.mainContainer.style.height = `${window.innerHeight}px`;
-    this.mainContainer.style.position = 'relative';
-    this.mainContainer.style.overflow = 'hidden';
   }
 
   /**

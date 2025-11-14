@@ -11,50 +11,6 @@ interface HotkeyTooltipProps {
 
 const TOOLTIP_DELAY = 500;
 
-const styles = {
-  tooltip: {
-    position: 'fixed',
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #3d3d3d',
-    borderRadius: '6px',
-    padding: '4px',
-    pointerEvents: 'auto',
-    zIndex: 10000,
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.6)',
-    maxWidth: '280px',
-  } as React.CSSProperties,
-  hotkeyRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '0px',
-    fontSize: '12px',
-    padding: '6px 8px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s ease',
-  } as React.CSSProperties,
-  hotkeyRowHover: {
-    backgroundColor: '#2d2d2d',
-  } as React.CSSProperties,
-  hotkeyRowLast: {
-    marginBottom: '0px',
-  } as React.CSSProperties,
-  hotkeyKey: {
-    fontFamily: "'Courier New', monospace",
-    fontWeight: 'bold',
-    color: '#3b82f6',
-    fontSize: '12px',
-    minWidth: '50px',
-    flexShrink: 0,
-  } as React.CSSProperties,
-  hotkeyAction: {
-    color: '#e5e7eb',
-    fontSize: '12px',
-    whiteSpace: 'nowrap',
-  } as React.CSSProperties,
-};
-
 export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, mouseY, isMouseDown = false, onHotkeyClick }) => {
   const [position, setPosition] = useState({ x: mouseX, y: mouseY });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -103,8 +59,8 @@ export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, m
   return (
     <div
       ref={tooltipRef}
+      className="fixed bg-slate-950 border border-slate-800 rounded-md p-1 pointer-events-auto z-[10000] shadow-[0_4px_12px_rgba(0,0,0,0.6)] max-w-[280px]"
       style={{
-        ...styles.tooltip,
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
@@ -113,17 +69,13 @@ export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, m
       {hotkeys.map((hotkey, index) => (
         <div
           key={`${hotkey.key}-${index}`}
-          style={{
-            ...styles.hotkeyRow,
-            ...(index === hotkeys.length - 1 ? styles.hotkeyRowLast : {}),
-            ...(hoveredIndex === index ? styles.hotkeyRowHover : {}),
-          }}
+            className={`flex items-center gap-2 mb-0 text-xs px-2 py-1.5 rounded cursor-pointer transition-colors duration-150 ${hoveredIndex === index ? 'bg-slate-900' : ''}`}
           onMouseEnter={() => setHoveredIndex(index)}
           onMouseLeave={() => setHoveredIndex(null)}
           onClick={(e) => handleHotkeyClick(hotkey, e)}
         >
-          <span style={styles.hotkeyKey}>{hotkey.key}</span>
-          <span style={styles.hotkeyAction}>{hotkey.shortDescription}</span>
+          <span className="font-mono font-bold text-blue-500 text-xs min-w-[50px] shrink-0">{hotkey.key}</span>
+          <span className="text-gray-200 text-xs whitespace-nowrap">{hotkey.shortDescription}</span>
         </div>
       ))}
     </div>

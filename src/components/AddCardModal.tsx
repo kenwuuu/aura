@@ -57,7 +57,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content max-w-[500px]" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Add Card to Hand</h2>
           <button className="modal-close" onClick={onClose}>
@@ -66,15 +66,10 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
         </div>
         <div className="modal-body">
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
+            <div className="mb-4">
               <label
                 htmlFor="card-name-input"
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  color: '#9ca3af',
-                  fontSize: '14px',
-                }}
+                className="block mb-2 text-gray-400 text-sm"
               >
                 Enter the exact card name
               </label>
@@ -86,83 +81,35 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
                 onChange={(e) => setCardName(e.target.value)}
                 placeholder='e.g., "Lightning Bolt"'
                 disabled={isLoading}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  fontSize: '14px',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #3d3d3d',
-                  borderRadius: '6px',
-                  color: '#fff',
-                  outline: 'none',
-                }}
+                className="w-full px-3 py-2.5 text-sm bg-slate-900 border border-slate-700 rounded-md text-slate-50 outline-none focus:border-sky-500 focus:bg-slate-950 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
             {error && (
-              <div
-                style={{
-                  padding: '10px 12px',
-                  marginBottom: '16px',
-                  backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                  border: '1px solid rgba(220, 38, 38, 0.3)',
-                  borderRadius: '6px',
-                  color: '#fca5a5',
-                  fontSize: '13px',
-                }}
-              >
+              <div className="px-3 py-2.5 mb-4 bg-red-500/10 border border-red-500/30 rounded-md text-red-300 text-[13px]">
                 {error}
               </div>
             )}
 
             {isLoading && (
-              <div
-                style={{
-                  padding: '10px 12px',
-                  marginBottom: '16px',
-                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                  borderRadius: '6px',
-                  color: '#93c5fd',
-                  fontSize: '13px',
-                }}
-              >
+              <div className="px-3 py-2.5 mb-4 bg-blue-500/10 border border-blue-500/30 rounded-md text-blue-300 text-[13px]">
                 Fetching card from Scryfall...
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="flex gap-3 justify-end">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #3d3d3d',
-                  borderRadius: '6px',
-                  color: '#9ca3af',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  opacity: isLoading ? 0.5 : 1,
-                }}
+                className={`px-4 py-2.5 text-sm font-medium bg-slate-900 border border-slate-700 rounded-md text-slate-300 transition-all duration-150 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800 border-slate-600'}`}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!cardName.trim() || isLoading}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  backgroundColor: cardName.trim() && !isLoading ? '#3b82f6' : '#1e3a5f',
-                  border: 'none',
-                  borderRadius: '6px',
-                  color: cardName.trim() && !isLoading ? '#fff' : '#6b7280',
-                  cursor: cardName.trim() && !isLoading ? 'pointer' : 'not-allowed',
-                }}
+                className={`px-4 py-2.5 text-sm font-medium border-none rounded-md transition-all duration-150 ${cardName.trim() && !isLoading ? 'bg-sky-500 text-slate-950 cursor-pointer hover:bg-sky-400' : 'bg-slate-900 text-slate-500 cursor-not-allowed'}`}
               >
                 {isLoading ? 'Adding...' : 'Add to Hand'}
               </button>

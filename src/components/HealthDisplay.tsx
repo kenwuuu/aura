@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { CustomCounter } from '../modules/player/types';
 import { PlayerCounterModal } from './PlayerCounterModal';
-import styles from './HealthDisplay.module.css';
 
 interface HealthDisplayProps {
   label: string;
@@ -57,8 +56,9 @@ export const HealthDisplay: React.FC<HealthDisplayProps> = ({
     setShowModal(false);
   };
 
-  const containerClass = variant === 'local' ? styles.healthContainer : styles.opponentHealth;
-  const expandClass = variant === 'opponent' ? styles.expandLeft : styles.expandRight;
+  const containerClass = variant === 'local' 
+    ? 'bg-slate-950 border border-emerald-500 rounded-lg px-4 py-3 flex flex-row-reverse items-center gap-2 w-fit transition-all duration-200 cursor-pointer min-h-[132px]' 
+    : 'bg-slate-950/90 border border-red-500 rounded-lg px-4 py-3 flex flex-row-reverse items-center gap-2 transition-all duration-200 min-h-[132px] w-fit';
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -94,31 +94,46 @@ export const HealthDisplay: React.FC<HealthDisplayProps> = ({
   return (
     <>
       <div
-        className={`${containerClass} ${expandClass}`}
+        className={containerClass}
         data-player-id={playerId}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
       >
-        <div className={styles.health}>
-          <div className={variant === 'local' ? styles.healthLabel : styles.opponentHealthLabel}>
+        <div className="flex flex-col items-center min-w-[96px]">
+          <div className={variant === 'local' 
+            ? 'text-[11px] text-gray-400 uppercase tracking-wider' 
+            : 'text-[11px] text-gray-400 uppercase tracking-wider mb-1'}>
             {label}
           </div>
-          <div className={variant === 'local' ? styles.healthValue : styles.opponentHealthValue}>
+          <div className={variant === 'local' 
+            ? 'text-[36px] font-bold text-emerald-400 font-mono' 
+            : 'text-[32px] font-bold text-red-500 font-mono'}>
             {health}
           </div>
-          <div className={variant === 'local' ? styles.healthControls : styles.opponentHealthControls}>
-            <button onClick={() => onModifyHealth(-1)}>-</button>
-            <button onClick={() => onModifyHealth(1)}>+</button>
+          <div className={variant === 'local' 
+            ? 'flex gap-2' 
+            : 'flex gap-2 mt-2'}>
+            <button 
+              onClick={() => onModifyHealth(-1)}
+              className={variant === 'local'
+                ? 'w-8 h-8 bg-slate-900 border border-slate-700 rounded-md text-slate-50 text-lg cursor-pointer transition-all duration-150 hover:bg-slate-800 hover:border-slate-500 active:bg-slate-950'
+                : 'w-7 h-7 bg-red-500/20 border border-red-500/40 rounded-md text-red-500 text-base cursor-pointer transition-all duration-200 hover:bg-red-500/30 hover:border-red-400 active:bg-red-500/40'}
+            >-</button>
+            <button 
+              onClick={() => onModifyHealth(1)}
+              className={variant === 'local'
+                ? 'w-8 h-8 bg-slate-900 border border-slate-700 rounded-md text-slate-50 text-lg cursor-pointer transition-all duration-150 hover:bg-slate-800 hover:border-slate-500 active:bg-slate-950'
+                : 'w-7 h-7 bg-red-500/20 border border-red-500/40 rounded-md text-red-500 text-base cursor-pointer transition-all duration-200 hover:bg-red-500/30 hover:border-red-400 active:bg-red-500/40'}
+            >+</button>
           </div>
         </div>
 
         {variant === 'opponent' && isHovered && (
           <>
             <div
-              className="resource-pile hand-pile"
+              className={`resource-pile hand-pile ${allowViewHand ? 'cursor-pointer opacity-100' : 'cursor-default opacity-70'}`}
               onClick={allowViewHand ? onViewHand : undefined}
-              style={{ cursor: allowViewHand ? 'pointer' : 'default', opacity: allowViewHand ? 1 : 0.7 }}
             >
               <div className="pile-label">Hand</div>
               <div className="pile-count">{handCount}</div>
@@ -135,20 +150,29 @@ export const HealthDisplay: React.FC<HealthDisplayProps> = ({
         )}
 
         {isHovered && (
-          <div className={styles.expandedContent}>
+          <div className={`grid grid-flow-col grid-rows-2 gap-2 w-full overflow-hidden transition-all duration-300 ${variant === 'opponent' ? 'rtl [&>*]:ltr' : 'ltr'}`}>
             {customCounters.map((counter) => (
-              <div key={counter.id} className={styles.customCounter}>
-                <span className={styles.counterIcon}>{counter.icon}</span>
-                <div className={styles.counterInfo}>
-                  <div className={styles.counterTitle}>{counter.title}</div>
-                  <div className={styles.counterValue}>{counter.value}</div>
+              <div 
+                key={counter.id} 
+                className={`flex items-center gap-2 px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg min-w-[140px] ${variant === 'opponent' ? 'bg-red-500/15 border-red-500/30' : ''}`}
+              >
+                <span className="text-lg w-6 text-center">{counter.icon}</span>
+                <div className="flex-1 flex flex-col gap-0.5">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider">{counter.title}</div>
+                  <div className={`text-lg font-bold font-mono ${variant === 'opponent' ? 'text-red-500' : 'text-green-500'}`}>{counter.value}</div>
                 </div>
-                <div className={styles.counterControls}>
-                  <button onClick={() => onModifyCounter?.(counter.id, -1)}>-</button>
-                  <button onClick={() => onModifyCounter?.(counter.id, 1)}>+</button>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={() => onModifyCounter?.(counter.id, -1)}
+                    className="w-6 h-6 bg-slate-950 border border-slate-700 rounded text-slate-50 text-sm cursor-pointer transition-all duration-150 flex items-center justify-center hover:bg-slate-800 hover:border-slate-500"
+                  >-</button>
+                  <button 
+                    onClick={() => onModifyCounter?.(counter.id, 1)}
+                    className="w-6 h-6 bg-slate-950 border border-slate-700 rounded text-slate-50 text-sm cursor-pointer transition-all duration-150 flex items-center justify-center hover:bg-slate-800 hover:border-slate-500"
+                  >+</button>
                 </div>
                 <button
-                  className={styles.deleteButton}
+                  className="w-6 h-6 bg-transparent border border-slate-700 rounded text-red-400 text-base cursor-pointer transition-all duration-150 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500"
                   onClick={() => onRemoveCounter?.(counter.id)}
                   title="Remove counter"
                 >
@@ -159,7 +183,7 @@ export const HealthDisplay: React.FC<HealthDisplayProps> = ({
 
             {onAddCounter && (
               <button
-                className={styles.addCounterButton}
+                className={`w-9 h-9 bg-slate-900 border border-dashed border-slate-700 rounded-lg text-slate-400 text-xl cursor-pointer transition-all duration-150 flex items-center justify-center col-span-2 self-center ${variant === 'opponent' ? 'hover:bg-red-500/20 hover:border-red-500 hover:text-red-500 border-red-500/40' : 'hover:bg-slate-800 hover:border-emerald-500 hover:text-emerald-400'}`}
                 onClick={() => setShowModal(true)}
                 title="Add custom counter"
               >

@@ -1,0 +1,38 @@
+{
+  "consentModal":{
+    "title":"",
+    "description":"Ich hasse Cookies genauso wie du. Ich verwende sie nur für Fehlerberichte und Leistungsüberwachung.",
+    "closeIconLabel":"",
+    "acceptAllBtn":"Nicht-Marketing-Cookies akzeptieren",
+    "acceptNecessaryBtn":"Alle ablehnen",
+    "showPreferencesBtn":"Einstellungen verwalten"
+  },
+  "preferencesModal":{
+    "title":"Cookie-Einstellungen",
+    "closeIconLabel":"Fenster schließen",
+    "acceptAllBtn":"Alle akzeptieren",
+    "acceptNecessaryBtn":"Alle ablehnen",
+    "savePreferencesBtn":"Einstellungen speichern",
+    "serviceCounterLabel":"Dienst|Dienste",
+    "sections":[
+      {
+        "title":"Verwendung von Cookies",
+        "description":"Wir verwenden Cookies, um deine Decks und deinen Spielraum zu speichern, damit wir dafür keinen Server benötigen. Außerdem nutzen wir Cookies zur Fehler- und Leistungsüberwachung. Wir haben keine Marketing- oder Werbe-Cookies."
+      },
+      {
+        "title":"Notwendige Cookies <span class=\"pm__badge\">Immer aktiviert</span>",
+        "description":"Wird verwendet, um Decks, Hand, Raum-ID und aktuellen Spielstatus zu speichern.",
+        "linkedCategory":"necessary"
+      },
+      {
+        "title":"Fehlerprotokollierung & Analyse",
+        "description":"Wird verwendet, um mich zu benachrichtigen, wenn jemand auf einen Fehler stößt, und um nachvollziehen zu können, was zum Fehler geführt hat. Außerdem kann ich damit sehen, wie viele Personen die Seite nutzen.",
+        "linkedCategory":"analytics"
+      },
+      {
+        "title":"Weitere Informationen",
+        "description":"Bei Fragen zu meiner Cookie-Richtlinie oder deinen Auswahlmöglichkeiten kontaktiere mich bitte auf <a class=\"cc__link\" href=\"https://discord.gg/PgH2gVZYKq\">Discord</a>."
+      }
+    ]
+  }
+}

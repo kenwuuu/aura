@@ -390,11 +390,7 @@ export class GameResourcesDock {
         const img = document.createElement('img');
         img.src = shouldHaveImage;
         img.alt = card.isFlipped ? 'Card Back' : (card.name || `Card #${card.cardNumber}`);
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.borderRadius = '8px';
-        img.style.pointerEvents = 'none';
+        img.className = 'w-full h-full object-cover rounded-lg pointer-events-none';
         cardEl.appendChild(img);
 
         // Add card number badge
@@ -792,14 +788,7 @@ export class GameResourcesDock {
 
   private setupZoomControls(): void {
     const controls = document.createElement('div');
-    controls.className = 'zoom-controls hand-zoom-controls';
-    controls.style.position = 'fixed';
-    controls.style.bottom = '20px'; // Swap with preview zoom (was 200px)
-    controls.style.left = '20px'; // Left side for hand zoom
-    controls.style.zIndex = '1000';
-    controls.style.display = 'flex';
-    controls.style.flexDirection = 'column';
-    controls.style.gap = '8px';
+    controls.className = 'zoom-controls hand-zoom-controls fixed bottom-5 left-5 z-[1000] flex flex-col gap-2';
 
     const zoomInBtn = document.createElement('button');
     zoomInBtn.className = 'zoom-button';

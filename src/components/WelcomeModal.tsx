@@ -3,72 +3,6 @@ import React, { useEffect, useState } from 'react';
 const VISIT_COUNT_KEY = 'aura-visit-count';
 const DISMISSED_KEY = 'aura-welcome-dismissed';
 
-const styles: { [key: string]: React.CSSProperties } = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10000,
-  },
-  modal: {
-    backgroundColor: '#1f1f1f',
-    border: '1px solid #3d3d3d',
-    borderRadius: '8px',
-    padding: '32px',
-    maxWidth: '400px',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-  },
-  h2: {
-    color: '#fff',
-    fontSize: '20px',
-    marginBottom: '16px',
-  },
-  p: {
-    color: '#d1d5db',
-    fontSize: '14px',
-    lineHeight: 1.6,
-    marginBottom: '12px',
-  },
-  strong: {
-    color: '#fff',
-  },
-  buttons: {
-    display: 'flex',
-    gap: '12px',
-    marginTop: '24px',
-  },
-  button: {
-    flex: 1,
-    padding: '10px 16px',
-    fontSize: '14px',
-    fontWeight: 600,
-    borderRadius: '6px',
-    border: '1px solid #3d3d3d',
-    backgroundColor: '#3b82f6',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  buttonSecondary: {
-    flex: 1,
-    padding: '10px 16px',
-    fontSize: '14px',
-    fontWeight: 600,
-    borderRadius: '6px',
-    border: '1px solid #4a4a4a',
-    backgroundColor: '#2d2d2d',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-};
-
 export const WelcomeModal: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [showDontShowAgain, setShowDontShowAgain] = useState(false);
@@ -104,22 +38,30 @@ export const WelcomeModal: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div style={styles.overlay} onClick={handleClose}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.h2}>Welcome to Aura</h2>
-        <p style={styles.p}>
-          Import a new deck using the <strong style={styles.strong}>Choose Deck</strong> button in the top left.
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10000]" onClick={handleClose}>
+      <div className="bg-slate-950 border border-slate-800 rounded-lg p-6 max-w-[400px]" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-slate-50 text-xl mb-4">Welcome to Aura</h2>
+        <p className="text-slate-300 text-sm leading-relaxed mb-3">
+          Import a new deck using the <strong className="text-slate-50">Choose Deck</strong> button in the top left.
         </p>
-        <p style={styles.p}>
-          View all hotkeys in the <strong style={styles.strong}>Hotkeys</strong> button next to it.
+        <p className="text-slate-300 text-sm leading-relaxed mb-3">
+          View all hotkeys in the <strong className="text-slate-50">Hotkeys</strong> button next to it.
         </p>
-        <div style={styles.buttons}>
+        <div className="flex gap-3 mt-6">
           {showDontShowAgain && (
-            <button style={styles.buttonSecondary} onClick={handleDontShowAgain}>
+            <button 
+              className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-md border border-slate-700 bg-slate-900 text-slate-100 cursor-pointer transition-all duration-150 hover:bg-slate-800" 
+              onClick={handleDontShowAgain}
+            >
               Don't show again
             </button>
           )}
-          <button style={styles.button} onClick={handleClose}>Got it</button>
+          <button 
+            className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-md border border-sky-500 bg-sky-500 text-slate-950 cursor-pointer transition-all duration-150 hover:bg-sky-400" 
+            onClick={handleClose}
+          >
+            Got it
+          </button>
         </div>
       </div>
     </div>
