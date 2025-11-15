@@ -4,6 +4,7 @@ import { HealthDisplay } from './HealthDisplay';
 import { CustomCounter } from '../../modules/player/types';
 import { Card } from '../../modules/deck';
 import { DeckPileViewer } from '../../modules/gameResourcesDock/components';
+import {YSTATE_CUSTOM_COUNTERS, YSTATE_DISCARD_PILE} from "../../constants";
 
 interface OpponentHealthListProps {
   yDoc: Y.Doc;
@@ -43,9 +44,9 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
           const playerId = key.replace('player-', '');
           const yPlayerState = yDoc.getMap(key);
           const health = (yPlayerState.get('health') as number | undefined) ?? 20;
-          const customCounters = (yPlayerState.get('customCounters') as CustomCounter[] | undefined) ?? [];
+          const customCounters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
           const exilePile = (yPlayerState.get('exilePile') as Card[] | undefined) ?? [];
-          const discardPile = (yPlayerState.get('discardPile') as Card[] | undefined) ?? [];
+          const discardPile = (yPlayerState.get(YSTATE_DISCARD_PILE) as Card[] | undefined) ?? [];
           const hand = (yPlayerState.get('hand') as Card[] | undefined) ?? [];
           const allowViewHand = (yPlayerState.get('allowViewHand') as boolean | undefined) ?? false;
 
@@ -99,32 +100,32 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
 
   const addOpponentCounter = (playerId: string, title: string, icon: string) => {
     const yPlayerState = yDoc.getMap(`player-${playerId}`);
-    const counters = (yPlayerState.get('customCounters') as CustomCounter[] | undefined) ?? [];
+    const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const newCounter: CustomCounter = {
       id: `counter-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       title,
       icon,
       value: 0,
     };
-    yPlayerState.set('customCounters', [...counters, newCounter]);
+    yPlayerState.set(YSTATE_CUSTOM_COUNTERS, [...counters, newCounter]);
   };
 
   const modifyOpponentCounter = (playerId: string, counterId: string, delta: number) => {
     const yPlayerState = yDoc.getMap(`player-${playerId}`);
-    const counters = (yPlayerState.get('customCounters') as CustomCounter[] | undefined) ?? [];
+    const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const updatedCounters = counters.map(counter =>
       counter.id === counterId
         ? { ...counter, value: counter.value + delta }
         : counter
     );
-    yPlayerState.set('customCounters', updatedCounters);
+    yPlayerState.set(YSTATE_CUSTOM_COUNTERS, updatedCounters);
   };
 
   const removeOpponentCounter = (playerId: string, counterId: string) => {
     const yPlayerState = yDoc.getMap(`player-${playerId}`);
-    const counters = (yPlayerState.get('customCounters') as CustomCounter[] | undefined) ?? [];
+    const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const updatedCounters = counters.filter(counter => counter.id !== counterId);
-    yPlayerState.set('customCounters', updatedCounters);
+    yPlayerState.set(YSTATE_CUSTOM_COUNTERS, updatedCounters);
   };
 
   const getOrCreateViewer = (playerId: string, pileType: 'exile' | 'discard' | 'hand'): DeckPileViewer => {

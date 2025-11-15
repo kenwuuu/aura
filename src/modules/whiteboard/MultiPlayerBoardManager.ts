@@ -50,7 +50,6 @@ export class MultiPlayerBoardManager {
   ) {
     this.yDoc = yDoc;
     this.localPlayerId = localPlayerId;
-    this.backgroundColor = backgroundColor;
     this.cardPreview = cardPreview;
 
     this.yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);

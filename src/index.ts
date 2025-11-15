@@ -21,6 +21,7 @@ import { PatchNotesService } from './services/patchNotes';
 import { DEFAULT_DECK } from './data/defaultDeck';
 import './style.css';
 import * as Sentry from "@sentry/react";
+import {YSTATE_DECK_CARD_COUNT} from "./constants";
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -358,7 +359,7 @@ class AuraApp {
     // Update the player state with deck
     this.localPlayer.loadNewDeck(newDeck).then(() => {
       // Update deck count in Yjs state
-      this.localPlayer['yPlayerState'].set('deckCardCount', newDeck.getCardCount());
+      this.localPlayer['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, newDeck.getCardCount());
 
       // Save this as the last loaded deck for auto-loading on next visit
       localStorage.setItem('aura-last-loaded-deck', savedDeck.metadata.id);

@@ -188,6 +188,7 @@ player.onStateChange(state => updateUI(state))
 ### Hand Reordering
 
 ```typescript
+// @ts-nocheck
 // 1. User starts dragging card #2 in hand
 dragstart event
   └── set draggedHandCardIndex = 2
@@ -290,7 +291,7 @@ callbacks.onDrawCard() (defined in index.ts)
 player.drawCard()
   ├── deck.drawCard() → removes card from local Deck
   ├── yPlayerState.set('hand', [...hand, drawnCard])
-  └── yPlayerState.set('deckCardCount', deck.getCardCount())
+  └── yPlayerState.set(YDOC_DECK_CARD_COUNT, deck.getCardCount())
   ↓
 player.onStateChange fires
   ↓

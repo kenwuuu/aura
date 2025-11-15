@@ -298,7 +298,7 @@ export class Player {
 
     const hand = this.yPlayerState.get('hand') ?? [];
     this.yPlayerState.set('hand', [...hand, card]);  // Syncs to all players!
-    this.yPlayerState.set('deckCardCount', this.deck.getCardCount());
+    this.yPlayerState.set(YDOC_DECK_CARD_COUNT, this.deck.getCardCount());
 
     return card;
   }
@@ -1397,6 +1397,7 @@ yCards.observe((event) => {
 ### Inspecting Yjs State
 
 **Browser Console Utilities:**
+
 ```javascript
 // Get the Yjs document (if exposed globally)
 const yDoc = window.yDoc;
@@ -1409,13 +1410,13 @@ console.table(Array.from(yCards.values()));
 const yPlayer = yDoc.getMap('player-abc123');  // Replace with actual ID
 console.log('Health:', yPlayer.get('health'));
 console.log('Hand:', yPlayer.get('hand'));
-console.log('Deck count:', yPlayer.get('deckCardCount'));
+console.log('Deck count:', yPlayer.get(YSTATE_DECK_CARD_COUNT));
 
 // View all players
 yDoc.share.forEach((value, key) => {
-  if (key.startsWith('player-')) {
-    console.log(key, value.toJSON());
-  }
+   if (key.startsWith('player-')) {
+      console.log(key, value.toJSON());
+   }
 });
 ```
 
