@@ -8,4 +8,5 @@ export const ROOM_PREFIX = 'mtg-';
 export const DEFAULT_CARD_BACK = '/assets/card-back.png';
 
 // yDoc constants
-export const YDOC_CARDS_ON_BOARD = 'cards-on-board'
+export const YDOC_CARDS_ON_BOARD = 'cards-on-board';
+export function YDOC_PLAYER(playerId: string): string { return `player-${playerId}` }

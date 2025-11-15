@@ -1,7 +1,7 @@
 import * as Y from 'yjs';
 import { Card, Deck } from '../deck';
 import { PlayerState, PlayerConfig, CustomCounter } from './types';
-import {YDOC_CARDS_ON_BOARD} from "../../constants";
+import {YDOC_CARDS_ON_BOARD, YDOC_PLAYER} from "../../constants";
 
 export class Player {
   private playerId: string;
@@ -22,7 +22,7 @@ export class Player {
       initialHealth: config.initialHealth ?? 40,
     };
 
-    this.yPlayerState = yDoc.getMap(`player-${playerId}`);
+    this.yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     this.yCardsOnBoard = yDoc.getMap(YDOC_CARDS_ON_BOARD); // Store reference to battlefield
     this.initializeState();
   }
