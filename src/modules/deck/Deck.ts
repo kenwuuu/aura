@@ -38,6 +38,10 @@ export class Deck {
     }
   }
 
+  public setCards(cards: Card[]): void {
+    this.cards = cards;
+  }
+
   public addCardToTop(card: Card): void {
     this.cards.push(card);
   }
@@ -65,7 +69,7 @@ export class Deck {
     return this.cards.length;
   }
 
-  public removeCard(cardId: string): Card | null {
+  removeCard(cardId: string): Promise<Card | null> {
     const index = this.cards.findIndex(c => c.id === cardId);
     if (index !== -1) {
       return this.cards.splice(index, 1)[0];

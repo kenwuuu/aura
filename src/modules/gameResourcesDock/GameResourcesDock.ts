@@ -1,6 +1,6 @@
 import { Player, PlayerState } from '../player';
 import { GameResourcesDockConfig } from './types';
-import { Card } from '../deck';
+import {Card, Deck} from '../deck';
 import { DeckPileViewer } from './components';
 import { CardPreview } from '../cardPreview';
 import React from 'react';
@@ -10,12 +10,14 @@ import { HotkeyTooltip } from '../../components/HotkeyTooltip';
 import { HotkeyContext } from '../../data/hotkeys';
 import { DEFAULT_CARD_BACK } from '../../constants';
 import {animate} from "motion";
+import { ScryModal } from '../../components/ScryModal';
 
 export class GameResourcesDock {
   private container: HTMLElement;
   private player: Player;
   private config: GameResourcesDockConfig;
   private deckViewer: DeckPileViewer;
+  private scryViewer: DeckPileViewer;
   private exileViewer: DeckPileViewer;
   private discardViewer: DeckPileViewer;
   private elements: {
@@ -34,6 +36,10 @@ export class GameResourcesDock {
   private healthRoot: Root | null = null;
   private tooltipRoot: Root | null = null;
   private tooltipContainer: HTMLElement | null = null;
+  private scryModalRoot: Root | null = null;
+  private scryModalContainer: HTMLElement | null = null;
+  private isScryModalOpen: boolean = false;
+  private scriedCards: Deck = new Deck({initialCardCount: 0}, []);
   private currentMouseX: number = 0;
   private currentMouseY: number = 0;
   private isMouseDown: boolean = false;
@@ -57,6 +63,12 @@ export class GameResourcesDock {
       onMoveToExile: (card) => this.handlePileCardToExile(card, 'deck'),
       onMoveToDeckTop: (card) => this.handlePileCardToDeckTop(card, 'deck'),
       onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'deck'),
+    });
+
+    this.scryViewer = new DeckPileViewer({
+      onMoveToDiscard: (card) => this.handlePileCardToDiscard(card, 'scry'),
+      onMoveToDeckTop: (card) => this.handlePileCardToDeckTop(card, 'scry'),
+      onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'scry'),
     });
 
     this.exileViewer = new DeckPileViewer({
@@ -225,6 +237,14 @@ export class GameResourcesDock {
     count.dataset.pile = 'deck';
     count.textContent = '60';
 
+    const scryButton = document.createElement('button');
+    scryButton.className = 'draw-button';
+    scryButton.textContent = 'Scry';
+    scryButton.onclick = (e) => {
+      e.stopPropagation();
+      this.openScryModal();
+    };
+
     const drawButton = document.createElement('button');
     drawButton.className = 'draw-button';
     drawButton.textContent = 'Draw';
@@ -235,6 +255,7 @@ export class GameResourcesDock {
 
     deck.appendChild(labelEl);
     deck.appendChild(count);
+    deck.appendChild(scryButton);
     deck.appendChild(drawButton);
 
     // Add hover event listeners for keyboard shortcuts
@@ -249,7 +270,7 @@ export class GameResourcesDock {
 
     // Click deck to view it (with search and sort)
     deck.onclick = (e) => {
-      if (e.target !== drawButton) {
+      if (e.target !== drawButton && e.target !== scryButton) {
         this.viewDeck();
       }
     };
@@ -308,6 +329,10 @@ export class GameResourcesDock {
     window.addEventListener('modalClosed', () => {
       this.isModalOpen = false;
       this.updateHotkeyTooltip();
+    });
+
+    window.addEventListener('scryViewer closing', () => {
+      this.replaceRemainingScriedCards();
     });
 
     // Initial update
@@ -493,6 +518,59 @@ export class GameResourcesDock {
     this.player.drawCard();
   }
 
+  private openScryModal(): void {
+    const deckCount = this.player.getState().deckCardCount;
+
+    // Setup scry modal container if not already created
+    if (!this.scryModalContainer) {
+      this.scryModalContainer = document.createElement('div');
+      document.body.appendChild(this.scryModalContainer);
+      this.scryModalRoot = createRoot(this.scryModalContainer);
+    }
+
+    this.isScryModalOpen = true;
+    this.renderScryModal(deckCount);
+  }
+
+  private renderScryModal(maxCards: number): void {
+    if (!this.scryModalRoot) return;
+
+    this.scryModalRoot.render(
+      React.createElement(ScryModal, {
+        isOpen: this.isScryModalOpen,
+        maxCards,
+        onConfirm: (count: number) => {
+          this.isScryModalOpen = false;
+          this.renderScryModal(maxCards);
+          this.scryCards(count);
+        },
+        onCancel: () => {
+          this.isScryModalOpen = false;
+          this.renderScryModal(maxCards);
+        },
+      })
+    );
+  }
+
+  private replaceRemainingScriedCards(): void {
+    // returns any remaining cards in scryViewer on top of deck, in order
+    const newDeck = [...this.player['deck'].getCards(), ...this.scriedCards.getCards()]
+    this.player['deck'].setCards(newDeck);
+  }
+
+  private scryCards(count: number): void {
+    // Get the top N cards from the deck
+    const deckCards = this.player.getDeckCards();
+    // Cards are stored bottom-to-top, so we need to slice from the end
+    this.scriedCards.setCards(deckCards.slice(-count));
+    this.scriedCards.getCards().forEach((card) => {
+      this.player['deck'].removeCard(card.id);
+    });
+
+    // Show them in the deck viewer
+    this.scryViewer.show(this.scriedCards.getCards(), 'scry');
+  }
+
   private viewPile(pileType: 'exile' | 'discard'): void {
     const state = this.player.getState();
     const cards = pileType === 'exile' ? state.exilePile : state.discardPile;
@@ -578,12 +656,14 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToDiscard(card: Card, pileType: 'exile' | 'deck'): void {
+  private handlePileCardToDiscard(card: Card, pileType: 'exile' | 'deck' | 'scry'): void {
     const state = this.player.getState();
 
     if (pileType === 'deck') {
       // Remove from deck (local)
       this.player['deck'].removeCard(card.id);
+    } else if (pileType === 'scry') {
+      this.scriedCards.removeCard(card.id);
     } else if (pileType === 'exile') {
       // Remove from exile pile
       const pile = state.exilePile;
@@ -600,12 +680,14 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToDeckTop(card: Card, pileType: 'exile' | 'discard' | 'deck'): void {
+  private handlePileCardToDeckTop(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
     const state = this.player.getState();
 
     if (pileType === 'deck') {
       // Remove from deck (local) and add back to top
       this.player['deck'].removeCard(card.id);
+    } else if (pileType === 'scry') {
+      this.scriedCards.removeCard(card.id);
     } else {
       // Remove from exile or discard pile
       const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
@@ -622,12 +704,14 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToDeckBottom(card: Card, pileType: 'exile' | 'discard' | 'deck'): void {
+  private handlePileCardToDeckBottom(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
     const state = this.player.getState();
 
     if (pileType === 'deck') {
       // Remove from deck (local) and add back to bottom
       this.player['deck'].removeCard(card.id);
+    } else if (pileType === 'scry') {
+      this.scriedCards.removeCard(card.id);
     } else {
       // Remove from exile or discard pile
       const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
@@ -644,16 +728,19 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private updatePileViewer(pileType: 'deck' | 'exile' | 'discard'): void {
+  private updatePileViewer(pileType: 'deck' | 'exile' | 'discard' | 'scry'): void {
     if (pileType === 'deck') {
       const updatedCards = this.player.getDeckCards();
       this.deckViewer.updateCards(updatedCards);
     } else if (pileType === 'exile') {
       const state = this.player.getState();
       this.exileViewer.updateCards(state.exilePile);
-    } else {
+    } else if (pileType === 'discard') {
       const state = this.player.getState();
       this.discardViewer.updateCards(state.discardPile);
+    } else if (pileType === 'scry') {
+      const updatedCards = this.scriedCards.getCards();
+      this.scryViewer.updateCards(updatedCards);
     }
   }
 
@@ -917,6 +1004,14 @@ export class GameResourcesDock {
       this.tooltipContainer.remove();
       this.tooltipContainer = null;
     }
+    if (this.scryModalRoot) {
+      this.scryModalRoot.unmount();
+      this.scryModalRoot = null;
+    }
+    if (this.scryModalContainer) {
+      this.scryModalContainer.remove();
+      this.scryModalContainer = null;
+    }
     if (this.elements) {
       this.container.innerHTML = '';
       this.elements = null;
@@ -925,6 +1020,7 @@ export class GameResourcesDock {
       this.zoomControls.remove();
     }
     // Close all pile viewers
+    this.scryViewer.close();
     this.deckViewer.close();
     this.exileViewer.close();
     this.discardViewer.close();

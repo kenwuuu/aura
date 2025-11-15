@@ -10,6 +10,7 @@ export const HotkeyContext = {
   Deck: 'deck',
   DeckCard: 'deckcard',
   Exile: 'exile',
+  Scry: 'scry',
   Discard: 'discard',
   Health: 'health',
 } as const;
@@ -116,7 +117,7 @@ export const HOTKEYS: HotkeyDefinition[] = [
   // Hand and pile shortcuts
   {
     key: 'D',
-    context: ['battlefield', 'hand', 'exile', 'deck', 'deckcard'],
+    context: ['battlefield', 'hand', 'exile', 'deck', 'deckcard', 'scry'],
     shortDescription: 'To discard',
     longDescription: 'Move card from hand/deck to discard',
   },
@@ -128,13 +129,13 @@ export const HOTKEYS: HotkeyDefinition[] = [
   },
   {
     key: 'T',
-    context: ['battlefield', 'hand', 'exile', 'discard'],
+    context: ['battlefield', 'hand', 'exile', 'discard', 'scry'],
     shortDescription: 'To deck top',
     longDescription: 'Move card from hand/deck to top of deck',
   },
   {
     key: 'Y',
-    context: ['battlefield', 'hand', 'exile', 'discard'],
+    context: ['battlefield', 'hand', 'exile', 'discard', 'scry'],
     shortDescription: 'To deck bottom',
     longDescription: 'Move card from hand/deck to bottom of deck',
   },

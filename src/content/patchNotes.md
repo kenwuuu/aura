@@ -1,3 +1,10 @@
+## 2025 November 15
+
+### Features
+- Added scry and surveil 
+
+---
+
 ## 2025 November 14
 
 ### Features

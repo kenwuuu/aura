@@ -30,7 +30,7 @@ import { CardGridItem } from './CardGridItem';
 import { TooltipManager } from '../../whiteboard/TooltipManager';
 import {HotkeyContext, HotkeyDefinition} from '../../../data/hotkeys';
 
-export type PileType = 'deck' | 'exile' | 'discard' | 'hand';
+export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
 
 export interface DeckPileViewerCallbacks {
   onPlayToBattlefield?: (card: Card) => void;
@@ -136,6 +136,8 @@ export class DeckPileViewer {
       title.textContent = 'Discard Pile';
     } else if (this.pileType === 'hand') {
       title.textContent = "Opponent's Hand";
+    } else if (this.pileType === 'scry') {
+      title.textContent = "Scry and Surveil";
     }
 
     header.appendChild(title);
@@ -143,7 +145,11 @@ export class DeckPileViewer {
     // Add subtitle with keyboard shortcuts
     const subtitle = document.createElement('div');
     subtitle.className = 'deck-pile-viewer-subtitle';
-    subtitle.textContent = 'Hover card and move to... \nH: Hand • D: Discard • S: Exile • T: Deck Top • Y: Deck Bottom';
+    if (this.pileType !== 'scry') {
+      subtitle.textContent = 'Hover card and move to... \nH: Hand • D: Discard • S: Exile • T: Deck Top • Y: Deck Bottom';
+    } else if (this.pileType === 'scry') {
+      subtitle.textContent = 'Hover card and move to... \nD: Discard • T: Deck Top • Y: Deck Bottom';
+    }
     header.appendChild(subtitle);
 
     const closeBtn = document.createElement('button');
@@ -385,6 +391,9 @@ export class DeckPileViewer {
       case 'exile':
         context = HotkeyContext.Exile;
         break;
+      case 'scry':
+        context = HotkeyContext.Scry;
+        break;
     }
 
     const showHover = (e: MouseEvent) =>
@@ -478,6 +487,10 @@ export class DeckPileViewer {
 
       if (this.modal.parentElement) {
         this.modal.parentElement.removeChild(this.modal);
+      }
+
+      if (this.pileType === 'scry') {
+        window.dispatchEvent(new Event('scryViewer closing'));
       }
 
       this.modal = null;
