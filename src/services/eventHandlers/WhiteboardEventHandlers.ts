@@ -2,7 +2,7 @@ import * as Y from 'yjs';
 import { Player } from '../../modules/player';
 import { MultiPlayerBoardManager } from '../../modules/whiteboard';
 import { TokenService } from '../scryfall';
-import { CARD_HEIGHT, CARD_WIDTH } from '../../constants';
+import {CARD_HEIGHT, CARD_WIDTH, YDOC_CARDS_ON_BOARD} from '../../constants';
 import {getBoardLeftOffset, getBoardTopOffset} from "../../modules/whiteboard/BoardContainerManager";
 
 /**
@@ -90,7 +90,7 @@ export class WhiteboardEventHandlers {
       const { cardId, destination } = event.detail;
 
       // Get the card from battlefield (yCards)
-      const yCards = this.yDoc.getMap('cards');
+      const yCards = this.yDoc.getMap(YDOC_CARDS_ON_BOARD);
       const card = yCards.get(cardId) as any;
 
       if (!card || card.ownerId !== this.playerId) return;

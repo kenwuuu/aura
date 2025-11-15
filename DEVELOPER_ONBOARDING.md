@@ -730,7 +730,7 @@ const DEFAULT_ICE_SERVERS = [
 
 | Data | Storage | Synced? | Why |
 |------|---------|---------|-----|
-| **Battlefield cards** | `yDoc.getMap('cards')` | ✓ Yes | All players see all cards |
+| **Battlefield cards** | `yDoc.getMap(YDOC_CARDS_ON_BOARD)` | ✓ Yes | All players see all cards |
 | **Your hand** | `yDoc.getMap('player-{id}').hand` | ✓ Yes | *Trust-based privacy* |
 | **Your deck** | `Deck` class (local) | ✗ No | **Private** to you |
 | **Deck count** | `yDoc.getMap('player-{id}').deckCardCount` | ✓ Yes | Opponents see your deck size |
@@ -755,7 +755,7 @@ const DEFAULT_ICE_SERVERS = [
 
 ```typescript
 // Listen for changes to any Yjs map
-const yCards = yDoc.getMap('cards');
+const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 
 yCards.observe((event) => {
   event.changes.keys.forEach((change, key) => {
@@ -776,7 +776,7 @@ yCards.observe((event) => {
 
 ```typescript
 // Get a map from the document
-const yCards = yDoc.getMap('cards');
+const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 const yPlayerState = yDoc.getMap(`player-${playerId}`);
 
 // Set a value (triggers sync to all peers)
@@ -1364,7 +1364,7 @@ yDoc.on('update', (update) => {
 3. **Inspect Yjs state:**
 ```typescript
 // In browser console
-const yCards = window.yDoc.getMap('cards');
+const yCards = window.yDoc.getMap(YDOC_CARDS_ON_BOARD);
 console.log('All cards:', Array.from(yCards.entries()));
 ```
 
@@ -1402,7 +1402,7 @@ yCards.observe((event) => {
 const yDoc = window.yDoc;
 
 // View all cards on battlefield
-const yCards = yDoc.getMap('cards');
+const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 console.table(Array.from(yCards.values()));
 
 // View player state

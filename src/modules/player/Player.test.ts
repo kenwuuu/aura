@@ -3,6 +3,7 @@ import * as Y from 'yjs';
 import { Player } from './Player';
 import { Deck } from '../deck';
 import { Card } from '../deck/types';
+import {YDOC_CARDS_ON_BOARD} from "../../constants";
 
 describe('Player.reset()', () => {
   let yDoc: Y.Doc;
@@ -108,7 +109,7 @@ describe('Player.reset()', () => {
 
   describe('Reset with cards on battlefield', () => {
     it('should remove player\'s cards from battlefield and return to deck', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 
       // Draw 3 cards
       const card1 = player.drawCard();
@@ -154,7 +155,7 @@ describe('Player.reset()', () => {
     });
 
     it('should NOT remove opponent\'s cards from battlefield', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       const opponentId = 'opponent-456';
 
       // Draw player's card
@@ -202,7 +203,7 @@ describe('Player.reset()', () => {
 
   describe('Reset with complex game state', () => {
     it('should handle full game scenario: battlefield, hand, piles, modified health', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 
       // Draw 8 cards
       const cards = Array.from({ length: 8 }, () => player.drawCard()).filter(Boolean) as Card[];

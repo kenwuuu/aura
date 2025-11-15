@@ -59,7 +59,7 @@ component libraries like shadcn, or helpful libraries like Tailwind CSS and GSAP
 import { useY } from 'y-react';
 
 function Whiteboard({ yDoc }) {
-  const yCards = useY(yDoc.getMap('cards'));
+  const yCards = useY(yDoc.getMap(YDOC_CARDS_ON_BOARD));
 
   return (
     <div className="whiteboard">
@@ -97,7 +97,7 @@ src/
 ### Module Communication Patterns
 
 **1. Yjs for State Synchronization**
-- Battlefield cards: `yDoc.getMap('cards')` - shared across all players
+- Battlefield cards: `yDoc.getMap(YDOC_CARDS_ON_BOARD)` - shared across all players
 - Player state: `yDoc.getMap('player-{id}')` - one per player
 - Changes to any Yjs map automatically sync to all connected peers
 
@@ -257,7 +257,7 @@ npm run dev
 
 ```typescript
 // In browser console or code:
-const yCards = yDoc.getMap('cards');
+const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 console.table(Array.from(yCards.values()));
 
 const yPlayer = yDoc.getMap(`player-${playerId}`);

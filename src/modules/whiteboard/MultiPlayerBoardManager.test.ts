@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MultiPlayerBoardManager } from './MultiPlayerBoardManager';
 import * as Y from 'yjs';
 import { CardPreview } from '../cardPreview';
+import {YDOC_CARDS_ON_BOARD} from "../../constants";
 
 // Mock dependencies
 vi.mock('../cardPreview', () => ({
@@ -142,7 +143,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
   describe('createPlayerContainer()', () => {
     it('should create opponent container when card is added by opponent', () => {
       // Add a card owned by opponent to trigger container creation
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -162,7 +163,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should set opponent container with correct classes', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -182,7 +183,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should set opponent container with low opacity by default', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -201,7 +202,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should set opponent container with overlay z-index (15)', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -220,7 +221,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should set opponent container with pointer-events none', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -239,7 +240,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should not create duplicate containers for same player', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 
       // Add two cards from same opponent
       yCards.set('card-1', {
@@ -273,7 +274,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should create separate containers for different opponents', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 
       yCards.set('card-1', {
         id: 'card-1',
@@ -310,7 +311,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should position all containers at same screen location (overlay)', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 
       yCards.set('card-1', {
         id: 'card-1',
@@ -336,7 +337,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
   describe('Opponent Opacity Management', () => {
     beforeEach(() => {
       // Setup opponent containers
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -447,7 +448,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
 
     it('should show single opponent at full opacity by default', () => {
       // First, clear the second opponent
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.delete('card-2');
 
       // Notify manager about single opponent
@@ -481,7 +482,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
 
   describe('Window Resize - Container Recentering', () => {
     it('should recenter all containers on window resize', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -524,7 +525,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
 
   describe('Container Cleanup - destroy()', () => {
     it('should remove all player containers on destroy', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -550,7 +551,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should remove all containers including multiple opponents', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,
@@ -612,7 +613,7 @@ describe('MultiPlayerBoardManager - Container Management', () => {
     });
 
     it('should set player ID as data attribute on opponent containers', () => {
-      const yCards = yDoc.getMap('cards');
+      const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
       yCards.set('card-1', {
         id: 'card-1',
         cardNumber: 1,

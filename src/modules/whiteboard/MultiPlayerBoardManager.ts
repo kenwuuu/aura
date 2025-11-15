@@ -1,5 +1,5 @@
 import { Card } from '../deck';
-import { CARD_HEIGHT, CARD_WIDTH, DEFAULT_CARD_BACK } from '../../constants';
+import {CARD_HEIGHT, CARD_WIDTH, DEFAULT_CARD_BACK, YDOC_CARDS_ON_BOARD} from '../../constants';
 import { WhiteboardCard, DragState } from './types';
 import { KeyboardHandler, KeyboardHandlerCallbacks } from './KeyboardHandler';
 import { CardPreview } from '../cardPreview';
@@ -53,7 +53,7 @@ export class MultiPlayerBoardManager {
     this.backgroundColor = backgroundColor;
     this.cardPreview = cardPreview;
 
-    this.yCards = yDoc.getMap('cards');
+    this.yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 
     // Initialize BoardContainerManager
     this.boardContainerManager = new BoardContainerManager(

@@ -184,7 +184,7 @@ yDoc = {
 }
 ```
 
-All changes to `yDoc.getMap('cards')` automatically sync to all peers.
+All changes to `yDoc.getMap(YDOC_CARDS_ON_BOARD)` automatically sync to all peers.
 
 ## Local Persistence (IndexedDB)
 

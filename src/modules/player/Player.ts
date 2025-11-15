@@ -1,6 +1,7 @@
 import * as Y from 'yjs';
 import { Card, Deck } from '../deck';
 import { PlayerState, PlayerConfig, CustomCounter } from './types';
+import {YDOC_CARDS_ON_BOARD} from "../../constants";
 
 export class Player {
   private playerId: string;
@@ -22,7 +23,7 @@ export class Player {
     };
 
     this.yPlayerState = yDoc.getMap(`player-${playerId}`);
-    this.yCardsOnBoard = yDoc.getMap('cards'); // Store reference to battlefield
+    this.yCardsOnBoard = yDoc.getMap(YDOC_CARDS_ON_BOARD); // Store reference to battlefield
     this.initializeState();
   }
 
