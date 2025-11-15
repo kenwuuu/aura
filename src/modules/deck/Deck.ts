@@ -1,30 +1,25 @@
-import { Card, DeckConfig } from './types';
+import { Card } from './types';
 
 export class Deck {
-  private config: DeckConfig;
   private cards: Card[] = [];
 
-  constructor(config: Partial<DeckConfig> = {}, cards?: Card[]) {
-    this.config = {
-      cardWidth: config.cardWidth ?? 63,
-      cardHeight: config.cardHeight ?? 88,
-      initialCardCount: config.initialCardCount ?? 60,
-    };
-
+  constructor(cards?: Card[]) {
     // Use provided cards if available, otherwise initialize with blank cards
     if (cards && cards.length > 0) {
+      console.log('real cards')
       // Regenerate unique IDs for all cards to prevent collisions when multiple players use the same deck
       this.cards = cards.map(card => ({
         ...card,
         id: `card-${Math.random().toString(36).substring(2, 11)}`,
       }));
     } else {
-      this.initializeDeck();
+      console.log('fake cards')
+      this.initializeDeckWithDummyCards(60);
     }
   }
 
-  private initializeDeck(): void {
-    for (let i = 0; i < this.config.initialCardCount; i++) {
+  private initializeDeckWithDummyCards(numDummyCards: number): void {
+    for (let i = 0; i < numDummyCards; i++) {
       this.cards.push({
         id: `card-${Math.random().toString(36).substring(2, 11)}`,
         cardNumber: i + 1, // Start from 1
@@ -75,9 +70,5 @@ export class Deck {
       return this.cards.splice(index, 1)[0];
     }
     return null;
-  }
-
-  public getConfig(): DeckConfig {
-    return { ...this.config };
   }
 }

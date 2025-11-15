@@ -21,7 +21,7 @@ describe('GameResourcesDock - Pile Card Movements (Keyboard Shortcuts)', () => {
     playerId = 'test-player-123';
 
     // Create a deck with 10 cards
-    deck = new Deck({ initialCardCount: 10 });
+    deck = new Deck(10);
 
     // Create player
     player = new Player(playerId, yDoc, deck, { initialHealth: 40 });

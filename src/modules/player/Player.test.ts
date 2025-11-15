@@ -18,7 +18,7 @@ describe('Player.reset()', () => {
 
     // Create a deck with default initialization (60 cards, no commander)
     // This avoids the cards[99] commander logic in Deck constructor
-    deck = new Deck({ initialCardCount: 10 });
+    deck = new Deck(10);
 
     // Create player with initial health of 40
     player = new Player(playerId, yDoc, deck, { initialHealth: 40 });
@@ -320,7 +320,7 @@ describe('Player.drawCard()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    deck = new Deck({ initialCardCount: 5 });
+    deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -361,7 +361,7 @@ describe('Player.playCardFromHand()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -395,7 +395,7 @@ describe('Player.moveCardToDiscard()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -431,7 +431,7 @@ describe('Player.moveCardToExile()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -467,7 +467,7 @@ describe('Player.setHealth()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -493,7 +493,7 @@ describe('Player.modifyHealth()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -522,7 +522,7 @@ describe('Player.shuffleDeck()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 10 });
+    const deck = new Deck(10);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -566,7 +566,7 @@ describe('Player.moveCardToDeckTop()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -602,7 +602,7 @@ describe('Player.moveCardToDeckBottom()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 3 });
+    const deck = new Deck(3);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -642,7 +642,7 @@ describe('Player.mulligan()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 20 });
+    const deck = new Deck(20);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -734,7 +734,7 @@ describe('Player.loadNewDeck()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -750,7 +750,7 @@ describe('Player.loadNewDeck()', () => {
       counters: [],
     }));
 
-    const newDeck = new Deck({ initialCardCount: 10 }, newDeckCards);
+    const newDeck = new Deck(10, newDeckCards);
     player.loadNewDeck(newDeck);
 
     // Should draw 1 card (commander) and have 9 remaining
@@ -770,7 +770,7 @@ describe('Player.loadNewDeck()', () => {
       counters: [],
     }));
 
-    const newDeck = new Deck({ initialCardCount: 15 }, newDeckCards);
+    const newDeck = new Deck(15, newDeckCards);
 
     // Load deck (draws commander, then shuffles)
     player.loadNewDeck(newDeck);
@@ -799,7 +799,7 @@ describe('Player.getId()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player-123', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -814,7 +814,7 @@ describe('Player.getDeckCards()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -838,7 +838,7 @@ describe('Player.onStateChange()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck({ initialCardCount: 5 });
+    const deck = new Deck(5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 

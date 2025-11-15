@@ -27,12 +27,6 @@ export interface Card {
   counters: number[]; // Array of counter values
 }
 
-export interface DeckConfig {
-  cardWidth: number;
-  cardHeight: number;
-  initialCardCount: number;
-}
-
 export interface DeckMetadata {
   id: string; // Unique deck ID
   name: string; // User-provided deck name

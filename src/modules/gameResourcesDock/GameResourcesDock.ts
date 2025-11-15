@@ -39,7 +39,7 @@ export class GameResourcesDock {
   private scryModalRoot: Root | null = null;
   private scryModalContainer: HTMLElement | null = null;
   private isScryModalOpen: boolean = false;
-  private scriedCards: Deck = new Deck({initialCardCount: 0}, []);
+  private scriedCards: Deck = new Deck([]);
   private currentMouseX: number = 0;
   private currentMouseY: number = 0;
   private isMouseDown: boolean = false;

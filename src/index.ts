@@ -82,9 +82,7 @@ class AuraApp {
 
     // Initialize local player deck - restore from localStorage if available for this room
     const restoredDeck = DeckPersistenceService.restoreDeckForRoom(this.roomManager.getRoomName());
-    const localDeck = restoredDeck ?? new Deck({
-      initialCardCount: 60,
-    });
+    const localDeck = restoredDeck ?? new Deck();
 
     // Initialize local player
     this.localPlayer = new Player(this.playerId, this.yDoc, localDeck, {
@@ -352,9 +350,7 @@ class AuraApp {
     this.localPlayer.reset();
 
     // Create a new deck with the imported cards
-    const newDeck = new Deck({
-      initialCardCount: savedDeck.cards.length,
-    }, savedDeck.cards);
+    const newDeck = new Deck(savedDeck.cards);
 
     // Update the player state with deck
     this.localPlayer.loadNewDeck(newDeck).then(() => {

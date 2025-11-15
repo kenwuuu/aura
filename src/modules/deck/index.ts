@@ -1,2 +1,2 @@
 export { Deck } from './Deck';
-export type { Card, DeckConfig } from './types';
+export type { Card } from './types';

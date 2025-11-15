@@ -25,7 +25,7 @@ export class DeckPersistenceService {
         return null;
       }
 
-      const { cards, config, timestamp } = JSON.parse(savedState);
+      const { cards, timestamp } = JSON.parse(savedState);
 
       // Only restore if the session is recent (within 1 hour)
       // This prevents collisions when re-entering a room after a long time
@@ -40,7 +40,7 @@ export class DeckPersistenceService {
       }
 
       console.log(`Restored deck with ${cards.length} cards for room ${roomName}`);
-      return new Deck(config, cards);
+      return new Deck(cards);
     } catch (error) {
       console.error('Error restoring deck state:', error);
       return null;
@@ -57,7 +57,6 @@ export class DeckPersistenceService {
       const key = `${this.STORAGE_PREFIX}${roomName}`;
       const state = {
         cards: deck.getCards(),
-        config: deck.getConfig(),
         timestamp: Date.now(), // Add timestamp to track session age
       };
       localStorage.setItem(key, JSON.stringify(state));

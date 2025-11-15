@@ -201,7 +201,6 @@ User Action (keyboard, mouse)
 ```typescript
 export class Deck {
   private cards: Card[] = [];
-  private config: DeckConfig;
 
   // Draw from top (LIFO - last in, first out)
   public drawCard(): Card | null {
@@ -238,10 +237,6 @@ export interface Card {
   isTapped: boolean;    // Tap state
   isFlipped: boolean;   // Face-down state
   counters: number[];   // Array of counter values [1, 1, 3, ...]
-}
-
-export interface DeckConfig {
-  initialCardCount: number;  // Usually 60
 }
 ```
 
@@ -335,7 +330,6 @@ export interface PlayerState {
 
 export interface PlayerConfig {
   playerId: string;
-  deckConfig: DeckConfig;
   yDoc: Y.Doc;  // Shared Yjs document
 }
 ```
