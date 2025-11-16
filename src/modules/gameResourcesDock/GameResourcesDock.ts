@@ -385,7 +385,7 @@ export class GameResourcesDock {
     if (discardCount) discardCount.textContent = state.discardPile.length.toString();
 
     const deckCount = this.elements.deck.querySelector('.pile-count');
-    if (deckCount) deckCount.textContent = state.deckCardCount.toString();
+    if (deckCount) deckCount.textContent = state.deck.length.toString();
 
     // Update health React component
     this.renderHealthComponent();
@@ -519,7 +519,7 @@ export class GameResourcesDock {
   }
 
   private openScryModal(): void {
-    const deckCount = this.player.getState().deckCardCount;
+    const deckCount = this.player.getState().deck.length;
 
     // Setup scry modal container if not already created
     if (!this.scryModalContainer) {

@@ -64,11 +64,31 @@ export class Deck {
     return this.cards.length;
   }
 
-  removeCard(cardId: string): Promise<Card | null> {
+  removeCard(cardId: string): Card | null {
     const index = this.cards.findIndex(c => c.id === cardId);
     if (index !== -1) {
       return this.cards.splice(index, 1)[0];
     }
     return null;
+  }
+
+  // Remove a specific card object from deck
+  removeCardObject(card: Card): boolean {
+    const index = this.cards.findIndex(c => c.id === card.id);
+    if (index !== -1) {
+      this.cards.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  // Find a card by ID
+  findCard(cardId: string): Card | null {
+    return this.cards.find(c => c.id === cardId) ?? null;
+  }
+
+  // Clear all cards from deck
+  clear(): void {
+    this.cards = [];
   }
 }

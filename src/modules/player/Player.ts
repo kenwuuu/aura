@@ -8,7 +8,8 @@ import {
   YSTATE_HAND,
   YSTATE_EXILE_PILE,
   YDOC_PLAYER,
-  YSTATE_DECK_CARD_COUNT, YSTATE_CUSTOM_COUNTERS, YSTATE_DECK
+  YSTATE_CUSTOM_COUNTERS,
+  YSTATE_DECK
 } from "../../constants";
 
 export class Player {
@@ -16,6 +17,9 @@ export class Player {
   private yPlayerState: Y.Map<any>;
   private yCardsOnBoard: Y.Map<any>; // Battlefield cards
   private deck: Deck;
+  private hand: Deck;
+  private exilePile: Deck;
+  private discardPile: Deck;
   private config: PlayerConfig;
 
   constructor(
@@ -26,6 +30,9 @@ export class Player {
   ) {
     this.playerId = playerId;
     this.deck = deck;
+    this.hand = new Deck([]);
+    this.exilePile = new Deck([]);
+    this.discardPile = new Deck([]);
     this.config = {
       initialHealth: config.initialHealth ?? 40,
     };
@@ -38,13 +45,20 @@ export class Player {
   private initializeState(): void {
     if (!this.yPlayerState.has(YSTATE_HEALTH)) {
       this.yPlayerState.set(YSTATE_HEALTH, this.config.initialHealth);
-      this.yPlayerState.set(YSTATE_DECK, new Deck());
+      this.yPlayerState.set(YSTATE_DECK, this.deck.getCards());
       this.yPlayerState.set(YSTATE_HAND, []);
       this.yPlayerState.set(YSTATE_EXILE_PILE, []);
       this.yPlayerState.set(YSTATE_DISCARD_PILE, []);
-      this.yPlayerState.set(YSTATE_DECK_CARD_COUNT, this.deck.getCardCount());
       this.yPlayerState.set(YSTATE_CUSTOM_COUNTERS, []);
     }
+  }
+
+  // Sync local Deck instances to yPlayerState
+  private syncToYState(): void {
+    this.yPlayerState.set(YSTATE_DECK, this.deck.getCards());
+    this.yPlayerState.set(YSTATE_HAND, this.hand.getCards());
+    this.yPlayerState.set(YSTATE_EXILE_PILE, this.exilePile.getCards());
+    this.yPlayerState.set(YSTATE_DISCARD_PILE, this.discardPile.getCards());
   }
 
   public getState(): PlayerState {
@@ -54,7 +68,7 @@ export class Player {
       hand: this.yPlayerState.get(YSTATE_HAND) ?? [],
       exilePile: this.yPlayerState.get(YSTATE_EXILE_PILE) ?? [],
       discardPile: this.yPlayerState.get(YSTATE_DISCARD_PILE) ?? [],
-      deckCardCount: this.yPlayerState.get(YSTATE_DECK_CARD_COUNT) ?? 0,
+      deck: this.yPlayerState.get(YSTATE_DECK) ?? [],
       customCounters: this.yPlayerState.get(YSTATE_CUSTOM_COUNTERS) ?? [],
     };
   }
@@ -87,8 +101,8 @@ export class Player {
     const card = this.deck.drawCard();
     if (!card) return null;
 
-    this.putCardInHand(card);
-    this.yPlayerState.set(YSTATE_DECK_CARD_COUNT, this.deck.getCardCount());
+    this.hand.addCardToTop(card);
+    this.syncToYState();
 
     return card;
   }
@@ -96,7 +110,7 @@ export class Player {
   // move board to hand. move hand, discard, and exile to deck. keep deck loaded. reset health
   // equivalent to resetting in IRL game
   public reset() {
-    // Step 1: Move all battlefield cards owned by this player to hand
+    // Step 1: Move all battlefield cards owned by this player back to deck
     const battlefieldCards: Card[] = [];
     this.yCardsOnBoard.forEach((card: any, cardId: string) => {
       if (card.ownerId === this.playerId) {
@@ -108,55 +122,45 @@ export class Player {
       }
     });
 
-    // Step 2: Get all cards from hand, discard, and exile
-    const hand = this.yPlayerState.get(YSTATE_HAND) ?? [];
-    const discardPile = this.yPlayerState.get(YSTATE_DISCARD_PILE) ?? [];
-    const exilePile = this.yPlayerState.get(YSTATE_EXILE_PILE) ?? [];
-
-    // Step 3: Move all cards (battlefield + hand + discard + exile) back to deck
-    [...battlefieldCards, ...hand, ...discardPile, ...exilePile].forEach(card => {
+    // Step 2: Move all cards from hand, discard, and exile back to deck
+    [...battlefieldCards, ...this.hand.getCards(), ...this.discardPile.getCards(), ...this.exilePile.getCards()].forEach(card => {
       this.deck.addCardToBottom(card);
     });
 
-    // Step 4: Clear all piles in synced state
-    this.yPlayerState.set(YSTATE_HAND, []);
-    this.yPlayerState.set(YSTATE_DISCARD_PILE, []);
-    this.yPlayerState.set(YSTATE_EXILE_PILE, []);
+    // Step 3: Clear all piles
+    this.hand.clear();
+    this.discardPile.clear();
+    this.exilePile.clear();
 
-    // Step 5: Reset health to initial value
+    // Step 4: Reset health to initial value
     this.yPlayerState.set(YSTATE_HEALTH, this.config.initialHealth);
 
-    // Step 6: Update deck count and shuffle
-    this.yPlayerState.set(YSTATE_DECK_CARD_COUNT, this.deck.getCardCount());
+    // Step 5: Shuffle deck and sync
     this.deck.shuffleDeck();
+    this.syncToYState();
   }
 
   public removeCardFromHand(cardId: string): Card | null {
-    const hand = this.yPlayerState.get(YSTATE_HAND) ?? [];
-    const cardIndex = hand.findIndex((c: Card) => c.id === cardId);
-
-    if (cardIndex === -1) return null;
-
-    const card = hand[cardIndex];
-    const newHand = [...hand.slice(0, cardIndex), ...hand.slice(cardIndex + 1)];
-    this.yPlayerState.set(YSTATE_HAND, newHand);
-
+    const card = this.hand.removeCard(cardId);
+    if (card) {
+      this.syncToYState();
+    }
     return card;
   }
 
   public putCardInHand(card: Card) {
-    const hand = this.yPlayerState.get(YSTATE_HAND) ?? [];
-    this.yPlayerState.set(YSTATE_HAND, [...hand, card]);
+    this.hand.addCardToTop(card);
+    this.syncToYState();
   }
 
   public moveCardToDiscard(card: Card): void {
-    const discardPile = this.yPlayerState.get(YSTATE_DISCARD_PILE) ?? [];
-    this.yPlayerState.set(YSTATE_DISCARD_PILE, [...discardPile, card]);
+    this.discardPile.addCardToTop(card);
+    this.syncToYState();
   }
 
   public moveCardToExile(card: Card): void {
-    const exilePile = this.yPlayerState.get(YSTATE_EXILE_PILE) ?? [];
-    this.yPlayerState.set(YSTATE_EXILE_PILE, [...exilePile, card]);
+    this.exilePile.addCardToTop(card);
+    this.syncToYState();
   }
 
   public setHealth(health: number): void {
@@ -174,19 +178,15 @@ export class Player {
 
   public mulligan(cardsToDraw: number = 7): void {
     // Move all cards from hand back to deck
-    const hand = this.yPlayerState.get(YSTATE_HAND) ?? [];
-    hand.forEach((card: Card) => {
+    this.hand.getCards().forEach((card: Card) => {
       this.deck.addCardToBottom(card);
     });
 
-    // Clear hand in synced state
-    this.yPlayerState.set(YSTATE_HAND, []);
+    // Clear hand
+    this.hand.clear();
 
     // Shuffle deck
     this.deck.shuffleDeck();
-
-    // Update deck count
-    this.yPlayerState.set(YSTATE_DECK_CARD_COUNT, this.deck.getCardCount());
 
     // Draw new hand
     for (let i = 0; i < cardsToDraw; i++) {
@@ -205,15 +205,27 @@ export class Player {
   public getDeck(): Deck {
     return this.deck;
   }
-  
+
+  public getHand(): Deck {
+    return this.hand;
+  }
+
+  public getExilePile(): Deck {
+    return this.exilePile;
+  }
+
+  public getDiscardPile(): Deck {
+    return this.discardPile;
+  }
+
   public moveCardToDeckTop(card: Card): void {
     this.deck.addCardToTop(card);
-    this.yPlayerState.set(YSTATE_DECK_CARD_COUNT, this.deck.getCardCount());
+    this.syncToYState();
   }
 
   public moveCardToDeckBottom(card: Card): void {
     this.deck.addCardToBottom(card);
-    this.yPlayerState.set(YSTATE_DECK_CARD_COUNT, this.deck.getCardCount());
+    this.syncToYState();
   }
 
   public onStateChange(callback: (state: PlayerState) => void): void {

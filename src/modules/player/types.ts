@@ -13,7 +13,7 @@ export interface PlayerState {
   hand: Card[];
   exilePile: Card[];
   discardPile: Card[];
-  deckCardCount: number;
+  deck: Card[];
   customCounters: CustomCounter[];
 }
 
