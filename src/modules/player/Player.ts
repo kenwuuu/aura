@@ -11,6 +11,7 @@ import {
   YSTATE_CUSTOM_COUNTERS,
   YSTATE_DECK
 } from "../../constants";
+import {PileType} from "../gameResourcesDock/components";
 
 export class Player {
   private playerId: string;
@@ -146,6 +147,17 @@ export class Player {
       this.syncToYState();
     }
     return card;
+  }
+
+  public drawCardFromPile(pile: PileType) {
+    switch (pile) {
+      case "deck":
+        return this.deck.drawCard();
+      case "discard":
+        return this.discard.drawCard();
+      case "exile":
+        return this.exile.drawCard();
+    }
   }
 
   public putCardInHand(card: Card) {
