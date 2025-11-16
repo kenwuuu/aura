@@ -764,6 +764,8 @@ export class GameResourcesDock {
           } else if (pileType === 'discard') {
             cards = state.discardPile;
           }
+          this.player.syncToYState();
+
           return cards.length > 0 ? cards[cards.length - 1] : null;
         },
         playHandCardToBattlefield: (cardId: string) => {
@@ -772,6 +774,7 @@ export class GameResourcesDock {
           if (card) {
             this.player.removeCardFromHand(cardId);
           }
+          this.player.syncToYState();
         },
         moveHandCardToDiscard: (cardId: string) => {
           const hand = this.player.getState().hand;
@@ -780,6 +783,7 @@ export class GameResourcesDock {
             this.player.moveCardToDiscard(card);
             this.player.removeCardFromHand(cardId);
           }
+          this.player.syncToYState();
         },
         moveHandCardToExile: (cardId: string) => {
           const hand = this.player.getState().hand;
@@ -788,6 +792,7 @@ export class GameResourcesDock {
             this.player.moveCardToExile(card);
             this.player.removeCardFromHand(cardId);
           }
+          this.player.syncToYState();
         },
         moveHandCardToDeckTop: (cardId: string) => {
           const hand = this.player.getState().hand;
@@ -796,6 +801,7 @@ export class GameResourcesDock {
             this.player.moveCardToDeckTop(card);
             this.player.removeCardFromHand(cardId);
           }
+          this.player.syncToYState();
         },
         moveHandCardToDeckBottom: (cardId: string) => {
           const hand = this.player.getState().hand;
@@ -804,6 +810,7 @@ export class GameResourcesDock {
             this.player.moveCardToDeckBottom(card);
             this.player.removeCardFromHand(cardId);
           }
+          this.player.syncToYState();
         },
         flipHandCard: (cardId: string) => {
           const hand = this.player.getState().hand;
@@ -814,6 +821,7 @@ export class GameResourcesDock {
             const updatedHand = hand.map(c => c.id === cardId ? updatedCard : c);
             this.player['yPlayerState'].set('hand', updatedHand);
           }
+          this.player.syncToYState();
         },
         movePileCardToBattlefield: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
           if (pileType === 'deck') {
@@ -839,6 +847,7 @@ export class GameResourcesDock {
               window.dispatchEvent(event);
             }
           }
+          this.player.syncToYState();
         },
         movePileCardToHand: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
           if (pileType === 'deck') {
@@ -855,6 +864,7 @@ export class GameResourcesDock {
               this.player['yPlayerState'].set('hand', [...hand, card]);
             }
           }
+          this.player.syncToYState();
         },
         movePileCardToExile: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
           if (pileType === 'exile') return; // Already in exile
@@ -874,6 +884,7 @@ export class GameResourcesDock {
               this.player.moveCardToExile(card);
             }
           }
+          this.player.syncToYState();
         },
         movePileCardToDiscard: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
           if (pileType === 'discard') return; // Already in discard
@@ -893,6 +904,7 @@ export class GameResourcesDock {
               this.player.moveCardToDiscard(card);
             }
           }
+          this.player.syncToYState();
         },
         movePileCardToDeckTop: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
           if (pileType === 'deck') return; // Already in deck
@@ -905,6 +917,7 @@ export class GameResourcesDock {
             this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
             this.player.moveCardToDeckTop(card);
           }
+          this.player.syncToYState();
         },
         movePileCardToDeckBottom: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
           if (pileType === 'deck') return; // Already in deck
@@ -917,6 +930,7 @@ export class GameResourcesDock {
             this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
             this.player.moveCardToDeckBottom(card);
           }
+          this.player.syncToYState();
         }
       };
     };
