@@ -853,16 +853,8 @@ export class GameResourcesDock {
           if (pileType === 'deck') {
             this.player.drawCard();
           } else {
-            const state = this.player.getState();
-            let pile: Card[] = pileType === 'exile' ? state.exilePile : state.discardPile;
-            const index = pile.findIndex(c => c.id === card.id);
-            if (index !== -1) {
-              pile.splice(index, 1);
-              this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
-
-              const hand = this.player.getState().hand;
-              this.player['yPlayerState'].set('hand', [...hand, card]);
-            }
+            const card = this.player.drawCardFromPile(pileType);
+            if (card) this.player.putCardOnPile(card, 'hand');
           }
           this.player.syncToYState();
         },

@@ -149,6 +149,17 @@ export class Player {
     return card;
   }
 
+  public putCardOnPile(card: Card, pile: PileType) {
+    switch (pile) {
+      case "hand":
+        return this.hand.addCardToTop(card);
+      case "discard":
+        return this.discard.addCardToTop(card);
+      case "exile":
+        return this.exile.addCardToTop(card);
+    }
+  }
+
   public drawCardFromPile(pile: PileType) {
     switch (pile) {
       case "deck":
