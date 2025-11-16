@@ -18,8 +18,8 @@ export class Player {
   private yCardsOnBoard: Y.Map<any>; // Battlefield cards
   private deck: Deck;
   private hand: Deck;
-  private exilePile: Deck;
-  private discardPile: Deck;
+  private exile: Deck;
+  private discard: Deck;
   private config: PlayerConfig;
 
   constructor(
@@ -31,8 +31,8 @@ export class Player {
     this.playerId = playerId;
     this.deck = deck;
     this.hand = new Deck([]);
-    this.exilePile = new Deck([]);
-    this.discardPile = new Deck([]);
+    this.exile = new Deck([]);
+    this.discard = new Deck([]);
     this.config = {
       initialHealth: config.initialHealth ?? 40,
     };
@@ -57,8 +57,8 @@ export class Player {
   private syncToYState(): void {
     this.yPlayerState.set(YSTATE_DECK, this.deck.getCards());
     this.yPlayerState.set(YSTATE_HAND, this.hand.getCards());
-    this.yPlayerState.set(YSTATE_EXILE_PILE, this.exilePile.getCards());
-    this.yPlayerState.set(YSTATE_DISCARD_PILE, this.discardPile.getCards());
+    this.yPlayerState.set(YSTATE_EXILE_PILE, this.exile.getCards());
+    this.yPlayerState.set(YSTATE_DISCARD_PILE, this.discard.getCards());
   }
 
   public getState(): PlayerState {
@@ -123,14 +123,14 @@ export class Player {
     });
 
     // Step 2: Move all cards from hand, discard, and exile back to deck
-    [...battlefieldCards, ...this.hand.getCards(), ...this.discardPile.getCards(), ...this.exilePile.getCards()].forEach(card => {
+    [...battlefieldCards, ...this.hand.getCards(), ...this.discard.getCards(), ...this.exile.getCards()].forEach(card => {
       this.deck.addCardToBottom(card);
     });
 
     // Step 3: Clear all piles
     this.hand.clear();
-    this.discardPile.clear();
-    this.exilePile.clear();
+    this.discard.clear();
+    this.exile.clear();
 
     // Step 4: Reset health to initial value
     this.yPlayerState.set(YSTATE_HEALTH, this.config.initialHealth);
@@ -154,12 +154,12 @@ export class Player {
   }
 
   public moveCardToDiscard(card: Card): void {
-    this.discardPile.addCardToTop(card);
+    this.discard.addCardToTop(card);
     this.syncToYState();
   }
 
   public moveCardToExile(card: Card): void {
-    this.exilePile.addCardToTop(card);
+    this.exile.addCardToTop(card);
     this.syncToYState();
   }
 
@@ -211,11 +211,11 @@ export class Player {
   }
 
   public getExilePile(): Deck {
-    return this.exilePile;
+    return this.exile;
   }
 
   public getDiscardPile(): Deck {
-    return this.discardPile;
+    return this.discard;
   }
 
   public moveCardToDeckTop(card: Card): void {
