@@ -55,7 +55,7 @@ export class Player {
   }
 
   // Sync local Deck instances to yPlayerState
-  private syncToYState(): void {
+  public syncToYState(): void {
     this.yPlayerState.set(YSTATE_DECK, this.deck.getCards());
     this.yPlayerState.set(YSTATE_HAND, this.hand.getCards());
     this.yPlayerState.set(YSTATE_EXILE_PILE, this.exile.getCards());
