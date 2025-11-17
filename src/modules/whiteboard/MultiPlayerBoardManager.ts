@@ -436,6 +436,18 @@ export class MultiPlayerBoardManager {
       }
     });
 
+    cardElement.addEventListener('touchstart', (e: TouchEvent) => {
+      this.keyboardHandler.setHoveredCard(card.id);
+      // Get latest card state from Yjs to avoid stale closures
+      const latestCard = this.yCards.get(card.id) || card;
+      this.cardPreview.show(latestCard);
+
+      // Show tooltip menu on hover for local player's cards (delayed)
+      if (card.ownerId === this.localPlayerId) {
+        this.tooltipManager.showOnHover(card.id, HotkeyContext.Battlefield);
+      }
+    });
+
     cardElement.addEventListener('mousemove', (e: MouseEvent) => {
       this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
       this.cardPreview.updatePositionWithMouse(e);
@@ -603,6 +615,29 @@ export class MultiPlayerBoardManager {
   }
 
   private onMouseMove(e: MouseEvent): void {
+    if (!this.dragState.cardId) return;
+
+    const card = this.cards.get(this.dragState.cardId);
+    if (!card || card.ownerId !== this.localPlayerId) return;
+
+    // Check if we've moved enough to consider this a drag
+    if (this.mousePosition && !this.isDragging) {
+      const dx = Math.abs(e.clientX - this.mousePosition.x);
+      const dy = Math.abs(e.clientY - this.mousePosition.y);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance >= this.DRAG_THRESHOLD) {
+        this.isDragging = true;
+      }
+    }
+
+    const x = e.clientX - this.dragState.offsetX;
+    const y = e.clientY - this.dragState.offsetY;
+
+    const updatedCard = { ...card, x, y };
+    this.yCards.set(this.dragState.cardId, updatedCard);
+  }
+
+  private onTouchMove(e: MouseEvent): void {
     if (!this.dragState.cardId) return;
 
     const card = this.cards.get(this.dragState.cardId);
