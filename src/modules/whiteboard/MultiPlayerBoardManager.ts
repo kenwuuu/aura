@@ -439,13 +439,17 @@ export class MultiPlayerBoardManager {
     cardElement.addEventListener('touchstart', (e: TouchEvent) => {
       this.keyboardHandler.setHoveredCard(card.id);
       // Get latest card state from Yjs to avoid stale closures
-      const latestCard = this.yCards.get(card.id) || card;
-      this.cardPreview.show(latestCard);
 
-      // Show tooltip menu on hover for local player's cards (delayed)
-      if (card.ownerId === this.localPlayerId) {
-        this.tooltipManager.showOnHover(card.id, HotkeyContext.Battlefield);
-      }
+      this.mousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      this.isDragging = false;
+      this.onTouchStart(e, card.id);
+    });
+
+    cardElement.addEventListener('mousedown', (e) => {
+      // Store mouse down position to detect drags
+      this.mousePosition = { x: e.clientX, y: e.clientY };
+      this.isDragging = false;
+      this.onMouseDown(e, card.id);
     });
 
     cardElement.addEventListener('mousemove', (e: MouseEvent) => {
@@ -488,13 +492,6 @@ export class MultiPlayerBoardManager {
       // Always clear drag state after click handler
       this.mousePosition = null;
       this.isDragging = false;
-    });
-
-    cardElement.addEventListener('mousedown', (e) => {
-      // Store mouse down position to detect drags
-      this.mousePosition = { x: e.clientX, y: e.clientY };
-      this.isDragging = false;
-      this.onMouseDown(e, card.id);
     });
 
     return cardElement;
@@ -558,6 +555,35 @@ export class MultiPlayerBoardManager {
     const cardElement = container.querySelector(`[data-card-id="${cardId}"]`);
     if (cardElement) {
       cardElement.remove();
+    }
+  }
+
+  private onTouchStart(e: TouchEvent, cardId: string): void {
+    e.preventDefault();
+    const card = this.cards.get(cardId);
+    if (!card || card.ownerId !== this.localPlayerId) return;
+
+    this.dragState = {
+      cardId,
+      offsetX: e.touches[0].clientX - card.x,
+      offsetY: e.touches[0].clientY - card.y,
+    };
+
+    // Hide tooltip
+    this.tooltipManager.hide();
+
+    // Bring card to front
+    const updatedCard = { ...card, zIndex: ++this.maxZIndex };
+    this.yCards.set(cardId, updatedCard);
+
+    const container = this.boardContainerManager.getContainer(card.ownerId);
+    if (!container) return;
+
+    const cardElement = container.querySelector(
+      `[data-card-id="${cardId}"]`
+    ) as HTMLElement;
+    if (cardElement) {
+      cardElement.style.cursor = 'grabbing';
     }
   }
 
