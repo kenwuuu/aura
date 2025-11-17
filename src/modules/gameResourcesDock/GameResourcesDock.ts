@@ -458,8 +458,6 @@ export class GameResourcesDock {
       cardEl.addEventListener('touchstart', () => {
         this.hoveredHandCardId = card.id;
         this.hoveredResource = null;
-        this.cardPreview.show(card);
-        this.updateHotkeyTooltip();
       });
 
       cardEl.addEventListener('mousemove', (e: MouseEvent) => {

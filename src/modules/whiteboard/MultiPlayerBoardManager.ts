@@ -448,6 +448,17 @@ export class MultiPlayerBoardManager {
       this.tooltipManager.hideOnLeave();
     });
 
+
+    cardElement.addEventListener('touchmove', (e: TouchEvent) => {
+      this.cardPreview.updatePositionWithTouch(e);
+    });
+
+    cardElement.addEventListener('touchend', () => {
+      this.keyboardHandler.setHoveredCard(null);
+      this.cardPreview.hide();
+      this.tooltipManager.hideOnLeave();
+    });
+
     // Handle click for tooltip menu (distinguish from drag)
     cardElement.addEventListener('click', (e: MouseEvent) => {
       // Only show menu if this was a click (not a drag) and it's the same card
@@ -667,6 +678,7 @@ export class MultiPlayerBoardManager {
 
   private attachEventListeners(): void {
     document.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    document.addEventListener('touchmove', (e) => this.onMouseMove(e));
     document.addEventListener('mouseup', (e) => this.onMouseUp(e));
     window.addEventListener('resize', () => this.boardContainerManager.recenterAll());
   }
