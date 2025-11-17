@@ -438,7 +438,7 @@ export class MultiPlayerBoardManager {
 
     cardElement.addEventListener('mousemove', (e: MouseEvent) => {
       this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
-      this.cardPreview.updatePosition(e);
+      this.cardPreview.updatePositionWithMouse(e);
       this.mousePosition = { x: e.clientX, y: e.clientY };
     });
 

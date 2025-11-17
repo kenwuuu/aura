@@ -455,11 +455,11 @@ export class GameResourcesDock {
       });
 
       cardEl.addEventListener('mousemove', (e: MouseEvent) => {
-        this.cardPreview.updatePosition(e);
+        this.cardPreview.updatePositionWithMouse(e);
       });
 
       cardEl.addEventListener('touchmove', (e: TouchEvent) => {
-        this.cardPreview.updatePosition(e);
+        this.cardPreview.updatePositionWithTouch(e);
       });
 
       cardEl.addEventListener('mouseleave', () => {
