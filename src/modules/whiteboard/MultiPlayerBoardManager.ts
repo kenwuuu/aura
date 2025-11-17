@@ -637,24 +637,25 @@ export class MultiPlayerBoardManager {
     this.yCards.set(this.dragState.cardId, updatedCard);
   }
 
-  private onTouchMove(e: MouseEvent): void {
+  private onTouchMove(e: TouchEvent): void {
     if (!this.dragState.cardId) return;
 
     const card = this.cards.get(this.dragState.cardId);
     if (!card || card.ownerId !== this.localPlayerId) return;
 
+    const touch = e.touches[0];
     // Check if we've moved enough to consider this a drag
     if (this.mousePosition && !this.isDragging) {
-      const dx = Math.abs(e.clientX - this.mousePosition.x);
-      const dy = Math.abs(e.clientY - this.mousePosition.y);
+      const dx = Math.abs(touch.clientX - this.mousePosition.x);
+      const dy = Math.abs(touch.clientY - this.mousePosition.y);
       const distance = Math.sqrt(dx * dx + dy * dy);
       if (distance >= this.DRAG_THRESHOLD) {
         this.isDragging = true;
       }
     }
 
-    const x = e.clientX - this.dragState.offsetX;
-    const y = e.clientY - this.dragState.offsetY;
+    const x = touch.clientX - this.dragState.offsetX;
+    const y = touch.clientY - this.dragState.offsetY;
 
     const updatedCard = { ...card, x, y };
     this.yCards.set(this.dragState.cardId, updatedCard);
@@ -713,7 +714,7 @@ export class MultiPlayerBoardManager {
 
   private attachEventListeners(): void {
     document.addEventListener('mousemove', (e) => this.onMouseMove(e));
-    document.addEventListener('touchmove', (e) => this.onMouseMove(e));
+    document.addEventListener('touchmove', (e) => this.onTouchMove(e));
     document.addEventListener('mouseup', (e) => this.onMouseUp(e));
     window.addEventListener('resize', () => this.boardContainerManager.recenterAll());
   }
