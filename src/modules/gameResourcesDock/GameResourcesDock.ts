@@ -454,6 +454,14 @@ export class GameResourcesDock {
         this.updateHotkeyTooltip();
       });
 
+      // Add hover event listeners for keyboard shortcuts, card preview, and tooltip
+      cardEl.addEventListener('touchstart', () => {
+        this.hoveredHandCardId = card.id;
+        this.hoveredResource = null;
+        this.cardPreview.show(card);
+        this.updateHotkeyTooltip();
+      });
+
       cardEl.addEventListener('mousemove', (e: MouseEvent) => {
         this.cardPreview.updatePositionWithMouse(e);
       });
@@ -463,6 +471,12 @@ export class GameResourcesDock {
       });
 
       cardEl.addEventListener('mouseleave', () => {
+        this.hoveredHandCardId = null;
+        this.cardPreview.hide();
+        this.updateHotkeyTooltip();
+      });
+
+      cardEl.addEventListener('touchend', () => {
         this.hoveredHandCardId = null;
         this.cardPreview.hide();
         this.updateHotkeyTooltip();
