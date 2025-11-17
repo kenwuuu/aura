@@ -458,6 +458,10 @@ export class GameResourcesDock {
         this.cardPreview.updatePosition(e);
       });
 
+      cardEl.addEventListener('touchmove', (e: TouchEvent) => {
+        this.cardPreview.updatePosition(e);
+      });
+
       cardEl.addEventListener('mouseleave', () => {
         this.hoveredHandCardId = null;
         this.cardPreview.hide();

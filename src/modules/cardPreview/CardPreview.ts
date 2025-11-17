@@ -1,5 +1,6 @@
 import { Card } from '../deck';
 import { DEFAULT_CARD_BACK } from '../../constants';
+import {MouseEvent} from "happy-dom";
 
 export class CardPreview {
   // Constants
@@ -106,9 +107,16 @@ export class CardPreview {
     this.previewElement.style.display = CardPreview.DISPLAY_VISIBLE;
   }
 
-  public updatePosition(mouseEvent: MouseEvent): void {
-    this.currentMouseX = mouseEvent.clientX;
-    this.currentMouseY = mouseEvent.clientY;
+  public updatePosition(mouseEvent: MouseEvent | TouchEvent): void {
+    if (mouseEvent instanceof MouseEvent) {
+      this.currentMouseX = mouseEvent.clientX;
+      this.currentMouseY = mouseEvent.clientY;
+    } else {
+      const touch = mouseEvent.touches[0];
+      this.currentMouseX = touch.clientX;
+      this.currentMouseY = touch.clientY;
+    }
+
     this.updatePreviewPosition();
   }
 
