@@ -618,21 +618,7 @@ export class GameResourcesDock {
   }
 
   private handlePileViewerCardToExile(card: Card, pileType: 'discard' | 'deck'): void {
-    const state = this.player.getState();
-
-    if (pileType === 'deck') {
-      // Remove from deck (local)
-      this.player['deck'].removeCardById(card.id);
-    } else if (pileType === 'discard') {
-      // Remove from discard pile
-      const pile = state.discardPile;
-      const index = pile.findIndex(c => c.id === card.id);
-      if (index !== -1) {
-        pile.splice(index, 1);
-        this.player['yPlayerState'].set(YSTATE_DISCARD_PILE, pile);
-      }
-    }
-
+    this.player.removeCardFromPileById(card.id, pileType)
     this.player.placeCardInPile(card, 'exile');
 
     // Update viewer with new card list
@@ -640,23 +626,8 @@ export class GameResourcesDock {
   }
 
   private handlePileViewerCardToDiscard(card: Card, pileType: 'exile' | 'deck' | 'scry'): void {
-    const state = this.player.getState();
-
-    if (pileType === 'deck') {
-      // Remove from deck (local)
-      this.player['deck'].removeCardById(card.id);
-    } else if (pileType === 'scry') {
-      this.scriedCards.removeCardById(card.id);
-    } else if (pileType === 'exile') {
-      // Remove from exile pile
-      const pile = state.exilePile;
-      const index = pile.findIndex(c => c.id === card.id);
-      if (index !== -1) {
-        pile.splice(index, 1);
-        this.player['yPlayerState'].set('exilePile', pile);
-      }
-    }
-
+    console.log('handlepilevierewcard to discard')
+    this.player.removeCardFromPileById(card.id, pileType)
     this.player.placeCardInPile(card, 'discard');
 
     // Update viewer with new card list
@@ -664,48 +635,16 @@ export class GameResourcesDock {
   }
 
   private handlePileViewerCardToDeckTop(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
-    const state = this.player.getState();
-
-    if (pileType === 'deck') {
-      // Remove from deck (local) and add back to top
-      this.player['deck'].removeCardById(card.id);
-    } else if (pileType === 'scry') {
-      this.scriedCards.removeCardById(card.id);
-    } else {
-      // Remove from exile or discard pile
-      const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
-      const index = pile.findIndex(c => c.id === card.id);
-      if (index !== -1) {
-        pile.splice(index, 1);
-        this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
-      }
-    }
-
-    this.player.moveCardToDeckTop(card);
+    this.player.removeCardFromPileById(card.id, pileType)
+    this.player.placeCardInPile(card, 'deck');
 
     // Update viewer with new card list
     this.updatePileViewer(pileType);
   }
 
   private handlePileViewerCardToDeckBottom(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
-    const state = this.player.getState();
-
-    if (pileType === 'deck') {
-      // Remove from deck (local) and add back to bottom
-      this.player['deck'].removeCardById(card.id);
-    } else if (pileType === 'scry') {
-      this.scriedCards.removeCardById(card.id);
-    } else {
-      // Remove from exile or discard pile
-      const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
-      const index = pile.findIndex(c => c.id === card.id);
-      if (index !== -1) {
-        pile.splice(index, 1);
-        this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
-      }
-    }
-
-    this.player.moveCardToDeckBottom(card);
+    this.player.removeCardFromPileById(card.id, pileType)
+    this.player.placeCardInPile(card, 'deck', 0);
 
     // Update viewer with new card list
     this.updatePileViewer(pileType);
@@ -870,14 +809,7 @@ export class GameResourcesDock {
             this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
             this.player.placeCardInPile(card, 'discard');
           } else {
-            const state = this.player.getState();
-            let pile: Card[] = state.exilePile;
-            const index = pile.findIndex(c => c.id === card.id);
-            if (index !== -1) {
-              pile.splice(index, 1);
-              this.player['yPlayerState'].set('exilePile', pile);
-              this.player.placeCardInPile(card, 'discard');
-            }
+            this.player.placeCardInPile(card, 'discard');
           }
           this.player.syncToYState();
         },
