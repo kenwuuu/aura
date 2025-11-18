@@ -278,7 +278,7 @@ export class GameResourcesDock {
     // Click deck to view it (with search and sort)
     deck.onclick = (e) => {
       if (e.target !== drawButton && e.target !== scryButton) {
-        this.viewDeck();
+        this.viewPile('deck');
       }
     };
 
@@ -693,17 +693,25 @@ export class GameResourcesDock {
     this.scryViewer.show(this.scriedCards.getCards(), 'scry');
   }
 
-  private viewPile(pileType: 'exile' | 'discard'): void {
-    const state = this.player.getState();
-    const cards = pileType === 'exile' ? state.exilePile : state.discardPile;
-    const viewer = pileType === 'exile' ? this.exileViewer : this.discardViewer;
+  private viewPile(pileType: 'exile' | 'discard' | 'deck'): void {    let result = null;
+    let cards;
+    let pileViewer;
+    switch (pileType) {
+      case "deck":
+        cards = this.player.getDeck().getCards();
+        pileViewer = this.deckViewer;
+        break;
+      case "discard":
+        cards = this.player.getDiscardPile().getCards();
+        pileViewer = this.discardViewer;
+        break;
+      case "exile":
+        cards = this.player.getExilePile().getCards();
+        pileViewer = this.exileViewer;
+        break;
+    }
 
-    viewer.show(cards, pileType);
-  }
-
-  private viewDeck(): void {
-    const cards = this.player.getDeckCards();
-    this.deckViewer.show(cards, 'deck');
+    pileViewer.show(cards, pileType);
   }
 
   // Handler methods for pile viewer callbacks
