@@ -644,6 +644,7 @@ export class MultiPlayerBoardManager {
     const img = document.createElement('img');
     img.src = token.imageUrl;
     img.alt = 'token';
+    img.className = 'svg-black'; // Make SVGs fully black
     img.style.width = '70%'; // Smaller than container to leave padding
     img.style.height = '70%';
     img.style.objectFit = 'contain';
@@ -662,7 +663,15 @@ export class MultiPlayerBoardManager {
     countElement.style.fontSize = '24px';
     countElement.style.fontWeight = 'bold';
     countElement.style.color = 'white';
-    countElement.style.textShadow = '0 0 4px black, 0 0 8px black';
+    // Strong text shadow for readability - multiple layers create outline effect
+    countElement.style.textShadow = `
+      -2px -2px 0 black,
+      2px -2px 0 black,
+      -2px 2px 0 black,
+      2px 2px 0 black,
+      0 0 8px black,
+      0 0 12px black
+    `;
     countElement.style.pointerEvents = 'none';
     countElement.style.userSelect = 'none';
     countElement.textContent = token.count.toString();
