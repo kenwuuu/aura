@@ -466,7 +466,7 @@ class AuraApp {
     root.render(
       React.createElement(AddCardManager, {
         scryfallApiService: this.scryfallApiService,
-        onAddCard: (card) => this.localPlayer.putCardInHand(card),
+        onAddCard: (card) => this.localPlayer.placeCardInPile(card, 'hand'),
       })
     );
   }

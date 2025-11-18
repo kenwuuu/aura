@@ -189,11 +189,6 @@ export class Player {
     return card;
   }
 
-  public putCardInHand(card: Card) {
-    this.hand.addCardToTop(card);
-    this.syncToYState();
-  }
-
   public moveCardToDiscard(card: Card): void {
     this.discard.addCardToTop(card);
     this.syncToYState();
@@ -214,6 +209,7 @@ export class Player {
   }
 
   public placeCardInPile(card: Card, pileType: PileType, position: number = Infinity) {
+    // Places card on top of pile by default
     switch (pileType) {
       case "deck":
         this.deck.placeCardAtPosition(card, position);

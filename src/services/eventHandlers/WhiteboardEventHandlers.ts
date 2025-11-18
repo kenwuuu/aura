@@ -106,7 +106,7 @@ export class WhiteboardEventHandlers {
 
     // Add card to the appropriate pile
     if (destination === 'hand') {
-      this.localPlayer.putCardInHand(baseCard as any);
+      this.localPlayer.placeCardInPile(baseCard, 'hand');
     } else if (destination === 'exile') {
       this.localPlayer.moveCardToExile(baseCard as any);
     } else if (destination === 'discard') {

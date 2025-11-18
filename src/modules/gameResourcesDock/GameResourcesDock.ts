@@ -612,23 +612,8 @@ export class GameResourcesDock {
   }
 
   private handlePileViewerCardToHand(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
-    if (pileType === 'deck') {
-      // Remove card from deck
-      this.player['deck'].removeCardById(card.id);
-      this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
-    } else {
-      // Remove from exile or discard pile
-      const state = this.player.getState();
-      const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
-      const index = pile.findIndex(c => c.id === card.id);
-      if (index !== -1) {
-        pile.splice(index, 1);
-        // TODO: add remove from top/bottom functions to PileViewer or whatever class this is
-        this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
-      }
-    }
-
-    this.player.putCardInHand(card);
+    this.player.removeCardFromPileById(card.id, pileType)
+    this.player.placeCardInPile(card, 'hand');
 
     // Update viewer with new card list
     this.updatePileViewer(pileType);
