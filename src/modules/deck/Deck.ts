@@ -3,7 +3,7 @@ import { Card } from './types';
 export class Deck {
   private cards: Card[] = [];
 
-  constructor(cards?: Card[]) {
+  constructor(cards?: Card[], numDummyCards?: number) {
     // Use provided cards if available, otherwise initialize with blank cards
     if (cards && cards.length > 0) {
       // Regenerate unique IDs for all cards to prevent collisions when multiple players use the same deck
@@ -12,11 +12,11 @@ export class Deck {
         id: `card-${Math.random().toString(36).substring(2, 11)}`,
       }));
     } else {
-      this.initializeDeckWithDummyCards(0);
+      this.initializeDeckWithDummyCards(numDummyCards);
     }
   }
 
-  private initializeDeckWithDummyCards(numDummyCards: number): void {
+  private initializeDeckWithDummyCards(numDummyCards: number = 0): void {
     for (let i = 0; i < numDummyCards; i++) {
       this.cards.push({
         id: `card-${Math.random().toString(36).substring(2, 11)}`,

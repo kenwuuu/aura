@@ -18,7 +18,7 @@ describe('Player.reset()', () => {
 
     // Create a deck with default initialization (60 cards, no commander)
     // This avoids the cards[99] commander logic in Deck constructor
-    deck = new Deck(10);
+    deck = new Deck(undefined, 10);
 
     // Create player with initial health of 40
     player = new Player(playerId, yDoc, deck, { initialHealth: 40 });
@@ -31,7 +31,7 @@ describe('Player.reset()', () => {
       expect(state.hand).toEqual([]);
       expect(state.discardPile).toEqual([]);
       expect(state.exilePile).toEqual([]);
-      expect(state.deckCardCount).toBe(10);
+      expect(player.getDeck().getCardCount()).toBe(10);
     });
   });
 
@@ -44,7 +44,7 @@ describe('Player.reset()', () => {
 
       // Verify hand has 3 cards
       expect(player.getState().hand.length).toBe(3);
-      expect(player.getState().deckCardCount).toBe(7);
+      expect(player.getDeck().getCardCount()).toBe(7);
 
       // Modify health
       player.setHealth(15);
@@ -59,7 +59,7 @@ describe('Player.reset()', () => {
       expect(state.discardPile).toEqual([]);
       expect(state.exilePile).toEqual([]);
       expect(state.health).toBe(40); // Reset to initial
-      expect(state.deckCardCount).toBe(10); // All cards back in deck
+      expect(player.getDeck().getCardCount()).toBe(10); // All cards back in deck
     });
   });
 
@@ -90,20 +90,20 @@ describe('Player.reset()', () => {
 
       // Keep card4 and card5 in hand
       const stateBefore = player.getState();
-      expect(stateBefore.hand.length).toBe(2); // card4, card5
-      expect(stateBefore.discardPile.length).toBe(2); // card1, card2
-      expect(stateBefore.exilePile.length).toBe(1); // card3
-      expect(stateBefore.deckCardCount).toBe(5); // 10 - 5 drawn
+      expect(player.getHand().getCardCount()).toBe(2); // card4, card5
+      expect(player.getDiscardPile().getCardCount()).toBe(2); // card1, card2
+      expect(player.getExilePile().getCardCount()).toBe(1); // card3
+      expect(player.getDeck().getCardCount()).toBe(5); // 10 - 5 drawn
 
       // Reset
       player.reset();
 
       // Verify all cards back in deck
       const stateAfter = player.getState();
-      expect(stateAfter.hand).toEqual([]);
-      expect(stateAfter.discardPile).toEqual([]);
-      expect(stateAfter.exilePile).toEqual([]);
-      expect(stateAfter.deckCardCount).toBe(10); // All 10 cards back
+      expect(player.getHand().getCards()).toEqual([]);
+      expect(player.getDiscardPile().getCards()).toEqual([]);
+      expect(player.getExilePile().getCards()).toEqual([]);
+      expect(player.getDeck().getCardCount()).toBe(10); // All 10 cards back
     });
   });
 
@@ -140,7 +140,7 @@ describe('Player.reset()', () => {
       // Verify state before reset
       expect(yCards.size).toBe(2); // 2 cards on battlefield
       expect(player.getState().hand.length).toBe(1); // card3 still in hand
-      expect(player.getState().deckCardCount).toBe(7); // 10 - 3 drawn
+      expect(player.getDeck().getCardCount()).toBe(7); // 10 - 3 drawn
 
       // Reset
       player.reset();
@@ -151,7 +151,7 @@ describe('Player.reset()', () => {
       // Verify all cards back in deck
       const state = player.getState();
       expect(state.hand).toEqual([]);
-      expect(state.deckCardCount).toBe(10);
+      expect(player.getDeck().getCardCount()).toBe(10);
     });
 
     it('should NOT remove opponent\'s cards from battlefield', () => {
@@ -241,7 +241,7 @@ describe('Player.reset()', () => {
       expect(stateBefore.discardPile.length).toBe(2); // 2 in discard
       expect(stateBefore.exilePile.length).toBe(1); // 1 in exile
       expect(stateBefore.health).toBe(12);
-      expect(stateBefore.deckCardCount).toBe(2); // 10 - 8 drawn
+      expect(player.getDeck().getCardCount()).toBe(2); // 10 - 8 drawn
 
       // Reset
       player.reset();
@@ -253,7 +253,7 @@ describe('Player.reset()', () => {
       expect(stateAfter.discardPile).toEqual([]);
       expect(stateAfter.exilePile).toEqual([]);
       expect(stateAfter.health).toBe(40); // Back to initial
-      expect(stateAfter.deckCardCount).toBe(10); // All cards back
+      expect(player.getDeck().getCardCount()).toBe(10); // All cards back
     });
   });
 
@@ -261,7 +261,7 @@ describe('Player.reset()', () => {
     it('should handle reset when no cards have been drawn', () => {
       // Don't draw any cards
       expect(player.getState().hand).toEqual([]);
-      expect(player.getState().deckCardCount).toBe(10);
+      expect(player.getDeck().getCardCount()).toBe(10);
 
       // Reset should work without errors
       player.reset();
@@ -272,7 +272,7 @@ describe('Player.reset()', () => {
       expect(state.discardPile).toEqual([]);
       expect(state.exilePile).toEqual([]);
       expect(state.health).toBe(40);
-      expect(state.deckCardCount).toBe(10);
+      expect(player.getDeck().getCardCount()).toBe(10);
     });
   });
 
@@ -287,14 +287,14 @@ describe('Player.reset()', () => {
       }
 
       // All cards drawn
-      expect(player.getState().deckCardCount).toBe(0);
+      expect(player.getDeck().getCardCount()).toBe(0);
       expect(player.getState().hand.length).toBe(10);
 
       // Reset (which includes shuffle)
       player.reset();
 
       // Deck should have all cards back
-      expect(player.getState().deckCardCount).toBe(10);
+      expect(player.getDeck().getCardCount()).toBe(10);
 
       // Draw cards again - order should be different (shuffled)
       // Note: There's a tiny chance they're the same, but very unlikely with 10 cards
@@ -320,7 +320,7 @@ describe('Player.drawCard()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    deck = new Deck(5);
+    deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -329,7 +329,7 @@ describe('Player.drawCard()', () => {
 
     expect(card).not.toBeNull();
     expect(player.getState().hand.length).toBe(1);
-    expect(player.getState().deckCardCount).toBe(4);
+    expect(player.getDeck().getCardCount()).toBe(4);
   });
 
   it('should return null when deck is empty', () => {
@@ -344,7 +344,7 @@ describe('Player.drawCard()', () => {
     const card = player.drawCard();
     expect(card).toBeNull();
     expect(player.getState().hand.length).toBe(5);
-    expect(player.getState().deckCardCount).toBe(0);
+    expect(player.getDeck().getCardCount()).toBe(0);
   });
 
   it('should update Yjs state with drawn card', () => {
@@ -361,7 +361,7 @@ describe('Player.playCardFromHand()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -395,7 +395,7 @@ describe('Player.moveCardToDiscard()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -431,7 +431,7 @@ describe('Player.placeCardInPile()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -467,7 +467,7 @@ describe('Player.setHealth()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -493,7 +493,7 @@ describe('Player.modifyHealth()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -522,16 +522,16 @@ describe('Player.shuffleDeck()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(10);
+    const deck = new Deck(undefined, 10);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
   it('should shuffle deck without changing card count', () => {
-    const initialCount = player.getState().deckCardCount;
+    const initialCount = player.getDeck().getCardCount();
 
     player.shuffleDeck();
 
-    expect(player.getState().deckCardCount).toBe(initialCount);
+    expect(player.getDeck().getCardCount()).toBe(initialCount);
   });
 
   it('should change card order (probabilistic test)', () => {
@@ -566,18 +566,18 @@ describe('Player.moveCardToDeckTop()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
   it('should add card to top of deck', () => {
     const card = player.drawCard();
-    const initialCount = player.getState().deckCardCount;
+    const initialCount = player.getDeck().getCardCount();
 
     if (card) {
       player.moveCardToDeckTop(card);
 
-      expect(player.getState().deckCardCount).toBe(initialCount + 1);
+      expect(player.getDeck().getCardCount()).toBe(initialCount + 1);
 
       // Next drawn card should be the one we put on top
       const drawnCard = player.drawCard();
@@ -587,11 +587,11 @@ describe('Player.moveCardToDeckTop()', () => {
 
   it('should update deck count in Yjs state', () => {
     const card = player.drawCard();
-    const countBefore = player.getState().deckCardCount;
+    const countBefore = player.getDeck().getCardCount();
 
     if (card) {
       player.moveCardToDeckTop(card);
-      expect(player.getState().deckCardCount).toBe(countBefore + 1);
+      expect(player.getDeck().getCardCount()).toBe(countBefore + 1);
     }
   });
 });
@@ -602,18 +602,18 @@ describe('Player.moveCardToDeckBottom()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(3);
+    const deck = new Deck(undefined, 3);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
   it('should add card to bottom of deck', () => {
     const card = player.drawCard();
-    const initialCount = player.getState().deckCardCount;
+    const initialCount = player.getDeck().getCardCount();
 
     if (card) {
       player.moveCardToDeckBottom(card);
 
-      expect(player.getState().deckCardCount).toBe(initialCount + 1);
+      expect(player.getDeck().getCardCount()).toBe(initialCount + 1);
 
       // Draw all remaining cards
       player.drawCard();
@@ -627,11 +627,11 @@ describe('Player.moveCardToDeckBottom()', () => {
 
   it('should update deck count in Yjs state', () => {
     const card = player.drawCard();
-    const countBefore = player.getState().deckCardCount;
+    const countBefore = player.getDeck().getCardCount();
 
     if (card) {
       player.moveCardToDeckBottom(card);
-      expect(player.getState().deckCardCount).toBe(countBefore + 1);
+      expect(player.getDeck().getCardCount()).toBe(countBefore + 1);
     }
   });
 });
@@ -642,7 +642,7 @@ describe('Player.mulligan()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(20);
+    const deck = new Deck(undefined, 20);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -655,13 +655,13 @@ describe('Player.mulligan()', () => {
     player.drawCard();
 
     expect(player.getState().hand.length).toBe(5);
-    expect(player.getState().deckCardCount).toBe(15);
+    expect(player.getDeck().getCardCount()).toBe(15);
 
     // Mulligan
     player.mulligan(7);
 
     expect(player.getState().hand.length).toBe(7);
-    expect(player.getState().deckCardCount).toBe(13); // 20 - 7
+    expect(player.getDeck().getCardCount()).toBe(13); // 20 - 7
   });
 
   it('should work with custom draw count', () => {
@@ -676,7 +676,7 @@ describe('Player.mulligan()', () => {
     player.mulligan(5);
 
     expect(player.getState().hand.length).toBe(5);
-    expect(player.getState().deckCardCount).toBe(15); // 20 - 5
+    expect(player.getDeck().getCardCount()).toBe(15); // 20 - 5
   });
 
   it('should shuffle deck during mulligan', () => {
@@ -719,12 +719,12 @@ describe('Player.mulligan()', () => {
       player.drawCard();
     }
 
-    expect(player.getState().deckCardCount).toBe(16);
+    expect(player.getDeck().getCardCount()).toBe(16);
 
     // Mulligan draws 7
     player.mulligan(7);
 
-    expect(player.getState().deckCardCount).toBe(13); // 20 - 7
+    expect(player.getDeck().getCardCount()).toBe(13); // 20 - 7
   });
 });
 
@@ -734,7 +734,7 @@ describe('Player.loadNewDeck()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -750,12 +750,12 @@ describe('Player.loadNewDeck()', () => {
       counters: [],
     }));
 
-    const newDeck = new Deck(10, newDeckCards);
+    const newDeck = new Deck(undefined, 10);
     await player.loadNewDeck(newDeck);
 
     // Should draw 1 card (commander) + 7 cards = 8 total in hand, 2 remaining in deck
-    expect(player.getState().hand.length).toBe(8);
-    expect(player.getState().deckCardCount).toBe(2);
+    expect(player.getHand().getCardCount()).toBe(8);
+    expect(player.getDeck().getCardCount()).toBe(2);
   });
 
   it('should shuffle deck after loading', () => {
@@ -770,7 +770,7 @@ describe('Player.loadNewDeck()', () => {
       counters: [],
     }));
 
-    const newDeck = new Deck(15, newDeckCards);
+    const newDeck = new Deck(undefined, 15);
 
     // Load deck (draws commander, then shuffles)
     player.loadNewDeck(newDeck);
@@ -799,7 +799,7 @@ describe('Player.getId()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player-123', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -814,7 +814,7 @@ describe('Player.getDeckCards()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
@@ -838,7 +838,7 @@ describe('Player.onStateChange()', () => {
 
   beforeEach(() => {
     yDoc = new Y.Doc();
-    const deck = new Deck(5);
+    const deck = new Deck(undefined, 5);
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
