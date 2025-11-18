@@ -1,7 +1,7 @@
 import { Player, PlayerState } from '../player';
 import { GameResourcesDockConfig } from './types';
 import {Card, Deck} from '../deck';
-import { DeckPileViewer } from './components';
+import { PileType, DeckPileViewer } from './components';
 import { CardPreview } from '../cardPreview';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
@@ -359,14 +359,12 @@ export class GameResourcesDock {
 
         if (!this.draggedCard) return;
 
-        const pileType = pile.dataset.pileType;
-        if (pileType === 'exile') {
-          this.player.moveCardToExile(this.draggedCard.card);
-        } else if (pileType === 'discard') {
-          this.player.moveCardToDiscard(this.draggedCard.card);
-        } else if (pileType === 'deck') {
-          this.player.moveCardToDeckTop(this.draggedCard.card);
+        function isPileType(value: string): value is PileType {
+          return ['deck', 'exile', 'discard', 'hand', 'scry'].includes(value);
         }
+
+        const pileType = pile.dataset.pileType;
+        if (pileType && isPileType(pileType)) this.player.placeCardInPile(this.draggedCard.card, pileType);
 
         this.player.removeCardFromHand(this.draggedCard.card.id);
         this.draggedCard = null;
@@ -635,7 +633,7 @@ export class GameResourcesDock {
       }
     }
 
-    this.player.moveCardToExile(card);
+    this.player.placeCardInPile(card, 'exile');
 
     // Update viewer with new card list
     this.updatePileViewer(pileType);
@@ -774,7 +772,7 @@ export class GameResourcesDock {
           const hand = this.player.getState().hand;
           const card = hand.find(c => c.id === cardId);
           if (card) {
-            this.player.moveCardToExile(card);
+            this.player.placeCardInPile(card, 'exile');
             this.player.removeCardFromHand(cardId);
           }
           this.player.syncToYState();
@@ -850,7 +848,7 @@ export class GameResourcesDock {
             // Remove from deck and move to exile directly (don't draw to hand first)
             this.player['deck'].removeCardById(card.id);
             this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
-            this.player.moveCardToExile(card);
+            this.player.placeCardInPile(card, 'exile');
           } else {
             const state = this.player.getState();
             let pile: Card[] = state.discardPile;
@@ -858,7 +856,7 @@ export class GameResourcesDock {
             if (index !== -1) {
               pile.splice(index, 1);
               this.player['yPlayerState'].set(YSTATE_DISCARD_PILE, pile);
-              this.player.moveCardToExile(card);
+              this.player.placeCardInPile(card, 'exile');
             }
           }
           this.player.syncToYState();

@@ -84,7 +84,7 @@ describe('Player.reset()', () => {
 
       // Move some to exile (and remove from hand)
       if (card3) {
-        player.moveCardToExile(card3);
+        player.placeCardInPile(card3, 'exile');
         player.removeCardFromHand(card3.id);
       }
 
@@ -226,7 +226,7 @@ describe('Player.reset()', () => {
       player.removeCardFromHand(cards[4].id);
 
       // Move 1 to exile
-      player.moveCardToExile(cards[5]);
+      player.placeCardInPile(cards[5], 'exile');
       player.removeCardFromHand(cards[5].id);
 
       // Keep cards[6] and cards[7] in hand
@@ -425,7 +425,7 @@ describe('Player.moveCardToDiscard()', () => {
   });
 });
 
-describe('Player.moveCardToExile()', () => {
+describe('Player.placeCardInPile()', () => {
   let yDoc: Y.Doc;
   let player: Player;
 
@@ -439,7 +439,7 @@ describe('Player.moveCardToExile()', () => {
     const card = player.drawCard();
 
     if (card) {
-      player.moveCardToExile(card);
+      player.placeCardInPile(card, 'exile');
 
       expect(player.getState().exilePile.length).toBe(1);
       expect(player.getState().exilePile).toContainEqual(card);
@@ -451,8 +451,8 @@ describe('Player.moveCardToExile()', () => {
     const card2 = player.drawCard();
 
     if (card1 && card2) {
-      player.moveCardToExile(card1);
-      player.moveCardToExile(card2);
+      player.placeCardInPile(card1, 'exile');
+      player.placeCardInPile(card2, 'exile');
 
       expect(player.getState().exilePile.length).toBe(2);
       expect(player.getState().exilePile).toContainEqual(card1);

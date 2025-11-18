@@ -231,7 +231,7 @@ drop event on #whiteboard
 
 // 3. Drop on exile/discard pile
 drop event on pile
-  └── if pile === 'exile': player.moveCardToExile(card)
+  └── if pile === 'exile': player.placeCardInPile(card, 'exile')
   └── if pile === 'discard': player.moveCardToDiscard(card)
   └── player.playCardFromHand(card.id)  // Remove from hand
 ```
@@ -317,7 +317,7 @@ KeyboardHandler checks hover state
   ↓
 dockState.moveHandCardToExile('card-abc123')
   ├── card = hand.find(c => c.id === 'card-abc123')
-  ├── player.moveCardToExile(card)
+  ├── player.placeCardInPile(card, 'exile')
   │   └── yPlayerState.set('exilePile', [...exilePile, card])
   └── player.playCardFromHand('card-abc123')
       └── yPlayerState.set('hand', hand.filter(c => c.id !== id))

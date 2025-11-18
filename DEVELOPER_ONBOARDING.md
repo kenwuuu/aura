@@ -375,7 +375,7 @@ player.playCardFromHand(cardId);  // Removes from hand, dispatches event
 
 // Move cards to piles
 player.moveCardToDiscard(card);
-player.moveCardToExile(card);
+player.placeCardInPile(card, 'exile');
 player.moveCardToDeckTop(card);
 player.moveCardToDeckBottom(card);
 
@@ -636,7 +636,7 @@ export class OpponentHealthDisplay {
 // User drags hand card → drop on whiteboard → playCardFromHand()
 
 // Drag from hand to pile
-// User drags hand card → drop on exile/discard → moveCardToExile()
+// User drags hand card → drop on exile/discard → placeCardInPile()
 ```
 
 ---

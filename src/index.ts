@@ -169,7 +169,7 @@ class AuraApp {
         this.localPlayer.moveCardToDiscard(card);
       },
       onMoveToExile: (card) => {
-        this.localPlayer.moveCardToExile(card);
+        this.localPlayer.placeCardInPile(card, 'exile');
       },
       onDeleteCard: (_card) => {
         // Card deletion is handled directly in KeyboardHandler via removeCard

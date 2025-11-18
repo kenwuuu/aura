@@ -46,14 +46,14 @@ export class Deck {
   }
 
   public addCardToTop(card: Card): void {
-    this.addCardAtPosition(card, Infinity);
+    this.placeCardAtPosition(card, Infinity);
   }
 
   public addCardToBottom(card: Card): void {
-    this.addCardAtPosition(card, 0);
+    this.placeCardAtPosition(card, 0);
   }
 
-  public addCardAtPosition(card: Card, index: number): void {
+  public placeCardAtPosition(card: Card, index: number): void {
     this.cards.splice(index, 0, card);
   }
 

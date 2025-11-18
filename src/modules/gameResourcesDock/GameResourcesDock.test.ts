@@ -76,9 +76,9 @@ describe('GameResourcesDock - Pile Card Movements (Keyboard Shortcuts)', () => {
       const card2: Card = { id: 'card-2', cardNumber: 2, x: 0, y: 0, rotation: 0, isTapped: false, isFlipped: false, counters: [] };
       const card3: Card = { id: 'card-3', cardNumber: 3, x: 0, y: 0, rotation: 0, isTapped: false, isFlipped: false, counters: [] };
 
-      player.moveCardToExile(card1);
-      player.moveCardToExile(card2);
-      player.moveCardToExile(card3);
+      player.placeCardInPile(card1, 'exile');
+      player.placeCardInPile(card2, 'exile');
+      player.placeCardInPile(card3, 'exile');
 
       // Verify initial state
       let state = player.getState();
@@ -175,7 +175,7 @@ describe('GameResourcesDock - Pile Card Movements (Keyboard Shortcuts)', () => {
       for (let i = 1; i <= 5; i++) {
         const card: Card = { id: `card-${i}`, cardNumber: i, x: 0, y: 0, rotation: 0, isTapped: false, isFlipped: false, counters: [] };
         cards.push(card);
-        player.moveCardToExile(card);
+        player.placeCardInPile(card, 'exile');
       }
 
       // Verify initial state

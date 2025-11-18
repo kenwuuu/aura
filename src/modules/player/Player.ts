@@ -194,11 +194,6 @@ export class Player {
     this.syncToYState();
   }
 
-  public moveCardToExile(card: Card): void {
-    this.exile.addCardToTop(card);
-    this.syncToYState();
-  }
-
   public setHealth(health: number): void {
     this.yPlayerState.set(YSTATE_HEALTH, health);
   }

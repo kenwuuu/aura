@@ -108,7 +108,7 @@ export class WhiteboardEventHandlers {
     if (destination === 'hand') {
       this.localPlayer.placeCardInPile(baseCard, 'hand');
     } else if (destination === 'exile') {
-      this.localPlayer.moveCardToExile(baseCard as any);
+      this.localPlayer.placeCardInPile(baseCard as any, 'exile');
     } else if (destination === 'discard') {
       this.localPlayer.moveCardToDiscard(baseCard as any);
     } else if (destination === 'deck') {
