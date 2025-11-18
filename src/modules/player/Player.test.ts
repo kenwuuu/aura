@@ -738,7 +738,7 @@ describe('Player.loadNewDeck()', () => {
     player = new Player('test-player', yDoc, deck, { initialHealth: 40 });
   });
 
-  it('should replace deck and draw commander', () => {
+  it('should replace deck and draw commander', async () => {
     const newDeckCards: Card[] = Array.from({ length: 10 }, (_, i) => ({
       id: `new-card-${i}`,
       cardNumber: i + 1,
@@ -751,11 +751,11 @@ describe('Player.loadNewDeck()', () => {
     }));
 
     const newDeck = new Deck(10, newDeckCards);
-    player.loadNewDeck(newDeck);
+    await player.loadNewDeck(newDeck);
 
-    // Should draw 1 card (commander) and have 9 remaining
-    expect(player.getState().hand.length).toBe(1);
-    expect(player.getState().deckCardCount).toBe(9);
+    // Should draw 1 card (commander) + 7 cards = 8 total in hand, 2 remaining in deck
+    expect(player.getState().hand.length).toBe(8);
+    expect(player.getState().deckCardCount).toBe(2);
   });
 
   it('should shuffle deck after loading', () => {

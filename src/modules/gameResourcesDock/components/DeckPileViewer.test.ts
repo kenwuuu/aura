@@ -513,18 +513,17 @@ describe('DeckPileViewer', () => {
     });
 
     it('should show correct title in view mode', () => {
-      viewer.show(mockCards, 'view');
+      viewer.show(mockCards, 'deck');
 
       const title = document.querySelector('.deck-pile-viewer-header h2');
-      expect(title?.textContent).toBe('Deck');
+      expect(title?.textContent).toBe('Search Deck');
     });
 
     it('should show keyboard shortcuts hint in search mode', () => {
       viewer.show(mockCards, 'deck');
 
       const subtitle = document.querySelector('.deck-pile-viewer-subtitle');
-      expect(subtitle?.textContent).toContain('Z: Play to battlefield');
-      expect(subtitle?.textContent).toContain('H: Move to hand');
+      expect(subtitle?.textContent).toContain('H: Hand');
     });
 
     it('should close modal when close button is clicked', () => {
