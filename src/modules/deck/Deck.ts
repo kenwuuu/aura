@@ -6,14 +6,12 @@ export class Deck {
   constructor(cards?: Card[]) {
     // Use provided cards if available, otherwise initialize with blank cards
     if (cards && cards.length > 0) {
-      console.log('real cards')
       // Regenerate unique IDs for all cards to prevent collisions when multiple players use the same deck
       this.cards = cards.map(card => ({
         ...card,
         id: `card-${Math.random().toString(36).substring(2, 11)}`,
       }));
     } else {
-      console.log('fake cards')
       this.initializeDeckWithDummyCards(60);
     }
   }
