@@ -57,34 +57,34 @@ export class GameResourcesDock {
 
     // Initialize all pile viewers with appropriate callbacks
     this.deckViewer = new DeckPileViewer({
-      onPlayToBattlefield: (card) => this.handlePileCardToBattlefield(card, 'deck'),
-      onMoveToHand: (card) => this.handlePileCardToHand(card, 'deck'),
-      onMoveToDiscard: (card) => this.handlePileCardToDiscard(card, 'deck'),
-      onMoveToExile: (card) => this.handlePileCardToExile(card, 'deck'),
-      onMoveToDeckTop: (card) => this.handlePileCardToDeckTop(card, 'deck'),
-      onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'deck'),
+      onPlayToBattlefield: (card) => this.handlePileViewerCardToBattlefield(card, 'deck'),
+      onMoveToHand: (card) => this.handlePileViewerCardToHand(card, 'deck'),
+      onMoveToDiscard: (card) => this.handlePileViewerCardToDiscard(card, 'deck'),
+      onMoveToExile: (card) => this.handlePileViewerCardToExile(card, 'deck'),
+      onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'deck'),
+      onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'deck'),
     });
 
     this.scryViewer = new DeckPileViewer({
-      onMoveToDiscard: (card) => this.handlePileCardToDiscard(card, 'scry'),
-      onMoveToDeckTop: (card) => this.handlePileCardToDeckTop(card, 'scry'),
-      onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'scry'),
+      onMoveToDiscard: (card) => this.handlePileViewerCardToDiscard(card, 'scry'),
+      onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'scry'),
+      onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'scry'),
     });
 
     this.exileViewer = new DeckPileViewer({
-      onPlayToBattlefield: (card) => this.handlePileCardToBattlefield(card, 'exile'),
-      onMoveToHand: (card) => this.handlePileCardToHand(card, 'exile'),
-      onMoveToDiscard: (card) => this.handlePileCardToDiscard(card, 'exile'),
-      onMoveToDeckTop: (card) => this.handlePileCardToDeckTop(card, 'exile'),
-      onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'exile'),
+      onPlayToBattlefield: (card) => this.handlePileViewerCardToBattlefield(card, 'exile'),
+      onMoveToHand: (card) => this.handlePileViewerCardToHand(card, 'exile'),
+      onMoveToDiscard: (card) => this.handlePileViewerCardToDiscard(card, 'exile'),
+      onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'exile'),
+      onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'exile'),
     });
 
     this.discardViewer = new DeckPileViewer({
-      onPlayToBattlefield: (card) => this.handlePileCardToBattlefield(card, 'discard'),
-      onMoveToHand: (card) => this.handlePileCardToHand(card, 'discard'),
-      onMoveToExile: (card) => this.handlePileCardToExile(card, 'discard'),
-      onMoveToDeckTop: (card) => this.handlePileCardToDeckTop(card, 'discard'),
-      onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'discard'),
+      onPlayToBattlefield: (card) => this.handlePileViewerCardToBattlefield(card, 'discard'),
+      onMoveToHand: (card) => this.handlePileViewerCardToHand(card, 'discard'),
+      onMoveToExile: (card) => this.handlePileViewerCardToExile(card, 'discard'),
+      onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'discard'),
+      onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'discard'),
     });
 
     this.handZoomLevel = parseFloat(localStorage.getItem('hand-zoom') || '1');
@@ -585,7 +585,7 @@ export class GameResourcesDock {
   }
 
   // Handler methods for pile viewer callbacks
-  private handlePileCardToBattlefield(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
+  private handlePileViewerCardToBattlefield(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
     if (pileType === 'deck') {
       // Remove card from deck
       this.player['deck'].removeCardById(card.id);
@@ -611,7 +611,7 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToHand(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
+  private handlePileViewerCardToHand(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
     if (pileType === 'deck') {
       // Remove card from deck
       this.player['deck'].removeCardById(card.id);
@@ -634,7 +634,7 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToExile(card: Card, pileType: 'discard' | 'deck'): void {
+  private handlePileViewerCardToExile(card: Card, pileType: 'discard' | 'deck'): void {
     const state = this.player.getState();
 
     if (pileType === 'deck') {
@@ -656,7 +656,7 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToDiscard(card: Card, pileType: 'exile' | 'deck' | 'scry'): void {
+  private handlePileViewerCardToDiscard(card: Card, pileType: 'exile' | 'deck' | 'scry'): void {
     const state = this.player.getState();
 
     if (pileType === 'deck') {
@@ -680,7 +680,7 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToDeckTop(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
+  private handlePileViewerCardToDeckTop(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
     const state = this.player.getState();
 
     if (pileType === 'deck') {
@@ -704,7 +704,7 @@ export class GameResourcesDock {
     this.updatePileViewer(pileType);
   }
 
-  private handlePileCardToDeckBottom(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
+  private handlePileViewerCardToDeckBottom(card: Card, pileType: 'exile' | 'discard' | 'deck' | 'scry'): void {
     const state = this.player.getState();
 
     if (pileType === 'deck') {
