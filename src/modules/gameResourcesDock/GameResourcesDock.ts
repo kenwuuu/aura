@@ -602,7 +602,7 @@ export class GameResourcesDock {
         const newIndex = Array.from(handCards.children).indexOf(draggedElement);
 
         if (newIndex !== startIndex) {
-          const currentHand = this.player.getState().hand;
+          const currentHand = this.player.getHand().getCards();
           const reordered = [...currentHand];
           const movedCard = reordered.splice(startIndex, 1)[0];
           reordered.splice(newIndex, 0, movedCard);
