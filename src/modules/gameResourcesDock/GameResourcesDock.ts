@@ -44,6 +44,13 @@ export class GameResourcesDock {
   private currentMouseY: number = 0;
   private isMouseDown: boolean = false;
   private isModalOpen: boolean = false;
+  private handDragState: {
+    draggedIndex: number;
+    draggedElement: HTMLElement;
+    placeholder: HTMLElement | null;
+  } | null = null;
+  private _dragState: { mode: string; draggedElement: HTMLDivElement; startIndex: number; } | undefined;
+  private requestAnimationFrameId: number | null = null;
 
   constructor(
     container: HTMLElement,
@@ -303,7 +310,7 @@ export class GameResourcesDock {
     const state = this.player.getState();
     this.healthRoot.render(
       React.createElement(HealthDisplay, {
-        label: 'Life',
+        label: this.player.getId().slice(0, 9),
         health: state.health,
         onModifyHealth: (delta: number) => this.player.modifyHealth(delta),
         variant: 'local',
@@ -458,17 +465,25 @@ export class GameResourcesDock {
 
       // Drag events
       cardEl.addEventListener('dragstart', (e) => {
-        this.cardPreview.hide();  // hide card preview to prevent preview bug after dropping
-        this.draggedCard = { card, element: cardEl };
-        cardEl.classList.add('dragging');
-
-        // Clear hover states to prevent tooltip from showing after drag
+        this.cardPreview.hide();
         this.hoveredHandCardId = null;
         this.hoveredResource = null;
         this.updateHotkeyTooltip();
 
-        // Center the drag image under the cursor. This helps us place the card in the
-        // correct position after dragging to board
+        // Track the card globally for board drop logic
+        this.draggedCard = { card, element: cardEl };
+
+        // Starting state: we assume play mode, not reorder mode
+        this._dragState = {
+          mode: 'play',   // 'play' or 'reorder'
+          draggedElement: cardEl,
+          startIndex: Array.from(handCards.children).indexOf(cardEl)
+        };
+
+        cardEl.classList.add('dragging');
+        cardEl.classList.remove('hover');
+
+        // Use your normal card-centered drag image first
         this.setCardDragPoint(cardEl, e);
 
         e.dataTransfer!.effectAllowed = 'move';
@@ -488,6 +503,115 @@ export class GameResourcesDock {
       onUpdate(value) {
         handCards.scrollLeft = value;
       }
+    });
+
+    // Setup hand reordering with vanilla drag and drop
+    this.setupHandReordering(handCards as HTMLElement);
+  }
+
+  private setupHandReordering(handCards: HTMLElement): void {
+    const buffer = 60; // px allowed above/below hand before switching to play mode
+    const transparentDragImage = new Image();
+    transparentDragImage.src =
+      'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+
+    handCards.addEventListener('dragover', (e: DragEvent) => {
+      if (!this._dragState) return;
+      e.preventDefault();
+
+      // Throttle with requestAnimationFrame to prevent layout thrashing
+      if (this.requestAnimationFrameId !== null) return;
+
+      this.requestAnimationFrameId = requestAnimationFrame(() => {
+        this.requestAnimationFrameId = null;
+
+        if (!this._dragState) return;
+        const { draggedElement, mode } = this._dragState;
+        if (!draggedElement) return;
+
+        // Read phase: batch all layout reads together
+        const handRect = handCards.getBoundingClientRect();
+        const outOfBounds =
+          e.clientY < handRect.top - buffer ||
+          e.clientY > handRect.bottom + buffer;
+
+        //
+        // ───────────────────────────────────────────────────────────────
+        // MODE SWITCHING LOGIC
+        // ───────────────────────────────────────────────────────────────
+        //
+        if (outOfBounds) {
+          // Switch to PLAY MODE
+          if (mode !== 'play') {
+            this._dragState.mode = 'play';
+
+            // Switch BACK to your full-size centered drag image
+            try {
+              this.setCardDragPoint(draggedElement, e);
+            } catch {}
+          }
+          return;
+        } else {
+          // Switch into REORDER MODE
+          if (mode !== 'reorder') {
+            this._dragState.mode = 'reorder';
+
+            // Use transparent drag image so reorder looks clean
+            try {
+              e.dataTransfer?.setDragImage(transparentDragImage, 0, 0);
+            } catch {}
+          }
+        }
+
+        //
+        // ───────────────────────────────────────────────────────────────
+        // REORDER MODE BEHAVIOR
+        // ───────────────────────────────────────────────────────────────
+        //
+        if (this._dragState.mode === 'reorder') {
+          const target = (e.target as HTMLElement).closest('.hand-card') as HTMLElement | null;
+          if (!target || target === draggedElement) return;
+
+          const rect = target.getBoundingClientRect();
+          const midpoint = rect.left + rect.width / 2;
+
+          // Write phase: batch all DOM mutations together
+          if (e.clientX < midpoint) {
+            handCards.insertBefore(draggedElement, target);
+          } else {
+            handCards.insertBefore(draggedElement, target.nextSibling);
+          }
+        }
+      });
+    });
+
+    handCards.addEventListener('dragend', () => {
+      // Cancel any pending animation frame
+      if (this.requestAnimationFrameId !== null) {
+        cancelAnimationFrame(this.requestAnimationFrameId);
+        this.requestAnimationFrameId = null;
+      }
+
+      if (!this._dragState) return;
+      const { draggedElement, startIndex, mode } = this._dragState;
+
+      if (mode === 'reorder') {
+        //
+        // Apply Yjs reorder
+        //
+        const newIndex = Array.from(handCards.children).indexOf(draggedElement);
+
+        if (newIndex !== startIndex) {
+          const currentHand = this.player.getState().hand;
+          const reordered = [...currentHand];
+          const movedCard = reordered.splice(startIndex, 1)[0];
+          reordered.splice(newIndex, 0, movedCard);
+
+          this.player.reorderHand(reordered);
+        }
+      }
+
+      this._dragState.mode = 'none';
     });
   }
 

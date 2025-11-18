@@ -50,6 +50,28 @@ import { WebRTCConfig, ConnectionStatus } from './types';
 import { restoreAwarenessState, setupAwarenessStatePersistence, AwarenessState } from './persistence';
 
 /**
+ * Fetches ICE server configuration from CloudFlare TURN service
+ * Falls back to default STUN servers if fetch fails
+ */
+async function fetchCloudFlareIceServers(): Promise<RTCIceServer[]> {
+  try {
+    const response = await fetch('https://cloudflare-turn-config-fetcher.kenqiwu-1b0.workers.dev/ice-servers');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    console.log('CloudFlare ICE servers fetched successfully');
+    return data['iceServers'];
+  } catch (error) {
+    console.warn('Failed to fetch CloudFlare ICE servers, using fallback STUN servers:', error);
+    return [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:global.stun.twilio.com:3478' }
+    ];
+  }
+}
+
+/**
  * Main WebRTC provider class that manages peer-to-peer connections
  * and document persistence
  */
@@ -60,6 +82,20 @@ export class WebRTCProvider {
   private config: WebRTCConfig;
   private statusCallbacks: Set<(status: ConnectionStatus) => void> = new Set();
   private cleanupAwarenessPersistence?: () => void;
+
+  /**
+   * Static factory method to create a WebRTCProvider with CloudFlare ICE servers
+   * Fetches TURN configuration before initializing the provider
+   */
+  static async create(yDoc: Y.Doc, config: WebRTCConfig): Promise<WebRTCProvider> {
+    // Fetch CloudFlare ICE servers if not explicitly provided
+    const iceServers = config.iceServers ?? await fetchCloudFlareIceServers();
+
+    return new WebRTCProvider(yDoc, {
+      ...config,
+      iceServers
+    });
+  }
 
   constructor(yDoc: Y.Doc, config: WebRTCConfig) {
     this.yDoc = yDoc;

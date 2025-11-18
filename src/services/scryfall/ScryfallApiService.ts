@@ -86,17 +86,22 @@ export class ScryfallApiService {
    * Fetch card data from Scryfall with rate limiting and retries
    */
   private async fetchCardData(cardName: string): Promise<ScryfallCard> {
-    const url = `${ScryfallApiService.BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`;
+    const exactUrl = `${ScryfallApiService.BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`;
+    const fuzzyUrl = `${ScryfallApiService.BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`;
+    const attemptNumberToSwitchToFuzzySearch = 2;
 
     return await this.queue.add(() =>
       pRetry(
-        async () => {
+        async (attemptNumber) => {
+          const url = attemptNumber >= attemptNumberToSwitchToFuzzySearch ?  fuzzyUrl : exactUrl;  // switch to fuzzy search after first
+
           const response = await fetch(url);
           if (!response.ok) {
             if (response.status === 404) {
               throw new Error(`Card "${cardName}" not found`);
             }
-            throw new Error(`Scryfall API error: ${response.status} ${response.statusText}`);
+            throw new Error(`Scryfall API error: ${response.status} ${response.statusText}. URL: ${url}. Will use 
+            fuzzy search starting from attempt #${attemptNumberToSwitchToFuzzySearch}`);
           }
           return await response.json();
         },

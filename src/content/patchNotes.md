@@ -1,7 +1,43 @@
-## 2025 November 15
+## 2025 November 17 - Daily patch 4
+
+### Feature
+- Language support: Add ability to import cards in any language that Scryfall supports. Import as usual, e.g.: 
+`1 Anillo solar`, `1 Sonnenring`, `1 Anneau solaire`
+- Alert opponents when players reveal any cards in their deck
+
+### Change
+- Put player ID on health displays
+
+### Major bug fix
+- Fix network issue where users would see 'Connected' but not see opponent HP or cards
+    - People who turned off VPNs and firewalls and ad blockers should be able to turn them back on now
+
+### Bug fixes
+- Make rearranging hand less laggy by throttling animation
+
+---
+
+## 2025 November 16
 
 ### Features
-- Added scry and surveil 
+- Add scry and surveil
+- Add ability to rearrange hand by dragging and dropping
+
+### Bug fixes
+- Fix functional reprint imports. Cards like `Doric, Nature's Warden` which are reprints of another card, `Casal, 
+Lurkwood Pathfinder`, are now imported correctly
+
+---
+
+## 2025 November 15
+
+### Changes
+- Clear rooms and hands that are older than 12 hours from storage
+
+### Bug fixes
+- Fix battlefield card tooltip rendering to not jump around.
+- Make battlefield card tooltip show up in a more predictable location when hovering a card.
+- Hide battlefield card tooltip when dragging card 
 
 ---
 
@@ -9,7 +45,7 @@
 
 ### Features
 - Cards are now hidden by default when viewing your deck
-- Added interactive tooltips when inside deck viewer
+- Add interactive tooltips when inside deck viewer
 - Drawing a card will scroll hand to end
 - Life total is now editable: click and type!
 

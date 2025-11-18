@@ -23,6 +23,7 @@
  * you MUST remove both .reverse() calls to prevent displaying cards in the wrong order.
  */
 
+import * as Y from 'yjs';
 import { Card } from '../../deck';
 import { SearchBar } from './SearchBar';
 import { SortControl } from './SortControl';
@@ -48,6 +49,7 @@ export class DeckPileViewer {
   private filteredCards: Card[] = [];
   private hoveredCard: Card | null = null;
   private pileType: PileType = 'deck';
+  private yPlayerState?: Y.Map<any>;
 
   // Components
   private searchBar: SearchBar | null = null;
@@ -61,8 +63,9 @@ export class DeckPileViewer {
   private revealAll: boolean = false;
   private revealCount: number = 0;
 
-  constructor(callbacks: DeckPileViewerCallbacks = {}) {
+  constructor(callbacks: DeckPileViewerCallbacks = {}, yPlayerState?: Y.Map<any>) {
     this.callbacks = callbacks;
+    this.yPlayerState = yPlayerState;
   }
 
   public show(cards: Card[], pileType: PileType): void {
@@ -70,8 +73,26 @@ export class DeckPileViewer {
     this.pileType = pileType;
     this.currentSearchQuery = '';
     this.currentSortOrder = 'top-to-bottom';
-    this.revealAll = this.pileType !== 'deck';
-    this.revealCount = 0;
+
+    // Initialize reveal state from yPlayerState if available (for deck pile)
+    // Otherwise default based on pile type
+    if (this.pileType === 'deck' && this.yPlayerState) {
+      const deckRevealCount = this.yPlayerState.get('deckRevealCount') ?? 0;
+      if (deckRevealCount === -1) {
+        this.revealAll = true;
+        this.revealCount = 0;
+      } else if (deckRevealCount > 0) {
+        this.revealAll = false;
+        this.revealCount = deckRevealCount;
+      } else {
+        this.revealAll = false;
+        this.revealCount = 0;
+      }
+    } else {
+      this.revealAll = this.pileType !== 'deck';
+      this.revealCount = 0;
+    }
+
     this.filteredCards = [...cards].reverse();
 
     this.modal = this.createModal();
@@ -210,6 +231,15 @@ export class DeckPileViewer {
         if (this.revealAll) {
           this.revealCount = 0; // Reset count when revealing all
           revealCountInput.value = '';
+          // Sync to yPlayerState: -1 = reveal all
+          if (this.yPlayerState) {
+            this.yPlayerState.set('deckRevealCount', -1);
+          }
+        } else {
+          // Sync to yPlayerState: 0 = hidden
+          if (this.yPlayerState) {
+            this.yPlayerState.set('deckRevealCount', 0);
+          }
         }
         this.renderCards();
       };
@@ -242,6 +272,15 @@ export class DeckPileViewer {
         if (this.revealCount > 0) {
           this.revealAll = false; // Uncheck reveal all when setting count
           revealAllCheckbox.checked = false;
+          // Sync to yPlayerState: N > 0 = reveal top N cards
+          if (this.yPlayerState) {
+            this.yPlayerState.set('deckRevealCount', this.revealCount);
+          }
+        } else {
+          // Sync to yPlayerState: 0 = hidden
+          if (this.yPlayerState) {
+            this.yPlayerState.set('deckRevealCount', 0);
+          }
         }
         this.renderCards();
       };

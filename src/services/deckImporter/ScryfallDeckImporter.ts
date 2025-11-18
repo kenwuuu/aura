@@ -102,6 +102,7 @@ export class ScryfallDeckImporter implements DeckImporter {
       };
     }
 
+    // call Scryfall API
     const entries = this.scryfallApi.parseDecklist(text);
     const results = await this.scryfallApi.fetchImagesForList(entries, this.onProgress);
 

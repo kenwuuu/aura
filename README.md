@@ -1,6 +1,6 @@
-# Aura - Instantaneous Peer to Peer Magic
+# Aura - The Fastest P2P App for Playing MTG
 
-A serverless web app for playing cards built on React, WebRTC, and Yjs. And hopefully Tailwind and shadcn in the future.
+A serverless web app for playing cards built on React, Tailwind, shadcn, WebRTC, and Yjs.
 
 Play [here](http://aura-dqp.pages.dev)
 

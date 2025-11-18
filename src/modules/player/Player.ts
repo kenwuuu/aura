@@ -51,6 +51,7 @@ export class Player {
       this.yPlayerState.set(YSTATE_EXILE_PILE, []);
       this.yPlayerState.set(YSTATE_DISCARD_PILE, []);
       this.yPlayerState.set(YSTATE_CUSTOM_COUNTERS, []);
+      this.yPlayerState.set('deckRevealCount', 0); // 0=hidden, -1=all, N>0=top N cards
     }
   }
 
@@ -302,5 +303,13 @@ export class Player {
     const counters = this.yPlayerState.get(YSTATE_CUSTOM_COUNTERS) ?? [];
     const updatedCounters = counters.filter((counter: CustomCounter) => counter.id !== counterId);
     this.yPlayerState.set(YSTATE_CUSTOM_COUNTERS, updatedCounters);
+  }
+
+  public reorderHand(newOrder: Card[]): void {
+    this.yPlayerState.set('hand', newOrder);
+  }
+
+  public getYPlayerState(): Y.Map<any> {
+    return this.yPlayerState;
   }
 }

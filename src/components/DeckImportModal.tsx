@@ -3,6 +3,12 @@ import { ScryfallDeckImporter } from '../services/deckImporter';
 import { DeckStorageService } from '../services/deckStorage';
 import { SavedDeck } from '../modules/deck/types';
 import { DeckImportHelpDialog } from './DeckImportHelpDialog';
+import {InfoIcon} from "lucide-react"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert"
 
 interface DeckImportModalProps {
   isOpen: boolean;
@@ -112,6 +118,14 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
               disabled={isImporting}
             />
           </div>
+
+          <Alert className={"mb-4"}>
+            <InfoIcon />
+            <AlertTitle>Aura supports all languages that Scryfall does.</AlertTitle>
+            <AlertDescription>
+              Example: "1 Anillo solar" or "1 Sonnenring" or "1 Anneau solaire"
+            </AlertDescription>
+          </Alert>
 
           <div className="form-group">
             <label htmlFor="deck-list">Deck List</label>

@@ -46,7 +46,7 @@ export interface AwarenessState {
 }
 
 /**
- * Get or create a persistent player ID
+ * Get or create a persistent player ID. Player ID is used by game logic. Peer ID is used by networking logic.
  * This ensures the same player ID is used across page reloads
  */
 export function getOrCreatePlayerId(): string {
@@ -61,7 +61,7 @@ export function getOrCreatePlayerId(): string {
 }
 
 /**
- * Get or create a persistent peer ID for WebRTC connections
+ * Get or create a persistent peer ID for WebRTC connections. Peer ID is used by networking logic. Player ID is used by game logic
  * This helps prevent peer identity changes on reconnection
  */
 export function getOrCreatePeerId(): string {

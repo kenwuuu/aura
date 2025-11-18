@@ -85,7 +85,7 @@ export class Deck {
   }
 
   // Remove a specific card object from deck
-  removeCard(card: Card): Card | null {
+  removeCard(card: Card): Promise<Card | null> {
     const index = this.cards.findIndex(c => c.id === card.id);
     if (index !== -1) {
       return this.cards.splice(index, 1)[0];

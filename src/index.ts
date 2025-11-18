@@ -22,6 +22,7 @@ import { DEFAULT_DECK } from './data/defaultDeck';
 import './style.css';
 import * as Sentry from "@sentry/react";
 import {YSTATE_DECK_CARD_COUNT} from "./constants";
+import {ReactToasterRoot} from "../ReactToasterRoot";
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -49,15 +50,15 @@ Sentry.init({
 
 class AuraApp {
   private yDoc: Y.Doc;
-  private webrtcProvider: WebRTCProvider;
-  private whiteboard: MultiPlayerBoardManager;
-  private localPlayer: Player;
-  private localDock: GameResourcesDock;
+  private webrtcProvider!: WebRTCProvider;
+  private whiteboard!: MultiPlayerBoardManager;
+  private localPlayer!: Player;
+  private localDock!: GameResourcesDock;
   private opponentHealthRoot: Root | null = null;
-  private tokenService: TokenService;
-  private cardPreview: CardPreview;
+  private tokenService!: TokenService;
+  private cardPreview!: CardPreview;
   private playerId: string;
-  private scryfallApiService: ScryfallApiService;
+  private scryfallApiService!: ScryfallApiService;
   private roomManager: RoomManager;
   private eventHandlers: WhiteboardEventHandlers | null = null;
 
@@ -70,12 +71,14 @@ class AuraApp {
 
     // Initialize room manager (handles room ID and URL)
     this.roomManager = new RoomManager();
+  }
 
+  async initialize() {
     // Get or create persistent peer ID for WebRTC
     const peerId = getOrCreatePeerId();
 
-    // Initialize WebRTC provider with persistence
-    this.webrtcProvider = new WebRTCProvider(this.yDoc, {
+    // Initialize WebRTC provider with CloudFlare TURN servers
+    this.webrtcProvider = await WebRTCProvider.create(this.yDoc, {
       roomName: this.roomManager.getRoomName(),
       peerId, // Pass persistent peer ID
     });
@@ -116,6 +119,15 @@ class AuraApp {
       position: 'bottom',
       playerId: this.playerId,
     }, this.cardPreview);
+
+    // init toaster for alerts like "Opponent revealed deck"
+    const toasterContainer = document.getElementById("toaster-root");
+    if (toasterContainer) {
+      const toasterRoot = createRoot(toasterContainer);
+      toasterRoot.render(
+        React.createElement(ReactToasterRoot)
+      );
+    }
 
     // Initialize opponent health display with React
     const opponentHealthContainer = document.getElementById('opponent-health-container');
@@ -239,10 +251,10 @@ class AuraApp {
     this.webrtcProvider.onStatusChange((status) => {
       if (statusElement) {
         if (status.isConnected) {
-          statusElement.textContent = `Connected (${status.peersCount} peer${status.peersCount !== 1 ? 's' : ''})`;
+          statusElement.textContent = `Connected (${status.peersCount} player${status.peersCount !== 1 ? 's' : ''})`;
           statusElement.style.color = '#4ade80';
         } else {
-          statusElement.textContent = 'Waiting for peers...';
+          statusElement.textContent = 'Waiting for players...';
           statusElement.style.color = '#facc15';
         }
       }
@@ -515,6 +527,10 @@ class AuraApp {
 
 // Initialize the app
 const app = new AuraApp();
+app.initialize().catch(error => {
+  console.error('Failed to initialize app:', error);
+  Sentry.captureException(error);
+});
 
 // Clean up on page unload
 window.addEventListener('beforeunload', () => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as Y from 'yjs';
+import { toast } from 'sonner';
 import { HealthDisplay } from './HealthDisplay';
 import { CustomCounter } from '../../modules/player/types';
 import { Card } from '../../modules/deck';
@@ -66,10 +67,42 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
     const setupObservers = () => {
       yDoc.share.forEach((_, key) => {
         if (key.startsWith('player-') && key !== `player-${localPlayerId}`) {
+          const playerId = key.replace('player-', '');
           const yPlayerState = yDoc.getMap(key);
+          // General observer for all state changes
           const observer = () => updateOpponents();
           yPlayerState.observe(observer);
           observerCleanups.push(() => yPlayerState.unobserve(observer));
+
+          // Specific observer for deckRevealCount changes to show toast
+          const deckRevealObserver = (event: Y.YMapEvent<any>) => {
+            if (event.changes.keys.has('deckRevealCount')) {
+              const deckRevealCount = yPlayerState.get('deckRevealCount') as number | undefined ?? 0;
+              const playerLabel = playerId.slice(0, 9);
+
+              if (deckRevealCount === -1) {
+                toast.warning(`${playerLabel} revealed their entire deck`, {
+                  position: 'bottom-center',
+                  style: { marginBottom: '200px' },
+                  richColors: true
+                });
+              } else if (deckRevealCount > 0) {
+                toast.warning(`${playerLabel} revealed the top ${deckRevealCount} card${deckRevealCount > 1 ? 's' : ''} of their deck`, {
+                  position: 'bottom-center',
+                  style: { marginBottom: '200px' },
+                  richColors: true
+                });
+              } else if (deckRevealCount === 0) {
+                console.log(`${playerLabel} hid their deck`);
+                toast.info(`${playerLabel} hid their deck`, {
+                  position: 'bottom-center',
+                  style: { marginBottom: '200px' }
+                });
+              }
+            }
+          };
+          yPlayerState.observe(deckRevealObserver);
+          observerCleanups.push(() => yPlayerState.unobserve(deckRevealObserver));
         }
       });
     };
@@ -168,7 +201,7 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
       {opponents.map((opponent) => (
         <HealthDisplay
           key={opponent.playerId}
-          label="Opponent"
+          label={opponent.playerId.slice(0, 9)}
           health={opponent.health}
           onModifyHealth={(delta) => modifyOpponentHealth(opponent.playerId, delta)}
           variant="opponent"
