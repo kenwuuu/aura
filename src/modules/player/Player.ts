@@ -152,23 +152,27 @@ export class Player {
   public putCardOnPile(card: Card, pile: PileType) {
     switch (pile) {
       case "hand":
-        return this.hand.addCardToTop(card);
+        this.hand.addCardToTop(card);
       case "discard":
-        return this.discard.addCardToTop(card);
+        this.discard.addCardToTop(card);
       case "exile":
-        return this.exile.addCardToTop(card);
+        this.exile.addCardToTop(card);
     }
+    this.syncToYState();
   }
 
   public drawCardFromPile(pile: PileType) {
+    let card;
     switch (pile) {
       case "deck":
-        return this.deck.drawCard();
+        card = this.deck.drawCard();
       case "discard":
-        return this.discard.drawCard();
+        card = this.discard.drawCard();
       case "exile":
-        return this.exile.drawCard();
+        card = this.exile.drawCard();
     }
+    this.syncToYState();
+    return card;
   }
 
   public putCardInHand(card: Card) {
