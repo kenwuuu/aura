@@ -213,6 +213,21 @@ export class Player {
     this.yPlayerState.set(YSTATE_HEALTH, currentHealth + delta);
   }
 
+  public placeCardInPile(card: Card, pileType: PileType, position: number = Infinity) {
+    switch (pileType) {
+      case "deck":
+        this.deck.placeCardAtPosition(card, position);
+      case "discard":
+        this.discard.placeCardAtPosition(card, position);
+      case "exile":
+        this.exile.placeCardAtPosition(card, position);
+      case "hand":
+        this.hand.placeCardAtPosition(card, position)
+    }
+    this.syncToYState();
+    return card;
+  }
+
   public shuffleDeck(): void {
     this.deck.shuffleDeck();
   }
