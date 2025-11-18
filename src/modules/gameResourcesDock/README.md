@@ -232,7 +232,7 @@ drop event on #whiteboard
 // 3. Drop on exile/discard pile
 drop event on pile
   └── if pile === 'exile': player.placeCardInPile(card, 'exile')
-  └── if pile === 'discard': player.moveCardToDiscard(card)
+  └── if pile === 'discard': player.placeCardInPile(card, 'discard')
   └── player.playCardFromHand(card.id)  // Remove from hand
 ```
 

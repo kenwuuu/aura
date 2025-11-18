@@ -657,7 +657,7 @@ export class GameResourcesDock {
       }
     }
 
-    this.player.moveCardToDiscard(card);
+    this.player.placeCardInPile(card, 'discard');
 
     // Update viewer with new card list
     this.updatePileViewer(pileType);
@@ -763,7 +763,7 @@ export class GameResourcesDock {
           const hand = this.player.getState().hand;
           const card = hand.find(c => c.id === cardId);
           if (card) {
-            this.player.moveCardToDiscard(card);
+            this.player.placeCardInPile(card, 'discard');
             this.player.removeCardFromHand(cardId);
           }
           this.player.syncToYState();
@@ -837,7 +837,7 @@ export class GameResourcesDock {
             this.player.drawCard();
           } else {
             const card = this.player.drawCardFromPile(pileType);
-            if (card) this.player.putCardOnPile(card, 'hand');
+            if (card) this.player.placeCardInPile(card, 'hand');
           }
           this.player.syncToYState();
         },
@@ -868,7 +868,7 @@ export class GameResourcesDock {
             // Remove from deck and move to discard directly (don't draw to hand first)
             this.player['deck'].removeCardById(card.id);
             this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
-            this.player.moveCardToDiscard(card);
+            this.player.placeCardInPile(card, 'discard');
           } else {
             const state = this.player.getState();
             let pile: Card[] = state.exilePile;
@@ -876,7 +876,7 @@ export class GameResourcesDock {
             if (index !== -1) {
               pile.splice(index, 1);
               this.player['yPlayerState'].set('exilePile', pile);
-              this.player.moveCardToDiscard(card);
+              this.player.placeCardInPile(card, 'discard');
             }
           }
           this.player.syncToYState();

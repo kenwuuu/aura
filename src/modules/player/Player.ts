@@ -189,11 +189,6 @@ export class Player {
     return card;
   }
 
-  public moveCardToDiscard(card: Card): void {
-    this.discard.addCardToTop(card);
-    this.syncToYState();
-  }
-
   public setHealth(health: number): void {
     this.yPlayerState.set(YSTATE_HEALTH, health);
   }

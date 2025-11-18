@@ -74,11 +74,11 @@ describe('Player.reset()', () => {
 
       // Move some to discard (and remove from hand)
       if (card1) {
-        player.moveCardToDiscard(card1);
+        player.placeCardInPile(card1, 'discard');
         player.removeCardFromHand(card1.id);
       }
       if (card2) {
-        player.moveCardToDiscard(card2);
+        player.placeCardInPile(card2, 'discard');
         player.removeCardFromHand(card2.id);
       }
 
@@ -219,10 +219,10 @@ describe('Player.reset()', () => {
       });
 
       // Move 2 to discard
-      player.moveCardToDiscard(cards[3]);
+      player.placeCardInPile(cards[3], 'discard');
       player.removeCardFromHand(cards[3].id);
 
-      player.moveCardToDiscard(cards[4]);
+      player.placeCardInPile(cards[4], 'discard');
       player.removeCardFromHand(cards[4].id);
 
       // Move 1 to exile
@@ -403,7 +403,7 @@ describe('Player.moveCardToDiscard()', () => {
     const card = player.drawCard();
 
     if (card) {
-      player.moveCardToDiscard(card);
+      player.placeCardInPile(card, 'discard');
 
       expect(player.getState().discardPile.length).toBe(1);
       expect(player.getState().discardPile).toContainEqual(card);
@@ -415,8 +415,8 @@ describe('Player.moveCardToDiscard()', () => {
     const card2 = player.drawCard();
 
     if (card1 && card2) {
-      player.moveCardToDiscard(card1);
-      player.moveCardToDiscard(card2);
+      player.placeCardInPile(card1, 'discard');
+      player.placeCardInPile(card2, 'discard');
 
       expect(player.getState().discardPile.length).toBe(2);
       expect(player.getState().discardPile).toContainEqual(card1);

@@ -374,7 +374,7 @@ player.modifyHealth(5);   // Gain 5 life
 player.playCardFromHand(cardId);  // Removes from hand, dispatches event
 
 // Move cards to piles
-player.moveCardToDiscard(card);
+player.placeCardInPile(card, 'discard');
 player.placeCardInPile(card, 'exile');
 player.moveCardToDeckTop(card);
 player.moveCardToDeckBottom(card);

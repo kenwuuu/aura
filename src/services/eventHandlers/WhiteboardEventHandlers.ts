@@ -110,7 +110,7 @@ export class WhiteboardEventHandlers {
     } else if (destination === 'exile') {
       this.localPlayer.placeCardInPile(baseCard as any, 'exile');
     } else if (destination === 'discard') {
-      this.localPlayer.moveCardToDiscard(baseCard as any);
+      this.localPlayer.placeCardInPile(baseCard as any, 'discard');
     } else if (destination === 'deck') {
       this.localPlayer.moveCardToDeckTop(baseCard as any);
       this.onDeckChange(); // Notify that deck changed

@@ -113,9 +113,9 @@ describe('GameResourcesDock - Pile Card Movements (Keyboard Shortcuts)', () => {
       const card2: Card = { id: 'card-2', cardNumber: 2, x: 0, y: 0, rotation: 0, isTapped: false, isFlipped: false, counters: [] };
       const card3: Card = { id: 'card-3', cardNumber: 3, x: 0, y: 0, rotation: 0, isTapped: false, isFlipped: false, counters: [] };
 
-      player.moveCardToDiscard(card1);
-      player.moveCardToDiscard(card2);
-      player.moveCardToDiscard(card3);
+      player.placeCardInPile(card1, 'discard');
+      player.placeCardInPile(card2, 'discard');
+      player.placeCardInPile(card3, 'discard');
 
       // Verify initial state
       let state = player.getState();

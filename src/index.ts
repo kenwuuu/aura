@@ -166,7 +166,7 @@ class AuraApp {
         DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
       },
       onMoveToGraveyard: (card) => {
-        this.localPlayer.moveCardToDiscard(card);
+        this.localPlayer.placeCardInPile(card, 'discard');
       },
       onMoveToExile: (card) => {
         this.localPlayer.placeCardInPile(card, 'exile');
