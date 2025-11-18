@@ -358,7 +358,7 @@ export class KeyboardHandler {
           // Skip if already in exile
           if (pileType !== 'exile') {
             e.preventDefault();
-            dockState.movePileCardToExile(pileType);
+            dockState.movePileCardToPile(pileType, 'exile');
           }
           break;
 
@@ -366,7 +366,7 @@ export class KeyboardHandler {
           // Skip if already in discard
           if (pileType !== 'discard') {
             e.preventDefault();
-            dockState.movePileCardToDiscard(pileType);
+            dockState.movePileCardToPile(pileType, 'discard');
           }
           break;
 
@@ -374,7 +374,7 @@ export class KeyboardHandler {
           // Skip if already in deck (would be redundant)
           if (pileType !== 'deck') {
             e.preventDefault();
-            dockState.movePileCardToDeckTop(pileType);
+            dockState.movePileCardToPile(pileType, 'deck');
           }
           break;
 
@@ -382,7 +382,8 @@ export class KeyboardHandler {
           // Skip if already in deck
           if (pileType !== 'deck') {
             e.preventDefault();
-            dockState.movePileCardToDeckBottom(pileType);
+            const bottomIndex = 0;
+            dockState.movePileCardToPile(pileType, 'deck', bottomIndex);
           }
           break;
       }

@@ -898,31 +898,16 @@ export class GameResourcesDock {
           }
           this.player.syncToYState();
         },
+        movePileCardToPile: (originPileType: 'deck' | 'discard' | 'exile', destinationPileType: PileType, position?: number) => {
+          const card = this.player.drawCardFromPile(originPileType);
+          if (card) this.player.placeCardInPile(card, destinationPileType, position);
+          this.player.syncToYState();
+        },
         movePileCardToHand: (pileType: 'deck' | 'exile' | 'discard') => {
           const card = this.player.drawCardFromPile(pileType);
           if (card) this.player.placeCardInPile(card, 'hand');
           this.player.syncToYState();
         },
-        movePileCardToExile: (pileType: 'deck' | 'discard') => {
-          const card = this.player.drawCardFromPile(pileType);
-          if (card) this.player.placeCardInPile(card, 'exile');
-          this.player.syncToYState();
-        },
-        movePileCardToDiscard: (pileType: 'deck' | 'exile') => {
-          const card = this.player.drawCardFromPile(pileType);
-          if (card) this.player.placeCardInPile(card, 'discard');
-          this.player.syncToYState();
-        },
-        movePileCardToDeckTop: (pileType: 'exile' | 'discard') => {
-          const card = this.player.drawCardFromPile(pileType);
-          if (card) this.player.placeCardInPile(card, 'deck');
-          this.player.syncToYState();
-        },
-        movePileCardToDeckBottom: (pileType: 'exile' | 'discard') => {
-          const card = this.player.drawCardFromPile(pileType);
-          if (card) this.player.placeCardInPile(card, 'deck', 0);
-          this.player.syncToYState();
-        }
       };
     };
   }
