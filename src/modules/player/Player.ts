@@ -149,6 +149,20 @@ export class Player {
     return card;
   }
 
+  public removeCardFromPileById(cardId: string, pileType: PileType): Card | null {
+    let result = null;
+    switch (pileType) {
+      case "hand":
+        result = this.hand.removeCardById(cardId);
+      case "discard":
+        result = this.discard.removeCardById(cardId);
+      case "exile":
+        result = this.exile.removeCardById(cardId);
+    }
+    this.syncToYState();
+    return result;
+  }
+
   public putCardOnPile(card: Card, pile: PileType) {
     switch (pile) {
       case "hand":
