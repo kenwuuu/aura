@@ -12,7 +12,7 @@ import { createRoot, Root } from 'react-dom/client';
 import { CardCounter } from '../../components';
 import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
 import {HotkeyContext} from "../../data/hotkeys";
-import { KeywordToken } from '../tokens/types';
+import { KeywordToken } from '@/modules/keywordTokens/types';
 
 const DEFAULT_OPPONENT_OPACITY = 1.0;
 const FOCUSED_OPACITY = 1.0;

@@ -19,7 +19,7 @@ import { RoomManager } from './services/roomManager';
 import { WhiteboardEventHandlers } from './services/eventHandlers';
 import { PatchNotesService } from './services/patchNotes';
 import { DEFAULT_DECK } from './data/defaultDeck';
-import { exposeTokenTestUtils } from './modules/tokens';
+import { exposeTokenTestUtils } from './modules/keywordTokens';
 import './style.css';
 import * as Sentry from "@sentry/react";
 import {ReactToasterRoot} from "../ReactToasterRoot";
