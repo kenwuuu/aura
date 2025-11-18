@@ -1,5 +1,5 @@
 import * as Y from 'yjs';
-import { Token } from './types';
+import { KeywordToken } from './types';
 
 /**
  * Test utility for manually spawning tokens
@@ -8,7 +8,7 @@ import { Token } from './types';
 export class TokenTestUtils {
   private yDoc: Y.Doc;
   private playerId: string;
-  private yTokens: Y.Map<Token>;
+  private yTokens: Y.Map<KeywordToken>;
 
   constructor(yDoc: Y.Doc, playerId: string) {
     this.yDoc = yDoc;
@@ -26,7 +26,7 @@ export class TokenTestUtils {
     const defaultImage = '/assets/token_images/ability-deathtouch.svg';
     const defaultBgColor = '#ffffff'; // Gray-500
 
-    const token: Token = {
+    const token: KeywordToken = {
       id: tokenId,
       ownerId: this.playerId,
       x,
@@ -62,7 +62,7 @@ export class TokenTestUtils {
   /**
    * List all current tokens
    */
-  public listTokens(): Token[] {
+  public listTokens(): KeywordToken[] {
     const tokens = Array.from(this.yTokens.values());
     console.table(tokens);
     return tokens;

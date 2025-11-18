@@ -12,7 +12,7 @@ import { createRoot, Root } from 'react-dom/client';
 import { CardCounter } from '../../components';
 import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
 import {HotkeyContext} from "../../data/hotkeys";
-import { Token } from '../tokens/types';
+import { KeywordToken } from '../tokens/types';
 
 const DEFAULT_OPPONENT_OPACITY = 1.0;
 const FOCUSED_OPACITY = 1.0;
@@ -20,10 +20,10 @@ const FOCUSED_OPACITY = 1.0;
 export class MultiPlayerBoardManager {
   private boardContainerManager: BoardContainerManager;
   private cards: Map<string, WhiteboardCard> = new Map();
-  private tokens: Map<string, Token> = new Map();
+  private tokens: Map<string, KeywordToken> = new Map();
   private dragState: DragState = { cardId: null, offsetX: 0, offsetY: 0 };
   private yCards: Y.Map<WhiteboardCard>;
-  private yTokens: Y.Map<Token>;
+  private yTokens: Y.Map<KeywordToken>;
   private yDoc: Y.Doc;
   private maxZIndex: number = 0;
   private keyboardHandler: KeyboardHandler;
@@ -582,7 +582,7 @@ export class MultiPlayerBoardManager {
   }
 
   // Token rendering methods
-  private updateTokenElement(token: Token): void {
+  private updateTokenElement(token: KeywordToken): void {
     this.tokens.set(token.id, token);
 
     const container = this.boardContainerManager.getContainer(token.ownerId);
@@ -615,7 +615,7 @@ export class MultiPlayerBoardManager {
     this.updateTokenPosition(tokenElement, token);
   }
 
-  private createTokenElement(token: Token): HTMLElement {
+  private createTokenElement(token: KeywordToken): HTMLElement {
     const tokenElement = document.createElement('div');
     tokenElement.dataset.tokenId = token.id;
     tokenElement.className = 'token';
@@ -723,7 +723,7 @@ export class MultiPlayerBoardManager {
     return tokenElement;
   }
 
-  private updateTokenPosition(element: HTMLElement, token: Token): void {
+  private updateTokenPosition(element: HTMLElement, token: KeywordToken): void {
     // Tokens don't rotate, so we can use a simpler transform
     const transformable = {
       ...token,
