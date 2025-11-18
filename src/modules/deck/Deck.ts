@@ -38,11 +38,15 @@ export class Deck {
   }
 
   public addCardToTop(card: Card): void {
-    this.cards.push(card);
+    this.addCardAtPosition(card, Infinity);
   }
 
   public addCardToBottom(card: Card): void {
-    this.cards.unshift(card);
+    this.addCardAtPosition(card, 0);
+  }
+
+  public addCardAtPosition(card: Card, index: number): void {
+    this.cards.splice(index, 0, card);
   }
 
   public getCards(): Card[] {
