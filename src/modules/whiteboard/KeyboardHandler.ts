@@ -351,14 +351,14 @@ export class KeyboardHandler {
 
         case 'h': // H - Move top card to hand
           e.preventDefault();
-          dockState.movePileCardToHand(topCard, pileType);
+          dockState.movePileCardToHand(pileType);
           break;
 
         case 's': // S - Move top card to exile
           // Skip if already in exile
           if (pileType !== 'exile') {
             e.preventDefault();
-            dockState.movePileCardToExile(topCard, pileType);
+            dockState.movePileCardToExile(pileType);
           }
           break;
 
@@ -366,7 +366,7 @@ export class KeyboardHandler {
           // Skip if already in discard
           if (pileType !== 'discard') {
             e.preventDefault();
-            dockState.movePileCardToDiscard(topCard, pileType);
+            dockState.movePileCardToDiscard(pileType);
           }
           break;
 
@@ -374,7 +374,7 @@ export class KeyboardHandler {
           // Skip if already in deck (would be redundant)
           if (pileType !== 'deck') {
             e.preventDefault();
-            dockState.movePileCardToDeckTop(topCard, pileType);
+            dockState.movePileCardToDeckTop(pileType);
           }
           break;
 
@@ -382,7 +382,7 @@ export class KeyboardHandler {
           // Skip if already in deck
           if (pileType !== 'deck') {
             e.preventDefault();
-            dockState.movePileCardToDeckBottom(topCard, pileType);
+            dockState.movePileCardToDeckBottom(pileType);
           }
           break;
       }
