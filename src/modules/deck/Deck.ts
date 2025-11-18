@@ -73,17 +73,16 @@ export class Deck {
   }
 
   // Remove a specific card object from deck
-  removeCardObject(card: Card): boolean {
+  removeCard(card: Card): Card | null {
     const index = this.cards.findIndex(c => c.id === card.id);
     if (index !== -1) {
-      this.cards.splice(index, 1);
-      return true;
+      return this.cards.splice(index, 1)[0];
     }
-    return false;
+    return null;
   }
 
   // Find a card by ID
-  findCard(cardId: string): Card | null {
+  findCardById(cardId: string): Card | null {
     return this.cards.find(c => c.id === cardId) ?? null;
   }
 
