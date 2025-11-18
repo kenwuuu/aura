@@ -390,7 +390,7 @@ yPlayerState = {
 1. **Add method to `getGameResourcesDockHoverState()`:**
 ```typescript
 moveHandCardToCustomZone: (cardId: string) => {
-  const hand = this.player.getState().hand;
+  const hand = this.player.getHand().getCards();
   const card = hand.find(c => c.id === cardId);
   if (card) {
     // Your custom logic here

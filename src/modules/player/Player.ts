@@ -200,12 +200,16 @@ export class Player {
     switch (pileType) {
       case "deck":
         this.deck.placeCardAtPosition(card, position);
+        break;
       case "discard":
         this.discard.placeCardAtPosition(card, position);
+        break;
       case "exile":
         this.exile.placeCardAtPosition(card, position);
+        break;
       case "hand":
         this.hand.placeCardAtPosition(card, position)
+        break;
     }
     this.syncToYState();
     return card;

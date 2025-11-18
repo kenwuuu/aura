@@ -626,7 +626,6 @@ export class GameResourcesDock {
   }
 
   private handlePileViewerCardToDiscard(card: Card, pileType: 'exile' | 'deck' | 'scry'): void {
-    console.log('handlepilevierewcard to discard')
     this.player.removeCardFromPileById(card.id, pileType)
     this.player.placeCardInPile(card, 'discard');
 
@@ -673,7 +672,7 @@ export class GameResourcesDock {
         hoveredHandCardId: this.hoveredHandCardId,
         hoveredPileType: this.hoveredResource,
         getHandCard: (cardId: string) => {
-          const hand = this.player.getState().hand;
+          const hand = this.player.getHand().getCards();
           return hand.find(c => c.id === cardId) || null;
         },
         getTopPileCard: (pileType: 'deck' | 'exile' | 'discard') => {
@@ -691,7 +690,7 @@ export class GameResourcesDock {
           return cards.length > 0 ? cards[cards.length - 1] : null;
         },
         playHandCardToBattlefield: (cardId: string) => {
-          const hand = this.player.getState().hand;
+          const hand = this.player.getHand().getCards();
           const card = hand.find(c => c.id === cardId);
           if (card) {
             this.player.removeCardFromHand(cardId);
@@ -699,43 +698,43 @@ export class GameResourcesDock {
           this.player.syncToYState();
         },
         moveHandCardToDiscard: (cardId: string) => {
-          const hand = this.player.getState().hand;
+          const hand = this.player.getHand().getCards();
           const card = hand.find(c => c.id === cardId);
           if (card) {
+            this.player.removeCardFromPileById(cardId, 'hand');
             this.player.placeCardInPile(card, 'discard');
-            this.player.removeCardFromHand(cardId);
           }
           this.player.syncToYState();
         },
         moveHandCardToExile: (cardId: string) => {
-          const hand = this.player.getState().hand;
+          const hand = this.player.getHand().getCards();
           const card = hand.find(c => c.id === cardId);
           if (card) {
+            this.player.removeCardFromPileById(cardId, 'hand');
             this.player.placeCardInPile(card, 'exile');
-            this.player.removeCardFromHand(cardId);
           }
           this.player.syncToYState();
         },
         moveHandCardToDeckTop: (cardId: string) => {
-          const hand = this.player.getState().hand;
+          const hand = this.player.getHand().getCards();
           const card = hand.find(c => c.id === cardId);
           if (card) {
-            this.player.moveCardToDeckTop(card);
-            this.player.removeCardFromHand(cardId);
+            this.player.removeCardFromPileById(cardId, 'hand');
+            this.player.placeCardInPile(card, 'deck');
           }
           this.player.syncToYState();
         },
         moveHandCardToDeckBottom: (cardId: string) => {
-          const hand = this.player.getState().hand;
+          const hand = this.player.getHand().getCards();
           const card = hand.find(c => c.id === cardId);
           if (card) {
-            this.player.moveCardToDeckBottom(card);
-            this.player.removeCardFromHand(cardId);
+            this.player.removeCardFromPileById(cardId, 'hand');
+            this.player.placeCardInPile(card, 'deck', 0);
           }
           this.player.syncToYState();
         },
         flipHandCard: (cardId: string) => {
-          const hand = this.player.getState().hand;
+          const hand = this.player.getHand().getCards();
           const card = hand.find(c => c.id === cardId);
           if (card) {
             // Toggle flip state
