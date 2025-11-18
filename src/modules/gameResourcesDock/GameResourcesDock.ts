@@ -257,7 +257,7 @@ export class GameResourcesDock {
     drawButton.textContent = 'Draw';
     drawButton.onclick = (e) => {
       e.stopPropagation();
-      this.onDrawCard();
+      this.player.drawCard();
     };
 
     deck.appendChild(labelEl);
@@ -634,10 +634,6 @@ export class GameResourcesDock {
     }
 
     e.dataTransfer!.setDragImage(cardEl, offsetX, offsetY);
-  }
-
-  private onDrawCard(): void {
-    this.player.drawCard();
   }
 
   private openScryModal(): void {
