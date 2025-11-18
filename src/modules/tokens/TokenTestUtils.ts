@@ -19,15 +19,17 @@ export class TokenTestUtils {
   /**
    * Spawn a test token at the specified position
    */
-  public spawnToken(x: number, y: number, imageUrl?: string, backgroundColor?: string): void {
+  public spawnToken(x: number, y: number, name?: string, imageUrl?: string, backgroundColor?: string): void {
     const tokenId = `token-${Math.random().toString(36).substring(2, 11)}`;
 
     // Use a default SVG if none provided
     const defaultImage = '/assets/token_images/ability-deathtouch.svg';
+    const defaultName = 'Deathtouch';
     const defaultBgColor = '#ffffff'; // Gray-500
 
     const token: KeywordToken = {
       id: tokenId,
+      title: name ?? defaultName,
       ownerId: this.playerId,
       x,
       y,
