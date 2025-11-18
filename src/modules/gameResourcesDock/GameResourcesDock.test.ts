@@ -21,7 +21,7 @@ describe('GameResourcesDock - Pile Card Movements (Keyboard Shortcuts)', () => {
     playerId = 'test-player-123';
 
     // Create a deck with 10 cards
-    deck = new Deck(10);
+    deck = new Deck(undefined, 10);
 
     // Create player
     player = new Player(playerId, yDoc, deck, { initialHealth: 40 });
@@ -147,7 +147,7 @@ describe('GameResourcesDock - Pile Card Movements (Keyboard Shortcuts)', () => {
     it('should move exactly ONE card from deck to hand', () => {
       // Verify initial state
       let state = player.getState();
-      expect(state.deckCardCount).toBe(10);
+      expect(player.getDeck().getCardCount()).toBe(10);
       expect(state.hand.length).toBe(0);
 
       // Simulate keyboard shortcut: Press 'H' while hovering deck pile
@@ -162,7 +162,7 @@ describe('GameResourcesDock - Pile Card Movements (Keyboard Shortcuts)', () => {
 
       // Verify: Deck should have 9 cards, hand should have 1 card
       state = player.getState();
-      expect(state.deckCardCount).toBe(9);
+      expect(player.getDeck().getCardCount()).toBe(9);
       expect(state.hand.length).toBe(1);
       expect(state.hand[0].id).toBe(topCardId);
     });

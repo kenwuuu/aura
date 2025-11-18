@@ -92,6 +92,7 @@ describe('DeckPileViewer', () => {
           front: {
             normal: `https://example.com/${card.id}.jpg`,
           },
+          back: {}
         },
       }));
 
@@ -102,7 +103,7 @@ describe('DeckPileViewer', () => {
 
       // Check first image has correct src
       const firstImg = images[0] as HTMLImageElement;
-      expect(firstImg.src).toBe('https://example.com/card-9.jpg');
+      expect(firstImg.src).toBe('http://localhost:3000/assets/card-back.png');
     });
 
     it('should show card number fallback when no images', () => {
