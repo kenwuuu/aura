@@ -555,14 +555,14 @@ export class GameResourcesDock {
   private replaceRemainingScriedCards(): void {
     // returns any remaining cards in scryViewer on top of deck, in order
     const newDeck = [...this.player['deck'].getCards(), ...this.scriedCards.getCards()]
-    this.player['deck'].setCards(newDeck);
+    this.player['deck'].setCardsDO_NOT_USE(newDeck);
   }
 
   private scryCards(count: number): void {
     // Get the top N cards from the deck
     const deckCards = this.player.getDeckCards();
     // Cards are stored bottom-to-top, so we need to slice from the end
-    this.scriedCards.setCards(deckCards.slice(-count));
+    this.scriedCards.setCardsDO_NOT_USE(deckCards.slice(-count));
     this.scriedCards.getCards().forEach((card) => {
       this.player['deck'].removeCardById(card.id);
     });

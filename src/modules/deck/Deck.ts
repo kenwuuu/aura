@@ -33,7 +33,17 @@ export class Deck {
     }
   }
 
-  public setCards(cards: Card[]): void {
+  public findCardById(cardId: string): Card | null {
+    return this.cards.find(c => c.id === cardId) ?? null;
+  }
+
+  public findCard(card: Card): Card | null {
+    return this.cards.find(c => c.id === card.id) ?? null;
+  }
+
+  public setCardsDO_NOT_USE(cards: Card[]): void {
+    // DO NOT USE THIS FUNCTION. THIS IS AN ANTIPATTERN
+    // THIS IS REQUIRED FOR SCRY TO FUNCTION. WE WILL REFACTOR LATER
     this.cards = cards;
   }
 
@@ -83,11 +93,6 @@ export class Deck {
       return this.cards.splice(index, 1)[0];
     }
     return null;
-  }
-
-  // Find a card by ID
-  findCardById(cardId: string): Card | null {
-    return this.cards.find(c => c.id === cardId) ?? null;
   }
 
   // Clear all cards from deck
