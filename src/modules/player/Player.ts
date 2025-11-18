@@ -154,24 +154,33 @@ export class Player {
     switch (pileType) {
       case "hand":
         result = this.hand.removeCardById(cardId);
+        break;
+      case "deck":
+        result = this.deck.removeCardById(cardId);
+        break;
       case "discard":
         result = this.discard.removeCardById(cardId);
+        break;
       case "exile":
         result = this.exile.removeCardById(cardId);
+        break;
     }
     this.syncToYState();
     return result;
   }
 
-  public drawCardFromPile(pile: PileType) {
+  public drawCardFromPile(pile: 'deck' | 'discard' | 'exile') {
     let card;
     switch (pile) {
       case "deck":
         card = this.deck.drawCard();
+        break;
       case "discard":
         card = this.discard.drawCard();
+        break;
       case "exile":
         card = this.exile.drawCard();
+        break;
     }
     this.syncToYState();
     return card;
