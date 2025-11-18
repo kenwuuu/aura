@@ -1,16 +1,16 @@
-import { Player, PlayerState } from '../player';
-import { GameResourcesDockConfig } from './types';
+import {Player, PlayerState} from '../player';
+import {GameResourcesDockConfig} from './types';
 import {Card, Deck} from '../deck';
-import { PileType, DeckPileViewer } from './components';
-import { CardPreview } from '../cardPreview';
+import {DeckPileViewer, PileType} from './components';
+import {CardPreview} from '../cardPreview';
 import React from 'react';
-import { createRoot, Root } from 'react-dom/client';
-import { HealthDisplay } from '../../components/health/HealthDisplay';
-import { HotkeyTooltip } from '../../components/HotkeyTooltip';
-import { HotkeyContext } from '../../data/hotkeys';
-import {DEFAULT_CARD_BACK, YSTATE_DECK_CARD_COUNT, YSTATE_DISCARD_PILE} from '../../constants';
+import {createRoot, Root} from 'react-dom/client';
+import {HealthDisplay} from '../../components/health/HealthDisplay';
+import {HotkeyTooltip} from '../../components/HotkeyTooltip';
+import {HotkeyContext} from '../../data/hotkeys';
+import {DEFAULT_CARD_BACK, YSTATE_DECK_CARD_COUNT} from '../../constants';
 import {animate} from "motion";
-import { ScryModal } from '../../components/ScryModal';
+import {ScryModal} from '../../components/ScryModal';
 
 export class GameResourcesDock {
   private container: HTMLElement;
