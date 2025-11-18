@@ -306,11 +306,6 @@ export class KeyboardHandler {
       if (!card) return;
 
       switch (key) {
-        case 'z': // Z - Play from hand to battlefield  TODO: Doesn't play when you press z on card
-          e.preventDefault();
-          dockState.playHandCardToBattlefield(dockState.hoveredHandCardId);
-          break;
-
         case 'd': // D - Move to graveyard
           e.preventDefault();
           dockState.moveHandCardToDiscard(dockState.hoveredHandCardId);
@@ -344,11 +339,6 @@ export class KeyboardHandler {
       const pileType = dockState.hoveredPileType;
 
       switch (key) {
-        case 'z': // Z - Play top card to battlefield
-          e.preventDefault();
-          dockState.movePileCardToBattlefield(topCard, pileType);
-          break;
-
         case 'h': // H - Move top card to hand
           e.preventDefault();
           dockState.movePileCardToHand(pileType);

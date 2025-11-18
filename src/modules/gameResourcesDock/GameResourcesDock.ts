@@ -817,14 +817,6 @@ export class GameResourcesDock {
 
           return cards.length > 0 ? cards[cards.length - 1] : null;
         },
-        playHandCardToBattlefield: (cardId: string) => {
-          const hand = this.player.getHand().getCards();
-          const card = hand.find(c => c.id === cardId);
-          if (card) {
-            this.player.removeCardFromHand(cardId);
-          }
-          this.player.syncToYState();
-        },
         moveHandCardToDiscard: (cardId: string) => {
           const hand = this.player.getHand().getCards();
           const card = hand.find(c => c.id === cardId);
@@ -872,38 +864,13 @@ export class GameResourcesDock {
           }
           this.player.syncToYState();
         },
-        movePileCardToBattlefield: (card: Card, pileType: 'deck' | 'exile' | 'discard') => {
-          if (pileType === 'deck') {
-            const drawnCard = this.player.drawCard();
-            if (drawnCard) {
-              const event = new CustomEvent('playCard', {
-                detail: { card: drawnCard, playerId: this.player['playerId'] }
-              });
-              window.dispatchEvent(event);
-            }
-          } else {
-            // Remove from pile and play
-            const state = this.player.getState();
-            let pile: Card[] = pileType === 'exile' ? state.exilePile : state.discardPile;
-            const index = pile.findIndex(c => c.id === card.id);
-            if (index !== -1) {
-              pile.splice(index, 1);
-              this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
-
-              const event = new CustomEvent('playCard', {
-                detail: { card, playerId: this.player['playerId'] }
-              });
-              window.dispatchEvent(event);
-            }
-          }
-          this.player.syncToYState();
-        },
         movePileCardToPile: (originPileType: 'deck' | 'discard' | 'exile', destinationPileType: PileType, position?: number) => {
           const card = this.player.drawCardFromPile(originPileType);
           if (card) this.player.placeCardInPile(card, destinationPileType, position);
           this.player.syncToYState();
         },
         movePileCardToHand: (pileType: 'deck' | 'exile' | 'discard') => {
+          // todo: refactor this into movePileCardToPile
           const card = this.player.drawCardFromPile(pileType);
           if (card) this.player.placeCardInPile(card, 'hand');
           this.player.syncToYState();
