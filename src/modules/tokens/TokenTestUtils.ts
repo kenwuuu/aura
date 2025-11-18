@@ -19,11 +19,12 @@ export class TokenTestUtils {
   /**
    * Spawn a test token at the specified position
    */
-  public spawnToken(x: number, y: number, imageUrl?: string): void {
+  public spawnToken(x: number, y: number, imageUrl?: string, backgroundColor?: string): void {
     const tokenId = `token-${Math.random().toString(36).substring(2, 11)}`;
 
-    // Use a default test image if none provided
-    const defaultImage = 'https://cards.scryfall.io/art_crop/front/f/c/fc1f8977-c35f-4d5c-9e3b-7b8c1e9e8f3a.jpg';
+    // Use a default SVG if none provided
+    const defaultImage = '/assets/token_images/ability-deathtouch.svg';
+    const defaultBgColor = '#ffffff'; // Gray-500
 
     const token: Token = {
       id: tokenId,
@@ -33,6 +34,7 @@ export class TokenTestUtils {
       zIndex: this.getMaxZIndex() + 1,
       rotation: 0,
       imageUrl: imageUrl ?? defaultImage,
+      backgroundColor: backgroundColor ?? defaultBgColor,
       count: 1,
     };
 
@@ -43,28 +45,10 @@ export class TokenTestUtils {
   /**
    * Spawn a token at the center of the viewport
    */
-  public spawnTokenAtCenter(imageUrl?: string): void {
+  public spawnTokenAtCenter(imageUrl?: string, backgroundColor?: string): void {
     const x = window.innerWidth / 2 - 25; // 25 = half of token width
     const y = window.innerHeight / 2 - 25; // 25 = half of token height
-    this.spawnToken(x, y, imageUrl);
-  }
-
-  /**
-   * Spawn multiple test tokens in a grid
-   */
-  public spawnTokenGrid(rows: number = 3, cols: number = 3): void {
-    const startX = 100;
-    const startY = 100;
-    const spacing = 70;
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        this.spawnToken(
-          startX + col * spacing,
-          startY + row * spacing
-        );
-      }
-    }
+    this.spawnToken(x, y, imageUrl, backgroundColor);
   }
 
   /**
@@ -101,12 +85,12 @@ export class TokenTestUtils {
 export function exposeTokenTestUtils(yDoc: Y.Doc, playerId: string): void {
   const utils = new TokenTestUtils(yDoc, playerId);
 
-  (window as any).spawnTestToken = (x: number, y: number, imageUrl?: string) => {
-    utils.spawnToken(x, y, imageUrl);
+  (window as any).spawnTestToken = (x: number, y: number, imageUrl?: string, backgroundColor?: string) => {
+    utils.spawnToken(x, y, imageUrl, backgroundColor);
   };
 
-  (window as any).spawnTestTokenAtCenter = (imageUrl?: string) => {
-    utils.spawnTokenAtCenter(imageUrl);
+  (window as any).spawnTestTokenAtCenter = (imageUrl?: string, backgroundColor?: string) => {
+    utils.spawnTokenAtCenter(imageUrl, backgroundColor);
   };
 
   (window as any).spawnTokenGrid = (rows?: number, cols?: number) => {

@@ -604,6 +604,12 @@ export class MultiPlayerBoardManager {
       if (countElement) {
         countElement.textContent = token.count.toString();
       }
+
+      // Update background color if changed
+      const background = tokenElement.querySelector('.token-background') as HTMLElement;
+      if (background) {
+        background.style.backgroundColor = token.backgroundColor;
+      }
     }
 
     this.updateTokenPosition(tokenElement, token);
@@ -620,17 +626,31 @@ export class MultiPlayerBoardManager {
     tokenElement.style.userSelect = 'none';
     tokenElement.style.pointerEvents = 'auto';
 
-    // Token image
+    // Circular background
+    const background = document.createElement('div');
+    background.className = 'token-background';
+    background.style.position = 'absolute';
+    background.style.width = '100%';
+    background.style.height = '100%';
+    background.style.borderRadius = '50%';
+    background.style.backgroundColor = token.backgroundColor;
+    background.style.display = 'flex';
+    background.style.alignItems = 'center';
+    background.style.justifyContent = 'center';
+    background.style.pointerEvents = 'none';
+    tokenElement.appendChild(background);
+
+    // Token image (SVG or regular image)
     const img = document.createElement('img');
     img.src = token.imageUrl;
     img.alt = 'token';
-    img.style.width = '100%';
-    img.style.height = '100%';
+    img.style.width = '70%'; // Smaller than container to leave padding
+    img.style.height = '70%';
     img.style.objectFit = 'contain';
     img.style.pointerEvents = 'none';
     img.style.userSelect = 'none';
     img.draggable = false;
-    tokenElement.appendChild(img);
+    background.appendChild(img);
 
     // Count overlay
     const countElement = document.createElement('div');

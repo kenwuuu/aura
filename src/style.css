@@ -196,7 +196,9 @@ body {
   letter-spacing: 0.05em;
   text-align: center;
 }
-
+.svg-black {
+  filter: brightness(0) saturate(100%);
+}
 .hand-cards {
   position: relative;
   height: 120px;
