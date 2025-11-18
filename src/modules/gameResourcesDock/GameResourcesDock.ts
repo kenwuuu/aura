@@ -641,7 +641,7 @@ export class GameResourcesDock {
   }
 
   private openScryModal(): void {
-    const deckCount = this.player.getState().deck.length;
+    const deckCount = this.player.getDeck().getCardCount();
 
     // Setup scry modal container if not already created
     if (!this.scryModalContainer) {
