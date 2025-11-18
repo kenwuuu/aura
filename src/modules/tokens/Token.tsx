@@ -22,31 +22,9 @@ export const TokenElement: React.FC<TokenElementProps> = ({
 }) => {
   const elementRef = useRef<HTMLDivElement>(null);
 
-  const incrementCount = () => {
-    onUpdate({
-      ...token,
-      count: token.count + 1,
-    });
-  };
-
-  const decrementCount = () => {
-    if (token.count > 0) {
-      onUpdate({
-        ...token,
-        count: token.count - 1,
-      });
-    }
-  };
-
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     incrementCount();
-  };
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    decrementCount();
   };
 
   // Handle keyboard events when this token is hovered
@@ -67,7 +45,6 @@ export const TokenElement: React.FC<TokenElementProps> = ({
       className="token"
       data-token-id={token.id}
       onClick={handleClick}
-      onContextMenu={handleContextMenu}
       style={{
         position: 'absolute',
         width: `${width}px`,

@@ -19,6 +19,7 @@ import { RoomManager } from './services/roomManager';
 import { WhiteboardEventHandlers } from './services/eventHandlers';
 import { PatchNotesService } from './services/patchNotes';
 import { DEFAULT_DECK } from './data/defaultDeck';
+import { exposeTokenTestUtils } from './modules/tokens';
 import './style.css';
 import * as Sentry from "@sentry/react";
 import {ReactToasterRoot} from "../ReactToasterRoot";
@@ -161,6 +162,9 @@ class AuraApp {
     this.setupDiscordButton();
     this.setupHotkeyHintsModal();
     this.setupAddCardModal();
+
+    // Expose token test utilities for development
+    exposeTokenTestUtils(this.yDoc, this.playerId);
   }
 
   private setupKeyboardCallbacks(): void {
