@@ -564,7 +564,7 @@ export class GameResourcesDock {
     // Cards are stored bottom-to-top, so we need to slice from the end
     this.scriedCards.setCards(deckCards.slice(-count));
     this.scriedCards.getCards().forEach((card) => {
-      this.player['deck'].removeCard(card.id);
+      this.player['deck'].removeCardById(card.id);
     });
 
     // Show them in the deck viewer
@@ -588,7 +588,7 @@ export class GameResourcesDock {
   private handlePileCardToBattlefield(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
     if (pileType === 'deck') {
       // Remove card from deck
-      this.player['deck'].removeCard(card.id);
+      this.player['deck'].removeCardById(card.id);
       this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
     } else {
       // Remove from exile or discard pile
@@ -614,7 +614,7 @@ export class GameResourcesDock {
   private handlePileCardToHand(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
     if (pileType === 'deck') {
       // Remove card from deck
-      this.player['deck'].removeCard(card.id);
+      this.player['deck'].removeCardById(card.id);
       this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
     } else {
       // Remove from exile or discard pile
@@ -639,7 +639,7 @@ export class GameResourcesDock {
 
     if (pileType === 'deck') {
       // Remove from deck (local)
-      this.player['deck'].removeCard(card.id);
+      this.player['deck'].removeCardById(card.id);
     } else if (pileType === 'discard') {
       // Remove from discard pile
       const pile = state.discardPile;
@@ -661,9 +661,9 @@ export class GameResourcesDock {
 
     if (pileType === 'deck') {
       // Remove from deck (local)
-      this.player['deck'].removeCard(card.id);
+      this.player['deck'].removeCardById(card.id);
     } else if (pileType === 'scry') {
-      this.scriedCards.removeCard(card.id);
+      this.scriedCards.removeCardById(card.id);
     } else if (pileType === 'exile') {
       // Remove from exile pile
       const pile = state.exilePile;
@@ -685,9 +685,9 @@ export class GameResourcesDock {
 
     if (pileType === 'deck') {
       // Remove from deck (local) and add back to top
-      this.player['deck'].removeCard(card.id);
+      this.player['deck'].removeCardById(card.id);
     } else if (pileType === 'scry') {
-      this.scriedCards.removeCard(card.id);
+      this.scriedCards.removeCardById(card.id);
     } else {
       // Remove from exile or discard pile
       const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
@@ -709,9 +709,9 @@ export class GameResourcesDock {
 
     if (pileType === 'deck') {
       // Remove from deck (local) and add back to bottom
-      this.player['deck'].removeCard(card.id);
+      this.player['deck'].removeCardById(card.id);
     } else if (pileType === 'scry') {
-      this.scriedCards.removeCard(card.id);
+      this.scriedCards.removeCardById(card.id);
     } else {
       // Remove from exile or discard pile
       const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
@@ -863,7 +863,7 @@ export class GameResourcesDock {
 
           if (pileType === 'deck') {
             // Remove from deck and move to exile directly (don't draw to hand first)
-            this.player['deck'].removeCard(card.id);
+            this.player['deck'].removeCardById(card.id);
             this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
             this.player.moveCardToExile(card);
           } else {
@@ -883,7 +883,7 @@ export class GameResourcesDock {
 
           if (pileType === 'deck') {
             // Remove from deck and move to discard directly (don't draw to hand first)
-            this.player['deck'].removeCard(card.id);
+            this.player['deck'].removeCardById(card.id);
             this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
             this.player.moveCardToDiscard(card);
           } else {

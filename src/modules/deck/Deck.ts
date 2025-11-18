@@ -64,7 +64,7 @@ export class Deck {
     return this.cards.length;
   }
 
-  removeCard(cardId: string): Card | null {
+  removeCardById(cardId: string): Card | null {
     const index = this.cards.findIndex(c => c.id === cardId);
     if (index !== -1) {
       return this.cards.splice(index, 1)[0];

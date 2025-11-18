@@ -84,7 +84,7 @@ export class Player {
     if (deckCards.length > 0) {  // TODO: change logic based on if deck is commander or not
       // move commander to hand
       const commander = deckCards[deckCards.length - 1];
-      this.deck.removeCard(commander.id);
+      this.deck.removeCardById(commander.id);
       this.deck.addCardToTop(commander);
       this.drawCard();
 
@@ -142,7 +142,7 @@ export class Player {
   }
 
   public removeCardFromHand(cardId: string): Card | null {
-    const card = this.hand.removeCard(cardId);
+    const card = this.hand.removeCardById(cardId);
     if (card) {
       this.syncToYState();
     }
