@@ -12,7 +12,7 @@ export class Deck {
         id: `card-${Math.random().toString(36).substring(2, 11)}`,
       }));
     } else {
-      this.initializeDeckWithDummyCards(60);
+      this.initializeDeckWithDummyCards(0);
     }
   }
 
