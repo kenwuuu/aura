@@ -14,7 +14,7 @@ import { ScryModal } from '../../components/ScryModal';
 import { ControlsMenu } from '../../components/controls/ControlsMenu';
 import {setCardDragPoint} from "@/utils/centerHtmlElementOnDrag";
 import { TooltipManager } from '../whiteboard/TooltipManager';
-import { TooltipProvider } from '../../contexts/TooltipContext';
+import { TooltipProvider } from '@/contexts/TooltipContext';
 
 export class GameResourcesDock {
   private container: HTMLElement;
