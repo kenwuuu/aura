@@ -56,26 +56,27 @@ export class KeywordTokenFactory {
     tokenElement.appendChild(background);
 
     // Token image (SVG or regular image)
-    const img = document.createElement('img');
-    img.src = token.imageUrl;
-    img.alt = token.title;
-    img.className = 'svg-black'; // Make SVGs fully black
-    img.style.width = '70%';
-    img.style.height = '70%';
-    img.style.objectFit = 'contain';
-    img.style.pointerEvents = 'none';
-    img.style.userSelect = 'none';
-    img.draggable = false;
-    background.appendChild(img);
+    if (token.imageUrl) {
+      const img = document.createElement('img');
+      img.src = token.imageUrl;
+      img.alt = token.title;
+      img.className = 'svg-black'; // Make SVGs fully black
+      img.style.width = '70%';
+      img.style.height = '70%';
+      img.style.objectFit = 'contain';
+      img.style.pointerEvents = 'none';
+      img.style.userSelect = 'none';
+      img.draggable = false;
+      background.appendChild(img);
+    }
 
     // Count overlay
     const count = 'count' in token ? token.count : (token.initialCount ?? 1);
     const countElement = document.createElement('div');
     countElement.className = 'token-count';
     countElement.style.position = 'absolute';
-    countElement.style.top = '50%';
-    countElement.style.left = '50%';
-    countElement.style.transform = 'translate(-50%, -50%)';
+    countElement.style.top = '-15%';
+    countElement.style.left = '0%';
     countElement.style.fontSize = '24px';
     countElement.style.fontWeight = 'bold';
     countElement.style.color = 'white';

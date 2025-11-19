@@ -74,7 +74,7 @@ export class WhiteboardEventHandlers {
           const newToken = {
             id: tokenId,
             title: template.title,
-            imageUrl: template.imageUrl,
+            imageUrl: template.imageUrl ?? '',
             backgroundColor: template.backgroundColor,
             count: template.initialCount ?? 1,
             ownerId: this.playerId,
