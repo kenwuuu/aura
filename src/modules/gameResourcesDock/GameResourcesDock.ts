@@ -12,6 +12,7 @@ import { DEFAULT_CARD_BACK } from '../../constants';
 import {animate} from "motion";
 import { ScryModal } from '../../components/ScryModal';
 import { ControlsMenu } from '../../components/controls/ControlsMenu';
+import {setCardDragPoint} from "@/utils/centerHtmlElementOnDrag";
 
 export class GameResourcesDock {
   private container: HTMLElement;
@@ -506,7 +507,7 @@ export class GameResourcesDock {
         cardEl.classList.remove('hover');
 
         // Use your normal card-centered drag image first
-        this.setCardDragPoint(cardEl, e);
+        setCardDragPoint(cardEl, e);
 
         e.dataTransfer!.effectAllowed = 'move';
         e.dataTransfer!.setData('text/plain', card.id);
@@ -569,7 +570,7 @@ export class GameResourcesDock {
 
             // Switch BACK to your full-size centered drag image
             try {
-              this.setCardDragPoint(draggedElement, e);
+              setCardDragPoint(draggedElement, e);
             } catch {}
           }
           return;
@@ -635,27 +636,6 @@ export class GameResourcesDock {
 
       this._dragState.mode = 'none';
     });
-  }
-
-  private setCardDragPoint(cardEl: HTMLDivElement, e: DragEvent) {
-    const userAgent = navigator.userAgent.toLowerCase();
-    const rect = cardEl.getBoundingClientRect();
-    let offsetX;
-    let offsetY;
-
-    // these magic numbers came from dragging a card out of dock and checking that it placed on the board as expected
-    if (userAgent.includes("safari") && !userAgent.includes("chrome")) {  // Safari
-      offsetX = rect.width / 2;
-      offsetY = rect.height / 2;
-    } else if (userAgent.includes("firefox")) {  // Firefox
-      offsetX = rect.width / 1.3;
-      offsetY = rect.height / 1.3;
-    } else {  // Chrome and other browsers
-      offsetX = rect.width / 1.5;
-      offsetY = rect.height / 2;
-    }
-
-    e.dataTransfer!.setDragImage(cardEl, offsetX, offsetY);
   }
 
   private onDrawCard(): void {

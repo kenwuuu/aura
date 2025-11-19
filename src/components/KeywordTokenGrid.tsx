@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { KeywordTokenTemplate } from '../modules/keywordTokens/types';
 import { KeywordTokenFactory } from '../modules/keywordTokens/KeywordTokenFactory';
+import {setCardDragPoint} from "@/utils/centerHtmlElementOnDrag";
 
 interface KeywordTokenGridProps {
   templates: KeywordTokenTemplate[];
@@ -30,6 +31,9 @@ export const KeywordTokenGrid: React.FC<KeywordTokenGridProps> = ({
       const tokenElement = KeywordTokenFactory.createTokenElement(template, {
         mode: 'grid',
         onDragStart: (e: DragEvent, draggedTemplate: KeywordTokenTemplate) => {
+          // Center the drag image on the mouse cursor
+          setCardDragPoint(e.target as HTMLDivElement, e);
+
           // Store token template data in dataTransfer for board to read
           e.dataTransfer!.setData('application/x-keyword-token-template', JSON.stringify(draggedTemplate));
           e.dataTransfer!.effectAllowed = 'copy'; // Indicate this is a copy operation
