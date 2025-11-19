@@ -50,7 +50,7 @@ export const KeywordTokenGrid: React.FC<KeywordTokenGridProps> = ({
           setCardDragPoint(e.target as HTMLDivElement, e);
 
           // Store token template data in dataTransfer for board to read
-          e.dataTransfer!.setData('application/x-keyword-token-template', JSON.stringify(draggedTemplate));
+          e.dataTransfer!.setData('text/x-keyword-token-template', JSON.stringify(draggedTemplate));
           e.dataTransfer!.effectAllowed = 'copy'; // Indicate this is a copy operation
 
           // Call parent callback

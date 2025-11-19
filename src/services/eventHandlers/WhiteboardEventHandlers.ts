@@ -40,14 +40,21 @@ export class WhiteboardEventHandlers {
 
     whiteboardContainer.addEventListener('dragover', (e) => {
       e.preventDefault();
-      e.dataTransfer!.dropEffect = 'move';
+      // Support both 'move' (for cards) and 'copy' (for tokens)
+      // Check what type of drag is happening
+      const types = e.dataTransfer?.types || [];
+      if (types.includes('text/x-keyword-token-template')) {
+        e.dataTransfer!.dropEffect = 'copy';
+      } else {
+        e.dataTransfer!.dropEffect = 'move';
+      }
     });
 
     whiteboardContainer.addEventListener('drop', async (e) => {
       e.preventDefault();
 
       // Check if dropping a keyword token template from the grid
-      const tokenTemplateData = e.dataTransfer?.getData('application/x-keyword-token-template');
+      const tokenTemplateData = e.dataTransfer?.getData('text/x-keyword-token-template');
       if (tokenTemplateData) {
         try {
           const template = JSON.parse(tokenTemplateData);
