@@ -130,6 +130,17 @@ const DEFAULT_TOKEN_TEMPLATES: KeywordTokenTemplate[] = [
   // Add more default templates here as you create token images
 ];
 
+const closeDelay = 200;
+
+// Read fade duration from CSS variable
+const getFadeDuration = (): number => {
+  const duration = getComputedStyle(document.documentElement)
+    .getPropertyValue('--fade-duration')
+    .trim();
+  // Parse CSS time value (e.g., "300ms" -> 300)
+  return parseInt(duration) || 300; // Fallback to 300ms
+};
+
 export const ControlsMenu: React.FC<ControlsMenuProps> = ({
   onScry,
   onAddCard,
@@ -139,7 +150,9 @@ export const ControlsMenu: React.FC<ControlsMenuProps> = ({
   tokenGridGap = 12,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const fadeDurationRef = React.useRef<number>(getFadeDuration());
 
   const handleMouseEnter = () => {
     // Clear any pending close timeout
@@ -147,14 +160,24 @@ export const ControlsMenu: React.FC<ControlsMenuProps> = ({
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
     }
+    setIsClosing(false);
     setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
     // Delay closing to allow user to move to expanded menu
     closeTimeoutRef.current = setTimeout(() => {
+      startClosing();
+    }, closeDelay); // 200ms delay
+  };
+
+  const startClosing = () => {
+    setIsClosing(true);
+    // After fade-down animation completes, actually hide the menu
+    setTimeout(() => {
       setIsHovered(false);
-    }, 200); // 200ms delay
+      setIsClosing(false);
+    }, fadeDurationRef.current); // Match fadeDown animation duration from CSS
   };
 
   // Cleanup timeout on unmount
@@ -204,8 +227,8 @@ export const ControlsMenu: React.FC<ControlsMenuProps> = ({
         </button>
       </div>
 
-      {isHovered && (
-        <div className={styles.expandedContent}>
+      {(isHovered || isClosing) && (
+        <div className={`${styles.expandedContent} ${isClosing ? styles.closing : ''}`}>
           <KeywordTokenGrid
             templates={tokenTemplates}
             columns={tokenGridColumns}

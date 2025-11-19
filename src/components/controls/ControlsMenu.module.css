@@ -1,3 +1,8 @@
+/* Shared constants */
+:root {
+  --fade-duration: 300ms;
+}
+
 /* Controls Menu Container */
 .controlsContainer {
   background-color: #1a1a1a;
@@ -54,6 +59,18 @@
   }
 }
 
+/* Keyframe animation for fade-down effect */
+@keyframes fadeDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
 /* Expansion - Positioned absolutely above the dock */
 .expandedContent {
   position: absolute;
@@ -73,7 +90,12 @@
   padding-left: 12px;
 
   /* Fade-up animation */
-  animation: fadeUp 0.3s ease-out;
+  animation: fadeUp var(--fade-duration) ease-out;
+}
+
+.expandedContent.closing {
+  /* Fade-down animation when closing */
+  animation: fadeDown var(--fade-duration) ease-out;
 }
 
 .expandedContent > * {
