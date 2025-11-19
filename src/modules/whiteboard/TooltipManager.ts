@@ -73,8 +73,9 @@ export class TooltipManager {
    * @param clickX - X position of the click
    * @param clickY - Y position of the click
    * @param pinned
+   * @param title - Optional title to display at the top of the tooltip
    */
-  show(cardId: string, context: HotkeyContext, clickX: number, clickY: number, pinned: boolean = true): void {
+  show(cardId: string, context: HotkeyContext, clickX: number, clickY: number, pinned: boolean = true, title?: string): void {
     this.clearTimeouts();
     if (!this.tooltipRoot) return;
 
@@ -90,6 +91,7 @@ export class TooltipManager {
         context: context,
         mouseX: clickX,
         mouseY: clickY,
+        title: title,
         onHotkeyClick: (hotkey: HotkeyDefinition) => {
           if (this.onHotkeyClick && this.clickedCardId) {
             this.onHotkeyClick(hotkey, this.clickedCardId);
@@ -103,12 +105,12 @@ export class TooltipManager {
   /**
    * Show tooltip on hover (delayed)
    */
-  showOnHover(cardId: string, context: HotkeyContext): void {
+  showOnHover(cardId: string, context: HotkeyContext, title?: string): void {
     this.clearTimeouts();
 
     this.hoverTimeout = window.setTimeout(() => {
       // Use the latest mouse coordinates, not the ones captured at mouseenter
-      this.show(cardId, context, this.latestMouseX, this.latestMouseY, false);
+      this.show(cardId, context, this.latestMouseX, this.latestMouseY, false, title);
     }, 500);
   }
 

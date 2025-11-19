@@ -622,7 +622,7 @@ export class MultiPlayerBoardManager {
       mode: 'board',
       onMouseEnter: (tokenId: string) => {
         this.hoveredTokenId = tokenId;
-        this.tooltipManager.showOnHover('-1', 'kwToken');
+        this.tooltipManager.showOnHover('-1', 'kwToken', token.title);
       },
       onMouseMove: (e: MouseEvent, tokenId: string) => {
         this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
