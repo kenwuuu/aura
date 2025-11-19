@@ -4,6 +4,7 @@ import { MultiPlayerBoardManager } from '../../modules/whiteboard';
 import { TokenService } from '../scryfall';
 import { CARD_HEIGHT, CARD_WIDTH } from '../../constants';
 import {getBoardLeftOffset, getBoardTopOffset} from "../../modules/whiteboard/BoardContainerManager";
+import {tokenDiameter} from "@/modules/keywordTokens/KeywordTokenFactory";
 
 /**
  * Handles drag-and-drop events between the whiteboard and other game zones
@@ -56,8 +57,8 @@ export class WhiteboardEventHandlers {
           const boardTop = getBoardTopOffset();
 
           // Convert screen coordinates to board-relative, centered on cursor
-          const x = e.clientX - boardLeft - (25 * this.whiteboard.getZoomLevel()); // 25 = half of 50px token
-          const y = e.clientY - boardTop - (25 * this.whiteboard.getZoomLevel()) - 60;
+          const x = e.clientX - boardLeft - ((tokenDiameter / 2) * this.whiteboard.getZoomLevel()); // 25 = half of 50px token
+          const y = e.clientY - boardTop - ((tokenDiameter / 2.7) * this.whiteboard.getZoomLevel()) - 60;
 
           // Create new token instance from template
           const tokenId = `token-${Math.random().toString(36).substring(2, 11)}`;
