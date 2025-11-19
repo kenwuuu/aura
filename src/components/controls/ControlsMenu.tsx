@@ -173,6 +173,21 @@ export const ControlsMenu: React.FC<ControlsMenuProps> = ({
       onMouseLeave={handleMouseLeave}
     >
       <div className={styles.collapsedContent}>
+        <div className={styles.hoverIndicator}>
+          <svg
+            width="20"
+            height="12"
+            viewBox="0 0 20 12"
+            fill="none"
+            className={styles.arrowIcon}
+          >
+            <path
+              d="M10 2L15 8H5L10 2Z"
+              fill="currentColor"
+              opacity="0.6"
+            />
+          </svg>
+        </div>
         <button
           className="draw-button"
           onClick={onScry}
