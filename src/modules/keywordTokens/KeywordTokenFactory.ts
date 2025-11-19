@@ -11,6 +11,8 @@ export interface TokenElementOptions {
   onDragStart?: (e: DragEvent, template: KeywordTokenTemplate) => void;
 }
 
+export const tokenDiameter = 40;
+
 export class KeywordTokenFactory {
   /**
    * Creates a token DOM element
@@ -30,8 +32,8 @@ export class KeywordTokenFactory {
 
     tokenElement.className = 'token';
     tokenElement.style.position = options.mode === 'board' ? 'absolute' : 'relative';
-    tokenElement.style.width = '50px';
-    tokenElement.style.height = '50px';
+    tokenElement.style.width = tokenDiameter + 'px';
+    tokenElement.style.height = tokenDiameter + 'px';
     tokenElement.style.cursor = options.mode === 'grid' ? 'grab' : 'grab';
     tokenElement.style.userSelect = 'none';
     tokenElement.style.pointerEvents = 'auto';
@@ -77,7 +79,7 @@ export class KeywordTokenFactory {
       countElement.style.position = 'absolute';
       countElement.style.top = '-15%';
       countElement.style.left = '0%';
-      countElement.style.fontSize = '24px';
+      countElement.style.fontSize = '20px';
       countElement.style.fontWeight = 'bold';
       countElement.style.color = 'white';
       countElement.style.textShadow = `
