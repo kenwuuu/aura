@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { KeywordTokenTemplate } from '../modules/keywordTokens/types';
 import { KeywordTokenFactory } from '../modules/keywordTokens/KeywordTokenFactory';
-import {setCardDragPoint} from "@/utils/centerHtmlElementOnDrag";
+import { setElementDragPoint } from "@/utils/centerHtmlElementOnDrag";
 import { HotkeyContext } from '../data/hotkeys';
 import { useTooltipManager } from '../contexts/TooltipContext';
 
@@ -47,7 +47,7 @@ export const KeywordTokenGrid: React.FC<KeywordTokenGridProps> = ({
           tooltipManager?.hide();
 
           // Center the drag image on the mouse cursor
-          setCardDragPoint(e.target as HTMLDivElement, e);
+          setElementDragPoint(e.target as HTMLDivElement, e, 'kwToken');
 
           // Store token template data in dataTransfer for board to read
           e.dataTransfer!.setData('text/x-keyword-token-template', JSON.stringify(draggedTemplate));

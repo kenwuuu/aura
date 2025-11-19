@@ -12,7 +12,7 @@ import { DEFAULT_CARD_BACK } from '../../constants';
 import {animate} from "motion";
 import { ScryModal } from '../../components/ScryModal';
 import { ControlsMenu } from '../../components/controls/ControlsMenu';
-import {setCardDragPoint} from "@/utils/centerHtmlElementOnDrag";
+import { setElementDragPoint } from "@/utils/centerHtmlElementOnDrag";
 import { TooltipManager } from '../whiteboard/TooltipManager';
 import { TooltipProvider } from '@/contexts/TooltipContext';
 
@@ -516,7 +516,7 @@ export class GameResourcesDock {
         cardEl.classList.remove('hover');
 
         // Use your normal card-centered drag image first
-        setCardDragPoint(cardEl, e);
+        setElementDragPoint(cardEl, e, 'card');
 
         e.dataTransfer!.effectAllowed = 'move';
         e.dataTransfer!.setData('text/plain', card.id);
@@ -579,7 +579,7 @@ export class GameResourcesDock {
 
             // Switch BACK to your full-size centered drag image
             try {
-              setCardDragPoint(draggedElement, e);
+              setElementDragPoint(draggedElement, e, 'card');
             } catch {}
           }
           return;
