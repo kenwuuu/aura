@@ -680,11 +680,18 @@ export class MultiPlayerBoardManager {
     // Hover tracking
     tokenElement.addEventListener('mouseenter', () => {
       this.hoveredTokenId = token.id;
+      this.tooltipManager.showOnHover('-1', 'kwToken');
+    });
+
+    tokenElement.addEventListener('mousemove', (e: MouseEvent) => {
+      this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
+      this.mousePosition = { x: e.clientX, y: e.clientY };
     });
 
     tokenElement.addEventListener('mouseleave', () => {
       if (this.hoveredTokenId === token.id) {
         this.hoveredTokenId = null;
+        this.tooltipManager.hide();
       }
     });
 
@@ -693,6 +700,11 @@ export class MultiPlayerBoardManager {
       this.mousePosition = { x: e.clientX, y: e.clientY };
       this.isDragging = false;
       this.onTokenMouseDown(e, token.id);
+
+      if (this.hoveredTokenId === token.id) {
+        this.hoveredTokenId = null;
+        this.tooltipManager.hide();
+      }
     });
 
     // Left click - increment

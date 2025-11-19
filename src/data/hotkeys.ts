@@ -13,6 +13,7 @@ export const HotkeyContext = {
   Scry: 'scry',
   Discard: 'discard',
   Health: 'health',
+  KeywordToken: 'kwToken',
 } as const;
 
 export type HotkeyContext = typeof HotkeyContext[keyof typeof HotkeyContext];
@@ -64,7 +65,6 @@ export const HOTKEYS: HotkeyDefinition[] = [
   },
 
   // Battlefield card shortcuts
-
   {
     key: 'X',
     context: ['global', 'battlefield'],
@@ -112,6 +112,18 @@ export const HOTKEYS: HotkeyDefinition[] = [
     context: ['battlefield', 'deck', 'exile', 'discard', 'deckcard'],
     shortDescription: 'To hand',
     longDescription: 'Move card to hand',
+  },
+  {
+    key: '▲ / Left Click',
+    context: ['kwToken'],
+    shortDescription: '+1',
+    longDescription: '+1',
+  },
+  {
+    key: '▼ / Right Click',
+    context: ['kwToken'],
+    shortDescription: '-1',
+    longDescription: '-1',
   },
 
   // Hand and pile shortcuts
