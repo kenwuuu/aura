@@ -13,6 +13,7 @@ import { CardCounter } from '../../components';
 import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
 import {HotkeyContext} from "../../data/hotkeys";
 import { KeywordToken } from '@/modules/keywordTokens/types';
+import { KeywordTokenFactory } from '@/modules/keywordTokens/KeywordTokenFactory';
 
 const DEFAULT_OPPONENT_OPACITY = 1.0;
 const FOCUSED_OPACITY = 1.0;
@@ -617,136 +618,64 @@ export class MultiPlayerBoardManager {
   }
 
   private createTokenElement(token: KeywordToken): HTMLElement {
-    const tokenElement = document.createElement('div');
-    tokenElement.dataset.tokenId = token.id;
-    tokenElement.className = 'token';
-    tokenElement.style.position = 'absolute';
-    tokenElement.style.width = '50px';
-    tokenElement.style.height = '50px';
-    tokenElement.style.cursor = 'grab';
-    tokenElement.style.userSelect = 'none';
-    tokenElement.style.pointerEvents = 'auto';
+    const tokenElement = KeywordTokenFactory.createTokenElement(token, {
+      mode: 'board',
+      onMouseEnter: (tokenId: string) => {
+        this.hoveredTokenId = tokenId;
+        // this.tooltipManager.showOnHover('-1', 'kwToken');
+      },
+      onMouseMove: (e: MouseEvent, tokenId: string) => {
+        // this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
+        // this.mousePosition = { x: e.clientX, y: e.clientY };
 
-    // Circular background
-    const background = document.createElement('div');
-    background.className = 'token-background';
-    background.style.position = 'absolute';
-    background.style.width = '100%';
-    background.style.height = '100%';
-    background.style.borderRadius = '50%';
-    background.style.backgroundColor = token.backgroundColor;
-    background.style.display = 'flex';
-    background.style.alignItems = 'center';
-    background.style.justifyContent = 'center';
-    background.style.pointerEvents = 'none';
-    tokenElement.appendChild(background);
+        // Detect dragging
+        if (this.mouseDownPosition) {
+          const dx = e.clientX - this.mouseDownPosition.x;
+          const dy = e.clientY - this.mouseDownPosition.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Token image (SVG or regular image)
-    const img = document.createElement('img');
-    img.src = token.imageUrl;
-    img.alt = 'token';
-    img.className = 'svg-black'; // Make SVGs fully black
-    img.style.width = '70%'; // Smaller than container to leave padding
-    img.style.height = '70%';
-    img.style.objectFit = 'contain';
-    img.style.pointerEvents = 'none';
-    img.style.userSelect = 'none';
-    img.draggable = false;
-    background.appendChild(img);
+          if (distance > this.DRAG_THRESHOLD) {
+            this.isDragging = true;
+          }
+        }
+      },
+      onMouseLeave: (tokenId: string) => {
+        if (this.hoveredTokenId === tokenId) {
+          this.hoveredTokenId = null;
+          this.tooltipManager.hide();
+        }
+      },
+      onMouseDown: (e: MouseEvent, tokenId: string) => {
+        // Record starting position for drag detection
+        this.mouseDownPosition = { x: e.clientX, y: e.clientY };
+        this.isDragging = false;
+        this.onTokenMouseDown(e, tokenId);
 
-    // Count overlay
-    const countElement = document.createElement('div');
-    countElement.className = 'token-count';
-    countElement.style.position = 'absolute';
-    countElement.style.top = '50%';
-    countElement.style.left = '50%';
-    countElement.style.transform = 'translate(-50%, -50%)';
-    countElement.style.fontSize = '24px';
-    countElement.style.fontWeight = 'bold';
-    countElement.style.color = 'white';
-    // Strong text shadow for readability - multiple layers create outline effect
-    countElement.style.textShadow = `
-      -2px -2px 0 black,
-      2px -2px 0 black,
-      -2px 2px 0 black,
-      2px 2px 0 black,
-      0 0 8px black,
-      0 0 12px black
-    `;
-    countElement.style.pointerEvents = 'none';
-    countElement.style.userSelect = 'none';
-    countElement.textContent = token.count.toString();
-    tokenElement.appendChild(countElement);
+        if (this.hoveredTokenId === tokenId) {
+          // this.hoveredTokenId = null;
+          // this.tooltipManager.hide();
+        }
+      },
+      onMouseUp: (e: MouseEvent, tokenId: string) => {
+        if (!this.mouseDownPosition) return;
 
-    // Hover tracking
-    tokenElement.addEventListener('mouseenter', () => {
-      this.hoveredTokenId = token.id;
-      this.tooltipManager.showOnHover('-1', 'kwToken');
-    });
+        if (!this.isDragging && token.ownerId === this.localPlayerId && e.button === 0) {
+          // It was a click, not a drag (left button only)
+          e.stopPropagation();
+          this.modifyTokenCount(tokenId, 1);
+        }
 
-    tokenElement.addEventListener('mousemove', (e: MouseEvent) => {
-      this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
-      this.mousePosition = { x: e.clientX, y: e.clientY };
-    });
-
-    tokenElement.addEventListener('mouseleave', () => {
-      if (this.hoveredTokenId === token.id) {
-        this.hoveredTokenId = null;
-        this.tooltipManager.hide();
-      }
-    });
-
-    // Event handlers
-    tokenElement.addEventListener('mousedown', (e) => {
-      // Record starting position for drag detection
-      this.mouseDownPosition = { x: e.clientX, y: e.clientY };
-      this.isDragging = false;
-      this.onTokenMouseDown(e, token.id);
-
-      if (this.hoveredTokenId === token.id) {
-        this.hoveredTokenId = null;
-        this.tooltipManager.hide();
-      }
-    });
-
-    // Detect dragging
-    tokenElement.addEventListener('mousemove', (e: MouseEvent) => {
-      if (!this.mouseDownPosition) return;
-
-      this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
-      this.mousePosition = { x: e.clientX, y: e.clientY };
-
-      const dx = e.clientX - this.mouseDownPosition.x;
-      const dy = e.clientY - this.mouseDownPosition.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance > this.DRAG_THRESHOLD) {
-        this.isDragging = true;
-      }
-    });
-
-    // Left click - increment (use mouseup instead of click)
-    tokenElement.addEventListener('mouseup', (e: MouseEvent) => {
-      if (!this.mouseDownPosition) return;
-
-      if (!this.isDragging && token.ownerId === this.localPlayerId && e.button === 0) {
-        // It was a click, not a drag (left button only)
+        // Reset
+        this.mouseDownPosition = null;
+        this.isDragging = false;
+      },
+      onContextMenu: (e: MouseEvent, tokenId: string) => {
+        e.preventDefault();
         e.stopPropagation();
-        this.modifyTokenCount(token.id, 1);
-      }
-
-      // Reset
-      this.mouseDownPosition = null;
-      this.isDragging = false;
-    });
-
-    // Right click - decrement
-    tokenElement.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (token.ownerId === this.localPlayerId) {
-        this.modifyTokenCount(token.id, -1);
-      }
+        if (token.ownerId === this.localPlayerId) {
+          this.modifyTokenCount(tokenId, -1);
+        }
+      },
     });
 
     return tokenElement;

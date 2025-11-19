@@ -11,3 +11,11 @@ export interface KeywordTokenConfig {
   width: number;
   height: number;
 }
+
+// Template for creating tokens - used in token grid as "infinite source"
+export interface KeywordTokenTemplate {
+  title: string; // Display name (e.g., "Deathtouch", "Flying")
+  imageUrl: string; // Path to token image/SVG
+  backgroundColor: string; // Circular background color
+  initialCount?: number; // Starting count (defaults to 1)
+}

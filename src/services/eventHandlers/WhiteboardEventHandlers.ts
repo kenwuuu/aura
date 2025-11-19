@@ -44,6 +44,54 @@ export class WhiteboardEventHandlers {
 
     whiteboardContainer.addEventListener('drop', async (e) => {
       e.preventDefault();
+
+      // Check if dropping a keyword token template from the grid
+      const tokenTemplateData = e.dataTransfer?.getData('application/x-keyword-token-template');
+      if (tokenTemplateData) {
+        try {
+          const template = JSON.parse(tokenTemplateData);
+
+          // Calculate board offset
+          const boardLeft = getBoardLeftOffset();
+          const boardTop = getBoardTopOffset();
+
+          // Convert screen coordinates to board-relative, centered on cursor
+          const x = e.clientX - boardLeft - (25 * this.whiteboard.getZoomLevel()); // 25 = half of 50px token
+          const y = e.clientY - boardTop - (25 * this.whiteboard.getZoomLevel()) - 60;
+
+          // Create new token instance from template
+          const tokenId = `token-${Math.random().toString(36).substring(2, 11)}`;
+          const yTokens = this.yDoc.getMap('tokens');
+
+          // Get current max zIndex
+          let maxZIndex = 0;
+          yTokens.forEach((token: any) => {
+            if (token.zIndex > maxZIndex) {
+              maxZIndex = token.zIndex;
+            }
+          });
+
+          const newToken = {
+            id: tokenId,
+            title: template.title,
+            imageUrl: template.imageUrl,
+            backgroundColor: template.backgroundColor,
+            count: template.initialCount ?? 1,
+            ownerId: this.playerId,
+            x,
+            y,
+            zIndex: maxZIndex + 1,
+            rotation: 0,
+          };
+
+          yTokens.set(tokenId, newToken);
+        } catch (error) {
+          console.error('Failed to create token from template:', error);
+        }
+        return;
+      }
+
+      // Original card drop logic
       const cardId = e.dataTransfer?.getData('text/plain');
       if (!cardId) return;
 
