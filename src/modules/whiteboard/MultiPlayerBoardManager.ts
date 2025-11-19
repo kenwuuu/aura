@@ -35,6 +35,7 @@ export class MultiPlayerBoardManager {
   private mousePosition: { x: number; y: number; } | null = null;
   private readonly DRAG_THRESHOLD = 5; // pixels
   private isDragging: boolean = false;
+  private mouseDownPosition: { x: number; y: number } | null = null; // Position at mousedown for drag detection
 
   // Token hover tracking
   private hoveredTokenId: string | null = null;
@@ -697,7 +698,8 @@ export class MultiPlayerBoardManager {
 
     // Event handlers
     tokenElement.addEventListener('mousedown', (e) => {
-      this.mousePosition = { x: e.clientX, y: e.clientY };
+      // Record starting position for drag detection
+      this.mouseDownPosition = { x: e.clientX, y: e.clientY };
       this.isDragging = false;
       this.onTokenMouseDown(e, token.id);
 
@@ -707,19 +709,34 @@ export class MultiPlayerBoardManager {
       }
     });
 
-    // Left click - increment
-    tokenElement.addEventListener('click', (e: MouseEvent) => {
-      if (this.mousePosition) {
-        const dx = Math.abs(e.clientX - this.mousePosition.x);
-        const dy = Math.abs(e.clientY - this.mousePosition.y);
-        const distance = Math.sqrt(dx * dx + dy * dy);
+    // Detect dragging
+    tokenElement.addEventListener('mousemove', (e: MouseEvent) => {
+      if (!this.mouseDownPosition) return;
 
-        if (distance < this.DRAG_THRESHOLD && !this.isDragging && token.ownerId === this.localPlayerId) {
-          e.stopPropagation();
-          this.modifyTokenCount(token.id, 1);
-        }
+      this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
+      this.mousePosition = { x: e.clientX, y: e.clientY };
+
+      const dx = e.clientX - this.mouseDownPosition.x;
+      const dy = e.clientY - this.mouseDownPosition.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > this.DRAG_THRESHOLD) {
+        this.isDragging = true;
       }
-      this.mousePosition = null;
+    });
+
+    // Left click - increment (use mouseup instead of click)
+    tokenElement.addEventListener('mouseup', (e: MouseEvent) => {
+      if (!this.mouseDownPosition) return;
+
+      if (!this.isDragging && token.ownerId === this.localPlayerId && e.button === 0) {
+        // It was a click, not a drag (left button only)
+        e.stopPropagation();
+        this.modifyTokenCount(token.id, 1);
+      }
+
+      // Reset
+      this.mouseDownPosition = null;
       this.isDragging = false;
     });
 
@@ -950,7 +967,7 @@ export class MultiPlayerBoardManager {
     }
 
     this.dragState = { cardId: null, offsetX: 0, offsetY: 0 };
-    
+
     // If we were dragging, clear the mousePosition immediately
     // Otherwise, let the click handler clear it (so it can detect clicks)
     if (this.isDragging || !this.mousePosition) {
