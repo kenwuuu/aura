@@ -622,20 +622,21 @@ export class MultiPlayerBoardManager {
       mode: 'board',
       onMouseEnter: (tokenId: string) => {
         this.hoveredTokenId = tokenId;
-        // this.tooltipManager.showOnHover('-1', 'kwToken');
+        this.tooltipManager.showOnHover('-1', 'kwToken');
       },
       onMouseMove: (e: MouseEvent, tokenId: string) => {
-        // this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
-        // this.mousePosition = { x: e.clientX, y: e.clientY };
+        this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
+        this.mousePosition = { x: e.clientX, y: e.clientY };
 
-        // Detect dragging
-        if (this.mouseDownPosition) {
+        // Detect dragging - only start drag state once threshold is crossed
+        if (this.mouseDownPosition && !this.isDragging) {
           const dx = e.clientX - this.mouseDownPosition.x;
           const dy = e.clientY - this.mouseDownPosition.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance > this.DRAG_THRESHOLD) {
             this.isDragging = true;
+            this.onTokenMouseDown(e, tokenId);
           }
         }
       },
@@ -646,10 +647,9 @@ export class MultiPlayerBoardManager {
         }
       },
       onMouseDown: (e: MouseEvent, tokenId: string) => {
-        // Record starting position for drag detection
+        // Record starting position for drag detection but don't start drag yet
         this.mouseDownPosition = { x: e.clientX, y: e.clientY };
         this.isDragging = false;
-        this.onTokenMouseDown(e, tokenId);
 
         if (this.hoveredTokenId === tokenId) {
           // this.hoveredTokenId = null;
