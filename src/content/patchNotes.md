@@ -1,6 +1,16 @@
+## 2025 November 18
+
+### Features
+- Add keyword tokens
+
+### Changes
+- Move add card and scry actions into a dock menu
+
+---
+
 ## 2025 November 17 - Daily patch 4
 
-### Feature
+### Features
 - Language support: Add ability to import cards in any language that Scryfall supports. Import as usual, e.g.: 
 `1 Anillo solar`, `1 Sonnenring`, `1 Anneau solaire`
 - Alert opponents when players reveal any cards in their deck
