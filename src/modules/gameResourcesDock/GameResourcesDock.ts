@@ -11,6 +11,7 @@ import { HotkeyContext } from '../../data/hotkeys';
 import { DEFAULT_CARD_BACK } from '../../constants';
 import {animate} from "motion";
 import { ScryModal } from '../../components/ScryModal';
+import { ControlsMenu } from '../../components/controls/ControlsMenu';
 
 export class GameResourcesDock {
   private container: HTMLElement;
@@ -24,6 +25,7 @@ export class GameResourcesDock {
     exile: HTMLElement;
     discard: HTMLElement;
     hand: HTMLElement;
+    controls: HTMLElement;
     deck: HTMLElement;
     health: HTMLElement;
   } | null = null;
@@ -34,6 +36,7 @@ export class GameResourcesDock {
   private zoomControls?: HTMLElement;
   private cardPreview: CardPreview;
   private healthRoot: Root | null = null;
+  private controlsRoot: Root | null = null;
   private tooltipRoot: Root | null = null;
   private tooltipContainer: HTMLElement | null = null;
   private scryModalRoot: Root | null = null;
@@ -170,16 +173,18 @@ export class GameResourcesDock {
     const exile = this.createPileElement('exile', 'Exile');
     const discard = this.createPileElement('discard', 'Discard');
     const hand = this.createHandElement();
+    const controls = this.createControlsElement();
     const deck = this.createDeckElement();
     const health = this.createHealthElement();
 
     this.container.appendChild(exile);
     this.container.appendChild(discard);
     this.container.appendChild(hand);
+    this.container.appendChild(controls);
     this.container.appendChild(deck);
     this.container.appendChild(health);
 
-    this.elements = { exile, discard, hand, deck, health };
+    this.elements = { exile, discard, hand, controls, deck, health };
   }
 
   private createPileElement(type: string, label: string): HTMLElement {
@@ -244,14 +249,6 @@ export class GameResourcesDock {
     count.dataset.pile = 'deck';
     count.textContent = '60';
 
-    const scryButton = document.createElement('button');
-    scryButton.className = 'draw-button';
-    scryButton.textContent = 'Scry';
-    scryButton.onclick = (e) => {
-      e.stopPropagation();
-      this.openScryModal();
-    };
-
     const drawButton = document.createElement('button');
     drawButton.className = 'draw-button';
     drawButton.textContent = 'Draw';
@@ -262,7 +259,6 @@ export class GameResourcesDock {
 
     deck.appendChild(labelEl);
     deck.appendChild(count);
-    deck.appendChild(scryButton);
     deck.appendChild(drawButton);
 
     // Add hover event listeners for keyboard shortcuts
@@ -277,12 +273,35 @@ export class GameResourcesDock {
 
     // Click deck to view it (with search and sort)
     deck.onclick = (e) => {
-      if (e.target !== drawButton && e.target !== scryButton) {
+      if (e.target !== drawButton) {
         this.viewDeck();
       }
     };
 
     return deck;
+  }
+
+  private createControlsElement(): HTMLElement {
+    const controlsElement = document.createElement('div');
+
+    this.controlsRoot = createRoot(controlsElement);
+    this.renderControlsComponent();
+
+    return controlsElement;
+  }
+
+  private renderControlsComponent(): void {
+    if (!this.controlsRoot) return;
+
+    this.controlsRoot.render(
+      React.createElement(ControlsMenu, {
+        onScry: () => this.openScryModal(),
+        onAddCard: () => {
+          // TODO: Implement add card functionality
+          console.log('Add card clicked');
+        }
+      })
+    );
   }
 
   private createHealthElement(): HTMLElement {
@@ -1119,6 +1138,10 @@ export class GameResourcesDock {
     if (this.healthRoot) {
       this.healthRoot.unmount();
       this.healthRoot = null;
+    }
+    if (this.controlsRoot) {
+      this.controlsRoot.unmount();
+      this.controlsRoot = null;
     }
     if (this.tooltipRoot) {
       this.tooltipRoot.unmount();
