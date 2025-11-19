@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { TooltipManager } from '../modules/whiteboard/TooltipManager';
+import { TooltipManager } from '@/modules/whiteboard/TooltipManager';
 
 /**
  * Context for sharing the TooltipManager across the app

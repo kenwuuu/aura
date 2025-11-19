@@ -1,9 +1,9 @@
 import * as Y from 'yjs';
-import { Player } from '../../modules/player';
-import { MultiPlayerBoardManager } from '../../modules/whiteboard';
+import { Player } from '@/modules/player';
+import { MultiPlayerBoardManager } from '@/modules/whiteboard';
 import { TokenService } from '../scryfall';
-import { CARD_HEIGHT, CARD_WIDTH } from '../../constants';
-import {getBoardLeftOffset, getBoardTopOffset} from "../../modules/whiteboard/BoardContainerManager";
+import { CARD_HEIGHT, CARD_WIDTH } from '@/constants';
+import {getBoardLeftOffset, getBoardTopOffset} from "@/modules/whiteboard/BoardContainerManager";
 import {tokenDiameter} from "@/modules/keywordTokens/KeywordTokenFactory";
 
 /**

@@ -5,13 +5,13 @@ import { DeckPileViewer } from './components';
 import { CardPreview } from '../cardPreview';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
-import { HealthDisplay } from '../../components/health/HealthDisplay';
-import { HotkeyTooltip } from '../../components/HotkeyTooltip';
-import { HotkeyContext } from '../../data/hotkeys';
-import { DEFAULT_CARD_BACK } from '../../constants';
+import { HealthDisplay } from '@/components/health/HealthDisplay';
+import { HotkeyTooltip } from '@/components';
+import { HotkeyContext } from '@/data/hotkeys';
+import { DEFAULT_CARD_BACK } from '@/constants';
 import {animate} from "motion";
-import { ScryModal } from '../../components/ScryModal';
-import { ControlsMenu } from '../../components/controls/ControlsMenu';
+import { ScryModal } from '@/components/ScryModal';
+import { ControlsMenu } from '@/components/controls/ControlsMenu';
 import { setElementDragPoint } from "@/utils/centerHtmlElementOnDrag";
 import { TooltipManager } from '../whiteboard/TooltipManager';
 import { TooltipProvider } from '@/contexts/TooltipContext';
@@ -51,11 +51,6 @@ export class GameResourcesDock {
   private currentMouseY: number = 0;
   private isMouseDown: boolean = false;
   private isModalOpen: boolean = false;
-  private handDragState: {
-    draggedIndex: number;
-    draggedElement: HTMLElement;
-    placeholder: HTMLElement | null;
-  } | null = null;
   private _dragState: { mode: string; draggedElement: HTMLDivElement; startIndex: number; } | undefined;
   private requestAnimationFrameId: number | null = null;
 
