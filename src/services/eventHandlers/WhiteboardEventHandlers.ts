@@ -76,7 +76,7 @@ export class WhiteboardEventHandlers {
             title: template.title,
             imageUrl: template.imageUrl ?? '',
             backgroundColor: template.backgroundColor,
-            count: template.initialCount ?? 1,
+            count: template.count,
             ownerId: this.playerId,
             x,
             y,

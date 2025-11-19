@@ -601,11 +601,8 @@ export class MultiPlayerBoardManager {
       tokenElement = this.createTokenElement(token);
       container.appendChild(tokenElement);
     } else {
-      // Update count display
-      const countElement = tokenElement.querySelector('.token-count') as HTMLElement;
-      if (countElement) {
-        countElement.textContent = token.count.toString();
-      }
+      // Update count display using factory method
+      KeywordTokenFactory.updateCount(tokenElement, token.count);
 
       // Update background color if changed
       const background = tokenElement.querySelector('.token-background') as HTMLElement;
@@ -716,16 +713,24 @@ export class MultiPlayerBoardManager {
     const token = this.yTokens.get(tokenId);
     if (!token) return;
 
-    const newCount = token.count + delta;
+    // Default to 1 if count is undefined
+    const currentCount = token.count ?? 0;
+    const newCount = currentCount + delta;
     const updatedToken = { ...token, count: newCount };
     this.yTokens.set(tokenId, updatedToken);
   }
 
   private onTokenMouseDown(e: MouseEvent, tokenId: string): void {
     e.preventDefault();
+
+    // get token. return if we don't own it
     const token = this.tokens.get(tokenId);
     if (!token || token.ownerId !== this.localPlayerId) return;
 
+    // hide tooltip
+    this.tooltipManager.hide();
+
+    // set drag state
     this.dragState = {
       cardId: tokenId,  // Reuse cardId field for tokens
       offsetX: e.clientX - token.x,

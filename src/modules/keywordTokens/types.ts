@@ -4,7 +4,7 @@ export interface KeywordToken extends WhiteboardObject {
   title: string // descriptor used in Tooltip
   imageUrl?: string; // URL to the token image (can be SVG or regular image)
   backgroundColor: string; // Background color for circular background
-  count: number; // The number overlaid on the token
+  count?: number; // The number overlaid on the token (optional for blank tokens)
 }
 
 export interface KeywordTokenConfig {
@@ -17,5 +17,5 @@ export interface KeywordTokenTemplate {
   title: string; // Display name (e.g., "Deathtouch", "Flying")
   imageUrl?: string; // Path to token image/SVG
   backgroundColor: string; // Circular background color
-  initialCount?: number; // Starting count (defaults to 1)
+  count?: number; // Starting count (defaults to 1)
 }

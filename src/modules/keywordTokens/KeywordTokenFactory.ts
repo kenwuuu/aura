@@ -70,28 +70,29 @@ export class KeywordTokenFactory {
       background.appendChild(img);
     }
 
-    // Count overlay
-    const count = 'count' in token ? token.count : (token.initialCount ?? 1);
-    const countElement = document.createElement('div');
-    countElement.className = 'token-count';
-    countElement.style.position = 'absolute';
-    countElement.style.top = '-15%';
-    countElement.style.left = '0%';
-    countElement.style.fontSize = '24px';
-    countElement.style.fontWeight = 'bold';
-    countElement.style.color = 'white';
-    countElement.style.textShadow = `
-      -2px -2px 0 black,
-      2px -2px 0 black,
-      -2px 2px 0 black,
-      2px 2px 0 black,
-      0 0 8px black,
-      0 0 12px black
-    `;
-    countElement.style.pointerEvents = 'none';
-    countElement.style.userSelect = 'none';
-    countElement.textContent = count.toString();
-    tokenElement.appendChild(countElement);
+    // Count overlay (only if count is defined)
+    if (token.count !== undefined) {
+      const countElement = document.createElement('div');
+      countElement.className = 'token-count';
+      countElement.style.position = 'absolute';
+      countElement.style.top = '-15%';
+      countElement.style.left = '0%';
+      countElement.style.fontSize = '24px';
+      countElement.style.fontWeight = 'bold';
+      countElement.style.color = 'white';
+      countElement.style.textShadow = `
+        -2px -2px 0 black,
+        2px -2px 0 black,
+        -2px 2px 0 black,
+        2px 2px 0 black,
+        0 0 8px black,
+        0 0 12px black
+      `;
+      countElement.style.pointerEvents = 'none';
+      countElement.style.userSelect = 'none';
+      countElement.textContent = token.count.toString();
+      tokenElement.appendChild(countElement);
+    }
 
     // Attach event handlers based on mode
     if (options.mode === 'board') {
@@ -174,10 +175,37 @@ export class KeywordTokenFactory {
   /**
    * Update the count display on an existing token element
    */
-  static updateCount(element: HTMLElement, newCount: number): void {
+  static updateCount(element: HTMLElement, newCount: number | undefined): void {
     const countElement = element.querySelector('.token-count') as HTMLElement;
     if (countElement) {
-      countElement.textContent = newCount.toString();
+      if (newCount !== undefined) {
+        countElement.textContent = newCount.toString();
+        countElement.style.display = '';
+      } else {
+        countElement.style.display = 'none';
+      }
+    } else if (newCount !== undefined) {
+      // Count element doesn't exist but we need to create it
+      const newCountElement = document.createElement('div');
+      newCountElement.className = 'token-count';
+      newCountElement.style.position = 'absolute';
+      newCountElement.style.top = '-15%';
+      newCountElement.style.left = '0%';
+      newCountElement.style.fontSize = '24px';
+      newCountElement.style.fontWeight = 'bold';
+      newCountElement.style.color = 'white';
+      newCountElement.style.textShadow = `
+        -2px -2px 0 black,
+        2px -2px 0 black,
+        -2px 2px 0 black,
+        2px 2px 0 black,
+        0 0 8px black,
+        0 0 12px black
+      `;
+      newCountElement.style.pointerEvents = 'none';
+      newCountElement.style.userSelect = 'none';
+      newCountElement.textContent = newCount.toString();
+      element.appendChild(newCountElement);
     }
   }
 }
