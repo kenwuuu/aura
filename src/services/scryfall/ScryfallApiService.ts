@@ -3,7 +3,7 @@ import pRetry from 'p-retry';
 import { CardImages, CardImageUris } from '@/modules/deck/types';
 import { toCardDataResult } from './ScryfallCardAdapter';
 
-export interface ScryfallCard {
+export type ScryfallCard = {
   id: string;
   name: string;
   type_line?: string;
@@ -20,12 +20,12 @@ export interface ScryfallCard {
   }>;
 }
 
-export interface ParsedDeckEntry {
+export type ParsedDeckEntry = {
   count: number;
   name: string;
 }
 
-export interface CardDataResult {
+export type CardDataResult = {
   count: number;
   name: string;
   type_line?: string;
@@ -44,7 +44,7 @@ export class ScryfallApiService {
     this.queue = new PQueue({
       interval: ScryfallApiService.RATE_LIMIT_INTERVAL,
       intervalCap: ScryfallApiService.RATE_LIMIT_CAP,
-      timeout: 30000, // 30 second timeout per request
+      timeout: 30000, // 30 second timeout for whole import
     });
   }
 
@@ -56,7 +56,7 @@ export class ScryfallApiService {
    *
    * Lines that don't start with a numeral are ignored.
    */
-  parseDecklist(text: string): ParsedDeckEntry[] {
+  public parseDecklist(text: string): ParsedDeckEntry[] {
     return text
       .trim()
       .split('\n')
@@ -119,7 +119,7 @@ export class ScryfallApiService {
   /**
    * Fetch images for a list of cards with progress callback
    */
-  async fetchImagesForList(
+  public async fetchImagesForList(
     entries: ParsedDeckEntry[],
     onProgress?: (current: number, total: number) => void
   ): Promise<CardDataResult[]> {
@@ -152,7 +152,7 @@ export class ScryfallApiService {
   /**
    * Get the current queue size (pending requests)
    */
-  getQueueSize(): number {
+  public getQueueSize(): number {
     return this.queue.size;
   }
 
@@ -166,7 +166,7 @@ export class ScryfallApiService {
   /**
    * Fetch card data by Scryfall ID
    */
-  async fetchCardById(scryfallId: string): Promise<ScryfallCard> {
+  public async fetchCardById(scryfallId: string): Promise<ScryfallCard> {
     const url = `${ScryfallApiService.BASE_URL}/cards/${scryfallId}`;
 
     return await this.queue.add(() =>
@@ -195,7 +195,7 @@ export class ScryfallApiService {
    * Extract token IDs from a card's all_parts
    * Returns array of Scryfall IDs for tokens created by this card
    */
-  extractTokenIds(cardData: ScryfallCard): string[] {
+  public extractTokenIds(cardData: ScryfallCard): string[] {
     if (!cardData.all_parts || !Array.isArray(cardData.all_parts)) {
       return [];
     }
@@ -208,14 +208,14 @@ export class ScryfallApiService {
   /**
    * Create a Card object from Scryfall data
    */
-  createCardFromScryfall(scryfallCard: ScryfallCard): CardDataResult {
+  public createCardFromScryfall(scryfallCard: ScryfallCard): CardDataResult {
     return toCardDataResult(scryfallCard, 1);
   }
 
   /**
    * Fetch card by name (public API for adding arbitrary cards)
    */
-  async fetchCardByName(cardName: string): Promise<ScryfallCard> {
+  public async fetchCardByName(cardName: string): Promise<ScryfallCard> {
     return this.fetchCardData(cardName);
   }
 }
