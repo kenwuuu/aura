@@ -125,6 +125,12 @@ export const HOTKEYS: HotkeyDefinition[] = [
     shortDescription: '-1',
     longDescription: '-1',
   },
+  {
+    key: 'Back',
+    context: ['kwToken'],
+    shortDescription: 'Delete token',
+    longDescription: 'Delete a keyword token',
+  },
 
   // Hand and pile shortcuts
   {
