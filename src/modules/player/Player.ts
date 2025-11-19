@@ -6,6 +6,7 @@ export class Player {
   private playerId: string;
   private yPlayerState: Y.Map<any>;
   private yCardsOnBoard: Y.Map<any>; // Battlefield cards
+  private yTokens: Y.Map<any>; // Keyword tokens on battlefield
   private deck: Deck;
   private config: PlayerConfig;
 
@@ -23,6 +24,7 @@ export class Player {
 
     this.yPlayerState = yDoc.getMap(`player-${playerId}`);
     this.yCardsOnBoard = yDoc.getMap('cards'); // Store reference to battlefield
+    this.yTokens = yDoc.getMap('tokens'); // Store reference to keyword tokens
     this.initializeState();
   }
 
@@ -96,6 +98,13 @@ export class Player {
         battlefieldCards.push(baseCard as Card);
         // Remove from battlefield
         this.yCardsOnBoard.delete(cardId);
+      }
+    });
+
+    // Remove all keyword tokens owned by this player from battlefield
+    this.yTokens.forEach((token: any, tokenId: string) => {
+      if (token.ownerId === this.playerId) {
+        this.yTokens.delete(tokenId);
       }
     });
 
