@@ -1,6 +1,6 @@
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
-import { CardImages, CardImageUris } from '../../modules/deck/types';
+import { CardImages, CardImageUris } from '@/modules/deck/types';
 import { toCardDataResult } from './ScryfallCardAdapter';
 
 export interface ScryfallCard {

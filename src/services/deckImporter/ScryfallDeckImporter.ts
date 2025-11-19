@@ -1,6 +1,6 @@
 import { DeckImporter, DeckImportResult } from './DeckImporter';
 import { ScryfallApiService } from '../scryfall';
-import { Card } from '../../modules/deck';
+import { Card } from '@/modules/deck';
 
 export class ScryfallDeckImporter implements DeckImporter {
   private scryfallApi: ScryfallApiService;

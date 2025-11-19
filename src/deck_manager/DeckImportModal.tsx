@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ScryfallDeckImporter } from '../services/deckImporter';
-import { DeckStorageService } from '../services/deckStorage';
-import { SavedDeck } from '../modules/deck/types';
+import { ScryfallDeckImporter } from '@/services/deckImporter';
+import { DeckStorageService } from '@/services/deckStorage';
+import { SavedDeck } from '@/modules/deck/types';
 import { DeckImportHelpDialog } from './DeckImportHelpDialog';
 import { ModalFooter } from './ModalFooter';
 import {InfoIcon} from "lucide-react"
