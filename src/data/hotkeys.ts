@@ -14,6 +14,7 @@ export const HotkeyContext = {
   Discard: 'discard',
   Health: 'health',
   KeywordToken: 'kwToken',
+  KeywordTokenStack: 'kwTokenStack',
 } as const;
 
 export type HotkeyContext = typeof HotkeyContext[keyof typeof HotkeyContext];

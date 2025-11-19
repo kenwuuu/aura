@@ -2,7 +2,7 @@ import { KeywordToken, KeywordTokenTemplate } from './types';
 
 export interface TokenElementOptions {
   mode: 'board' | 'grid'; // Board tokens are interactive, grid tokens are drag sources
-  onMouseEnter?: (tokenId: string) => void;
+  onMouseEnter?: (e: MouseEvent, tokenId: string) => void;
   onMouseMove?: (e: MouseEvent, tokenId: string) => void;
   onMouseLeave?: (tokenId: string) => void;
   onMouseDown?: (e: MouseEvent, tokenId: string) => void;
@@ -116,8 +116,8 @@ export class KeywordTokenFactory {
   ): void {
     // Hover tracking
     if (options.onMouseEnter) {
-      element.addEventListener('mouseenter', () => {
-        options.onMouseEnter!(token.id);
+      element.addEventListener('mouseenter', (e: MouseEvent) => {
+        options.onMouseEnter!(e, token.id);
       });
     }
 
@@ -161,6 +161,26 @@ export class KeywordTokenFactory {
     template: KeywordTokenTemplate,
     options: TokenElementOptions
   ): void {
+    // Hover tracking (for tooltips)
+    if (options.onMouseEnter) {
+      element.addEventListener('mouseenter', (e: MouseEvent) => {
+        options.onMouseEnter!(e, template.title); // Use title as identifier for grid tokens
+      });
+    }
+
+    if (options.onMouseMove) {
+      element.addEventListener('mousemove', (e: MouseEvent) => {
+        options.onMouseMove!(e, template.title);
+      });
+    }
+
+    if (options.onMouseLeave) {
+      element.addEventListener('mouseleave', () => {
+        options.onMouseLeave!(template.title);
+      });
+    }
+
+    // Drag handlers
     if (options.onDragStart) {
       element.addEventListener('dragstart', (e: DragEvent) => {
         e.stopPropagation();

@@ -617,9 +617,9 @@ export class MultiPlayerBoardManager {
   private createTokenElement(token: KeywordToken): HTMLElement {
     const tokenElement = KeywordTokenFactory.createTokenElement(token, {
       mode: 'board',
-      onMouseEnter: (tokenId: string) => {
+      onMouseEnter: (e: MouseEvent, tokenId: string) => {
         this.hoveredTokenId = tokenId;
-        this.tooltipManager.showOnHover('-1', 'kwToken', token.title);
+        this.tooltipManager.show(tokenId, HotkeyContext.KeywordToken, e.clientX, e.clientY, false, token.title);
       },
       onMouseMove: (e: MouseEvent, tokenId: string) => {
         this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
@@ -963,6 +963,10 @@ export class MultiPlayerBoardManager {
 
   public getZoomLevel() {
     return this.zoomController.getZoomLevel();
+  }
+
+  public getTooltipManager(): TooltipManager {
+    return this.tooltipManager;
   }
 
   public destroy(): void {

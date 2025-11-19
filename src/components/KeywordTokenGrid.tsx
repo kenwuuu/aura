@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { KeywordTokenTemplate } from '../modules/keywordTokens/types';
 import { KeywordTokenFactory } from '../modules/keywordTokens/KeywordTokenFactory';
 import {setCardDragPoint} from "@/utils/centerHtmlElementOnDrag";
+import { HotkeyContext } from '../data/hotkeys';
+import { useTooltipManager } from '../contexts/TooltipContext';
 
 interface KeywordTokenGridProps {
   templates: KeywordTokenTemplate[];
@@ -19,6 +21,7 @@ export const KeywordTokenGrid: React.FC<KeywordTokenGridProps> = ({
   onDragStart,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const tooltipManager = useTooltipManager();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -30,7 +33,19 @@ export const KeywordTokenGrid: React.FC<KeywordTokenGridProps> = ({
     templates.forEach((template) => {
       const tokenElement = KeywordTokenFactory.createTokenElement(template, {
         mode: 'grid',
+        onMouseEnter: tooltipManager ? (e: MouseEvent, tokenId: string) => {
+          tooltipManager.show(tokenId, HotkeyContext.KeywordToken, e.clientX, e.clientY, false, template.title);
+        } : undefined,
+        onMouseMove: tooltipManager ? (e: MouseEvent) => {
+          tooltipManager.setMouseLocation(e.clientX, e.clientY);
+        } : undefined,
+        onMouseLeave: tooltipManager ? () => {
+          tooltipManager.hide();
+        } : undefined,
         onDragStart: (e: DragEvent, draggedTemplate: KeywordTokenTemplate) => {
+          // Hide tooltip when starting drag
+          tooltipManager?.hide();
+
           // Center the drag image on the mouse cursor
           setCardDragPoint(e.target as HTMLDivElement, e);
 
@@ -45,7 +60,7 @@ export const KeywordTokenGrid: React.FC<KeywordTokenGridProps> = ({
 
       containerRef.current!.appendChild(tokenElement);
     });
-  }, [templates, onDragStart]);
+  }, [templates, onDragStart, tooltipManager]);
 
   // Calculate grid template based on columns/rows config
   const gridTemplateColumns = columns ? `repeat(${columns}, 50px)` : 'repeat(auto-fill, 50px)';

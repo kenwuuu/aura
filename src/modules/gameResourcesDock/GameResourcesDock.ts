@@ -13,6 +13,8 @@ import {animate} from "motion";
 import { ScryModal } from '../../components/ScryModal';
 import { ControlsMenu } from '../../components/controls/ControlsMenu';
 import {setCardDragPoint} from "@/utils/centerHtmlElementOnDrag";
+import { TooltipManager } from '../whiteboard/TooltipManager';
+import { TooltipProvider } from '../../contexts/TooltipContext';
 
 export class GameResourcesDock {
   private container: HTMLElement;
@@ -38,6 +40,7 @@ export class GameResourcesDock {
   private cardPreview: CardPreview;
   private healthRoot: Root | null = null;
   private controlsRoot: Root | null = null;
+  private controlsTooltipManager: TooltipManager | undefined;
   private tooltipRoot: Root | null = null;
   private tooltipContainer: HTMLElement | null = null;
   private scryModalRoot: Root | null = null;
@@ -60,11 +63,13 @@ export class GameResourcesDock {
     container: HTMLElement,
     player: Player,
     config: GameResourcesDockConfig,
-    cardPreview: CardPreview
+    cardPreview: CardPreview,
+    controlsTooltipManager?: TooltipManager
   ) {
     this.container = container;
     this.player = player;
     this.config = config;
+    this.controlsTooltipManager = controlsTooltipManager;
 
     // Initialize all pile viewers with appropriate callbacks
     this.deckViewer = new DeckPileViewer({
@@ -295,14 +300,18 @@ export class GameResourcesDock {
     if (!this.controlsRoot) return;
 
     this.controlsRoot.render(
-      React.createElement(ControlsMenu, {
-        onScry: () => this.openScryModal(),
-        onAddCard: () => {
-          // Trigger the AddCardManager by simulating the 'a' key press
-          const event = new KeyboardEvent('keydown', { key: 'a' });
-          document.dispatchEvent(event);
-        }
-      })
+      React.createElement(
+        TooltipProvider,
+        { value: this.controlsTooltipManager ?? null },
+        React.createElement(ControlsMenu, {
+          onScry: () => this.openScryModal(),
+          onAddCard: () => {
+            // Trigger the AddCardManager by simulating the 'a' key press
+            const event = new KeyboardEvent('keydown', { key: 'a' });
+            document.dispatchEvent(event);
+          }
+        })
+      )
     );
   }
 
