@@ -297,8 +297,9 @@ export class GameResourcesDock {
       React.createElement(ControlsMenu, {
         onScry: () => this.openScryModal(),
         onAddCard: () => {
-          // TODO: Implement add card functionality
-          console.log('Add card clicked');
+          // Trigger the AddCardManager by simulating the 'a' key press
+          const event = new KeyboardEvent('keydown', { key: 'a' });
+          document.dispatchEvent(event);
         }
       })
     );

@@ -14,24 +14,24 @@ export const ControlsMenu: React.FC<ControlsMenuProps> = ({
 
   return (
     <div
-      className={`${styles.controlsContainer} ${styles.expandRight}`}
+      className={styles.controlsContainer}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={styles.collapsedContent}>
         <button
-          className={styles.controlButton}
+          className="draw-button"
           onClick={onScry}
           title="Scry"
         >
-          🔍
+          Scry
         </button>
         <button
-          className={styles.controlButton}
+          className="draw-button"
           onClick={onAddCard}
-          title="Add Card"
+          title="Add Card (A)"
         >
-          +
+          Add Card
         </button>
       </div>
 
