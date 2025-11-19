@@ -9,6 +9,10 @@ Play [here](http://aura-dqp.pages.dev)
 Want to help? Head over to the [Discord](https://discord.gg/PgH2gVZYKq) first to make sure we're taking 
 new contributions.
 
+## Thanks To...
+Andrew Gioia's [Mana](https://github.com/andrewgioia/mana) project on Github for icons and symbol SVGs.
+
+
 ## Architecture
 
 The application follows a modular architecture designed for easy component replacement:
