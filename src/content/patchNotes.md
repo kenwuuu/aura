@@ -1,3 +1,13 @@
+## 2025 November 19
+
+### Feature
+- Add ability to import cards by set, example: `1 Rhystic Study (WOT) 71`
+
+### Bug fixes
+- Fix tooltip disappearing after hovering a card on board
+
+---
+
 ## 2025 November 17 - Daily patch 4
 
 ### Feature

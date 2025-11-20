@@ -187,9 +187,9 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
 
           <Alert className={"mb-4"}>
             <InfoIcon />
-            <AlertTitle>Aura supports all languages that Scryfall does.</AlertTitle>
+            <AlertTitle>Set imports available now!</AlertTitle>
             <AlertDescription>
-              Example: "1 Anillo solar" or "1 Sonnenring" or "1 Anneau solaire"
+              Example: 1 Rhystic Study (WOT) 71
             </AlertDescription>
           </Alert>
 
@@ -201,7 +201,7 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
               onChange={(e) => setDeckText(e.target.value)}
               placeholder={`Place your commander in the last line.
               Enter your deck list (one card per line):
-              \n\n4 Lightning Bolt\n20 Mountain\n1 Bonfire of the Damned`}
+              \n\n1 Rhystic Study (WOT) 71\n4 Lightning Bolt\n20 Mountain`}
               rows={15}
               disabled={isImporting}
             />
