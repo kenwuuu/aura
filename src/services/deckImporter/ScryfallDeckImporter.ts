@@ -1,6 +1,6 @@
 import { DeckImporter, DeckImportResult } from './DeckImporter';
-import { parseDecklist } from "@/services/deckImporter/DeckListParser";
-import { ScryfallApiService } from '../scryfall';
+import {DeckLineItem, parseDecklist} from "@/services/deckImporter/DeckListParser";
+import {CardDataResult, ScryfallApiService} from '../scryfall';
 import { Card } from '@/modules/deck';
 
 export class ScryfallDeckImporter implements DeckImporter {
@@ -104,8 +104,8 @@ export class ScryfallDeckImporter implements DeckImporter {
     }
 
     // call Scryfall API
-    const entries = parseDecklist(text);
-    const results = await this.scryfallApi.fetchImagesForList(entries, this.onProgress);
+    const entries: DeckLineItem[] = parseDecklist(text);
+    const results: CardDataResult[] = await this.scryfallApi.fetchImagesForList(entries, this.onProgress);
 
     const cards: Card[] = [];
     const errors: string[] = [];
