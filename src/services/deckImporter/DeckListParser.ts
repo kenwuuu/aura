@@ -5,48 +5,76 @@ export type DeckLineItem = {
   // Card name, "Mabel, Heir to Cragflame"
   name: string;
   // Three to five-letter set code, "BLB"
-  set_code?: string;
+  setCode?: string;
   // Number that points to a specific card when paired with a set code, e.g. "336"
-  collector_number?: string;
+  collectorNumber?: string;
   // Whether this card was under a commander header
   commander?: boolean;
+}
+
+function parseCount(firstPart: string): number {
+  // Handle 'x' notation (e.g., "20x" -> "20")
+  if (firstPart.toLowerCase().endsWith('x')) {
+    firstPart = firstPart.slice(0, -1);
+  }
+  return parseInt(firstPart, 10);
+}
+
+function extractSetInfo(line: string): { setCode: string; collectorNumber: string } | null {
+  const startIndex = line.indexOf('(');
+  const endIndex = line.indexOf(')');
+
+  if (startIndex < 0 || endIndex <= startIndex) {
+    return null;
+  }
+
+  const setCode = line.substring(startIndex + 1, endIndex);
+
+  // Extract collector number - it's after the closing paren
+  const afterParen = line.substring(endIndex + 1).trim();
+  const collectorNumber = afterParen.split(/\s+/)[0];
+
+  return { setCode, collectorNumber };
+}
+
+function extractCardName(line: string, parts: string[]): string {
+  const setInfo = extractSetInfo(line);
+
+  if (setInfo) {
+    // If there's set info, extract name between count and opening paren
+    const startIndex = line.indexOf('(');
+    const countLength = parts[0].length;
+    return line.substring(countLength, startIndex).trim();
+  }
+
+  // No set info - just join all parts after the count
+  return parts.slice(1).join(' ');
+}
+
+function parseLine(line: string): DeckLineItem {
+  const parts = line.trim().split(/\s+/);
+  const count = parseCount(parts[0]);
+  const name = extractCardName(line, parts);
+  const setInfo = extractSetInfo(line);
+
+  if (setInfo) {
+    return { count, name, setCode: setInfo.setCode, collectorNumber: setInfo.collectorNumber };
+  }
+
+  return { count, name };
+}
+
+// Ignore lines that don't start with a number
+function isValidDeckLine(line: string): boolean {
+  const trimmed = line.trim();
+  return trimmed.length > 0 && /^\d/.test(trimmed);
 }
 
 export function parseDecklist(text: string): DeckLineItem[] {
   return text
     .trim()
     .split('\n')
-    .filter(line => line.trim().length > 0)
-    .filter(line => {
-      // Ignore lines that don't start with a numeral
-      const trimmed = line.trim();
-      return /^\d/.test(trimmed);
-    })
-    .map(line => {
-      const parts = line.trim().split(/\s+/);
-      let firstPart = parts[0];
-
-      // Handle 'x' notation (e.g., "20x" -> "20")
-      if (firstPart.toLowerCase().endsWith('x')) {
-        firstPart = firstPart.slice(0, -1);
-      }
-
-      // set count and name
-      const count = parseInt(firstPart, 10);
-      const name = parts.slice(1).join(' ');
-
-      // set set_code
-      const startIndex = text.indexOf('(');
-      const endIndex = text.indexOf(')');
-      let set_code = undefined;
-      let collector_number = undefined;
-      if (startIndex >= 0) {
-        set_code = text.substring(startIndex + 1, endIndex);
-        collector_number = parts.slice(-1)?.join(' ');
-        return {count, name, set_code, collector_number};
-      }
-
-      return {count, name}
-    })
+    .filter(isValidDeckLine)
+    .map(parseLine)
     .filter(entry => !isNaN(entry.count) && entry.name.length > 0);
 }

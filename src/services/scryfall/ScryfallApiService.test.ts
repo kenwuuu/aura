@@ -360,6 +360,37 @@ SIDEBOARD:
         expect(result[4]).toEqual({ count: 2, name: 'Ancient Grudge' });
         expect(result[5]).toEqual({ count: 3, name: 'Counterspell' });
       });
+
+      it('should handle multiple sets', () => {
+        const deckText = `COMMANDER:
+1 Flubs, the Fool
+
+MAIN DECK:
+4x Lightning Bolt
+20 Mountain
+1X Sol Ring
+
+// Some comment
+SIDEBOARD:
+2 Ancient Grudge
+3   Counterspell  
+1 Mabel, Heir to Cragflame (BLB) 336
+1 Aegis of the Legion (CLU) 22
+1 Arcane Signet (BLC) 127`;
+
+        const result = parseDecklist(deckText);
+
+        expect(result).toHaveLength(9);
+        expect(result[0]).toEqual({ count: 1, name: 'Flubs, the Fool' });
+        expect(result[1]).toEqual({ count: 4, name: 'Lightning Bolt' });
+        expect(result[2]).toEqual({ count: 20, name: 'Mountain' });
+        expect(result[3]).toEqual({ count: 1, name: 'Sol Ring' });
+        expect(result[4]).toEqual({ count: 2, name: 'Ancient Grudge' });
+        expect(result[5]).toEqual({ count: 3, name: 'Counterspell' });
+        expect(result[6]).toEqual({ count: 1, name: 'Mabel, Heir to Cragflame', setCode: 'BLB', collectorNumber: '336' });
+        expect(result[7]).toEqual({ count: 1, name: 'Aegis of the Legion', setCode: 'CLU', collectorNumber: '22' });
+        expect(result[8]).toEqual({ count: 1, name: 'Arcane Signet', setCode: 'BLC', collectorNumber: '127' });
+      });
     });
   });
 });
