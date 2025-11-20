@@ -60,7 +60,6 @@ export class MultiPlayerBoardManager {
   ) {
     this.yDoc = yDoc;
     this.localPlayerId = localPlayerId;
-    this.backgroundColor = backgroundColor;
     this.cardPreview = cardPreview;
 
     this.yCards = yDoc.getMap('cards');
@@ -763,9 +762,6 @@ export class MultiPlayerBoardManager {
       offsetY: e.clientY - card.y,
     };
 
-    // Hide tooltip
-    this.tooltipManager.hide();
-
     // Bring card to front
     const updatedCard = { ...card, zIndex: ++this.maxZIndex };
     this.yCards.set(cardId, updatedCard);
@@ -807,6 +803,8 @@ export class MultiPlayerBoardManager {
 
   private onMouseMove(e: MouseEvent): void {
     if (!this.dragState.cardId) return;
+
+    this.tooltipManager.hide()
 
     // Check if dragging a card or token
     const card = this.cards.get(this.dragState.cardId);

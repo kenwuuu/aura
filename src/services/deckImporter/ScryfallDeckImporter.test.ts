@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ScryfallDeckImporter } from './ScryfallDeckImporter';
-import { ScryfallApiService } from '../scryfall';
+import {parseDecklist} from "@/services/deckImporter/DeckListParser";
 
 // Mock the ScryfallApiService but use real parseDecklist
 vi.mock('../scryfall', async () => {
@@ -9,7 +9,7 @@ vi.mock('../scryfall', async () => {
     ScryfallApiService: vi.fn().mockImplementation(() => {
       const realService = new actual.ScryfallApiService();
       return {
-        parseDecklist: realService.parseDecklist.bind(realService),
+        parseDecklist: parseDecklist.bind(realService),
         fetchImagesForList: vi.fn().mockImplementation(async (entries) => {
           // Return mock data for each entry
           return entries.map((entry: any) => ({

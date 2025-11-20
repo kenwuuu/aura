@@ -86,7 +86,7 @@ describe('DeckPileViewer', () => {
     });
 
     it('should show card images when available', () => {
-      const cardsWithImages = mockCards.map((card) => ({
+      const cardsWithImages: Card[] = mockCards.map((card) => ({
         ...card,
         images: {
           front: {
@@ -388,7 +388,7 @@ describe('DeckPileViewer', () => {
       const onPlayToBattlefield = vi.fn();
       viewer = new DeckPileViewer({ onPlayToBattlefield });
 
-      viewer.show(mockCards, 'search');
+      viewer.show(mockCards, 'deck');
 
       // Simulate hovering over first card
       const firstCard = document.querySelector('.card-grid-item') as HTMLElement;

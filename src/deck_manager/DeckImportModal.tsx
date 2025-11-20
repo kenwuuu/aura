@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ScryfallDeckImporter } from '../services/deckImporter';
-import { DeckStorageService } from '../services/deckStorage';
-import { SavedDeck } from '../modules/deck/types';
+import * as Dialog from '@radix-ui/react-dialog';
+import { ScryfallDeckImporter } from '@/services/deckImporter';
+import { DeckStorageService } from '@/services/deckStorage';
+import { SavedDeck } from '@/modules/deck/types';
 import { DeckImportHelpDialog } from './DeckImportHelpDialog';
+import { ModalFooter } from '@/components/ModalFooter';
 import {InfoIcon} from "lucide-react"
 import {
   Alert,
@@ -15,6 +17,70 @@ interface DeckImportModalProps {
   onClose: () => void;
   onDeckImported: (deck: SavedDeck) => void;
 }
+
+const styles: { [key: string]: React.CSSProperties } = {
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 10001,
+    animation: 'fadeIn 150ms ease-out',
+  },
+  content: {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: '#1f1f1f',
+    border: '2px solid #3d3d3d',
+    borderRadius: '16px',
+    padding: '0',
+    maxWidth: '600px',
+    width: '90vw',
+    maxHeight: '85vh',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
+    zIndex: 10002,
+    animation: 'slideIn 200ms ease-out',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '20px 24px',
+    borderBottom: '1px solid #3d3d3d',
+  },
+  title: {
+    color: '#fff',
+    fontSize: '18px',
+    fontWeight: 600,
+    margin: 0,
+  },
+  closeButton: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '4px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#9ca3af',
+    fontSize: '24px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+    lineHeight: '1',
+  },
+  formGroup: {
+    marginBottom: '10px',
+  },
+  body: {
+    padding: '24px',
+    overflowY: 'auto',
+    flex: 1,
+  },
+};
 
 export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportModalProps) {
   const [deckText, setDeckText] = useState('');
@@ -95,17 +161,17 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-backdrop" onClick={handleClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Import Deck from Scryfall</h2>
-          <button className="modal-close" onClick={handleClose}>×</button>
-        </div>
+    <Dialog.Root open={isOpen} onOpenChange={onClose}>
+      <Dialog.Portal>
+        <Dialog.Overlay style={styles.overlay} />
+        <Dialog.Content style={styles.content}>
+          <div style={styles.header}>
+            <Dialog.Title style={styles.title}>Import Deck from Scryfall</Dialog.Title>
+            <Dialog.Close style={styles.closeButton} onClick={handleClose}>×</Dialog.Close>
+          </div>
 
-        <div className="modal-body">
+          <div style={styles.body}>
           <div className="form-group">
             <label htmlFor="deck-name">Deck Name</label>
             <input
@@ -121,9 +187,9 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
 
           <Alert className={"mb-4"}>
             <InfoIcon />
-            <AlertTitle>Aura supports all languages that Scryfall does.</AlertTitle>
+            <AlertTitle>Set imports available now!</AlertTitle>
             <AlertDescription>
-              Example: "1 Anillo solar" or "1 Sonnenring" or "1 Anneau solaire"
+              Example: 1 Rhystic Study (WOT) 71
             </AlertDescription>
           </Alert>
 
@@ -135,7 +201,7 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
               onChange={(e) => setDeckText(e.target.value)}
               placeholder={`Place your commander in the last line.
               Enter your deck list (one card per line):
-              \n\n4 Lightning Bolt\n20 Mountain\n1 Bonfire of the Damned`}
+              \n\n1 Rhystic Study (WOT) 71\n4 Lightning Bolt\n20 Mountain`}
               rows={15}
               disabled={isImporting}
             />
@@ -171,27 +237,33 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
               <p>{successMessage}</p>
             </div>
           )}
-        </div>
+          </div>
 
-        <div className="modal-footer">
-          <button onClick={() => setIsHelpOpen(true)} disabled={isImporting}>
-            Help
-          </button>
-          <div style={{ flex: 1 }} />
-          <button onClick={handleClose} disabled={isImporting}>
-            Cancel
-          </button>
-          <button
-            onClick={handleImport}
-            disabled={isImporting || !deckText.trim() || !deckName.trim()}
-            className="primary"
-          >
-            {isImporting ? 'Importing...' : 'Import Deck'}
-          </button>
-        </div>
-      </div>
+          <ModalFooter
+            buttons={[
+              {
+                label: 'Help',
+                onClick: () => setIsHelpOpen(true),
+                disabled: isImporting,
+                align: 'left',
+              },
+              {
+                label: 'Cancel',
+                onClick: handleClose,
+                disabled: isImporting,
+              },
+              {
+                label: isImporting ? 'Importing...' : 'Import Deck',
+                onClick: handleImport,
+                disabled: isImporting || !deckText.trim() || !deckName.trim(),
+                variant: 'primary',
+              },
+            ]}
+          />
+        </Dialog.Content>
+      </Dialog.Portal>
 
       <DeckImportHelpDialog isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-    </div>
+    </Dialog.Root>
   );
 }

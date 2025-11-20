@@ -78,9 +78,10 @@ export class KeyboardHandler {
     // Create a mock keyboard event for compatibility
     const mockEvent = {
       key: normalizedKey,
-      preventDefault: () => {},
+      preventDefault: () => {
+      },
       target: document.body,
-    } as KeyboardEvent;
+    } as unknown as KeyboardEvent;
 
     // Temporarily set hovered card if provided
     const originalHoveredCard = this.hoveredCardId;

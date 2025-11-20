@@ -26,6 +26,7 @@ describe('KeyboardHandler - Copy Offset Logic', () => {
       onUntapAll: vi.fn(),
       onEndTurn: vi.fn(),
       onHideCardPreview: vi.fn(),
+      onHideCardTooltip: vi.fn(),
       onMulligan: vi.fn(),
       loseHealth: vi.fn(),
       gainHealth: vi.fn(),

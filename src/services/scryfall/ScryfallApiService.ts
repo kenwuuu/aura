@@ -1,9 +1,10 @@
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
-import { CardImages, CardImageUris } from '../../modules/deck/types';
-import { toCardDataResult } from './ScryfallCardAdapter';
+import {CardImages, CardImageUris} from '@/modules/deck/types';
+import {toCardDataResult} from './ScryfallCardAdapter';
+import {DeckLineItem} from "@/services/deckImporter/DeckListParser";
 
-export interface ScryfallCard {
+export type ScryfallCard = {
   id: string;
   name: string;
   type_line?: string;
@@ -20,12 +21,7 @@ export interface ScryfallCard {
   }>;
 }
 
-export interface ParsedDeckEntry {
-  count: number;
-  name: string;
-}
-
-export interface CardDataResult {
+export type CardDataResult = {
   count: number;
   name: string;
   type_line?: string;
@@ -44,48 +40,15 @@ export class ScryfallApiService {
     this.queue = new PQueue({
       interval: ScryfallApiService.RATE_LIMIT_INTERVAL,
       intervalCap: ScryfallApiService.RATE_LIMIT_CAP,
-      timeout: 30000, // 30 second timeout per request
+      timeout: 30000, // 30 second timeout for whole import
     });
-  }
-
-  /**
-   * Parse a decklist in the format:
-   * 1 Mountain
-   * 2 Island
-   * 4x Lightning Bolt (supports 'x' notation)
-   *
-   * Lines that don't start with a numeral are ignored.
-   */
-  parseDecklist(text: string): ParsedDeckEntry[] {
-    return text
-      .trim()
-      .split('\n')
-      .filter(line => line.trim().length > 0)
-      .filter(line => {
-        // Ignore lines that don't start with a numeral
-        const trimmed = line.trim();
-        return /^\d/.test(trimmed);
-      })
-      .map(line => {
-        const parts = line.trim().split(/\s+/);
-        let firstPart = parts[0];
-
-        // Handle 'x' notation (e.g., "20x" -> "20")
-        if (firstPart.toLowerCase().endsWith('x')) {
-          firstPart = firstPart.slice(0, -1);
-        }
-
-        const count = parseInt(firstPart, 10);
-        const name = parts.slice(1).join(' ');
-        return { count, name };
-      })
-      .filter(entry => !isNaN(entry.count) && entry.name.length > 0);
   }
 
   /**
    * Fetch card data from Scryfall with rate limiting and retries
    */
-  private async fetchCardData(cardName: string): Promise<ScryfallCard> {
+  private async fetchCardDataByName(cardLineItem: DeckLineItem): Promise<ScryfallCard> {
+    const cardName = cardLineItem.name;
     const exactUrl = `${ScryfallApiService.BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`;
     const fuzzyUrl = `${ScryfallApiService.BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`;
     const attemptNumberToSwitchToFuzzySearch = 2;
@@ -115,12 +78,43 @@ export class ScryfallApiService {
     ) as ScryfallCard;
   }
 
+  /**
+   * Fetch card data from Scryfall with rate limiting and retries
+   */
+  private async fetchCardDataBySet(cardLineItem: DeckLineItem): Promise<ScryfallCard> {
+    const encodedSetCode = encodeURIComponent(cardLineItem.setCode!);
+    const encodedCollectorNumber = encodeURIComponent(cardLineItem.collectorNumber!);
+
+    const url = `${ScryfallApiService.BASE_URL}/cards/${encodedSetCode}/${encodedCollectorNumber}`;
+
+    return await this.queue.add(() =>
+      pRetry(
+        async () => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error(`Card "${cardLineItem.name}" not found`);
+            }
+            throw new Error(`Scryfall API error: ${response.status} ${response.statusText}. URL: ${url}.`);
+          }
+          return await response.json();
+        },
+        {
+          retries: 3,
+          onFailedAttempt: (error) => {
+            console.warn(`Attempt ${error.attemptNumber} failed for "${cardLineItem.name}". ${error.retriesLeft} retries left.`);
+          },
+        }
+      )
+    ) as ScryfallCard;
+  }
+
 
   /**
    * Fetch images for a list of cards with progress callback
    */
-  async fetchImagesForList(
-    entries: ParsedDeckEntry[],
+  public async fetchImagesForList(
+    entries: DeckLineItem[],
     onProgress?: (current: number, total: number) => void
   ): Promise<CardDataResult[]> {
     const results: CardDataResult[] = [];
@@ -128,7 +122,12 @@ export class ScryfallApiService {
 
     for (const entry of entries) {
       try {
-        const cardObj = await this.fetchCardData(entry.name);
+        let cardObj: ScryfallCard;
+        if (entry.setCode && entry.collectorNumber) {
+          cardObj = await this.fetchCardDataBySet(entry);
+        } else { // fall back to using name
+          cardObj = await this.fetchCardDataByName(entry);
+        }
         results.push(toCardDataResult(cardObj, entry.count));
       } catch (err) {
         console.error(`Error fetching "${entry.name}":`, err);
@@ -152,7 +151,7 @@ export class ScryfallApiService {
   /**
    * Get the current queue size (pending requests)
    */
-  getQueueSize(): number {
+  public getQueueSize(): number {
     return this.queue.size;
   }
 
@@ -166,7 +165,7 @@ export class ScryfallApiService {
   /**
    * Fetch card data by Scryfall ID
    */
-  async fetchCardById(scryfallId: string): Promise<ScryfallCard> {
+  public async fetchCardById(scryfallId: string): Promise<ScryfallCard> {
     const url = `${ScryfallApiService.BASE_URL}/cards/${scryfallId}`;
 
     return await this.queue.add(() =>
@@ -195,7 +194,7 @@ export class ScryfallApiService {
    * Extract token IDs from a card's all_parts
    * Returns array of Scryfall IDs for tokens created by this card
    */
-  extractTokenIds(cardData: ScryfallCard): string[] {
+  public extractTokenIds(cardData: ScryfallCard): string[] {
     if (!cardData.all_parts || !Array.isArray(cardData.all_parts)) {
       return [];
     }
@@ -208,14 +207,15 @@ export class ScryfallApiService {
   /**
    * Create a Card object from Scryfall data
    */
-  createCardFromScryfall(scryfallCard: ScryfallCard): CardDataResult {
+  public createCardFromScryfall(scryfallCard: ScryfallCard): CardDataResult {
     return toCardDataResult(scryfallCard, 1);
   }
 
   /**
    * Fetch card by name (public API for adding arbitrary cards)
    */
-  async fetchCardByName(cardName: string): Promise<ScryfallCard> {
-    return this.fetchCardData(cardName);
+  public async fetchCardByName(cardName: string): Promise<ScryfallCard> {
+    const card:DeckLineItem = {name: cardName, count: 1}
+    return this.fetchCardDataByName(card);
   }
 }

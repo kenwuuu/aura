@@ -42,7 +42,7 @@ export const EditableHealth: React.FC<EditableHealthProps> = ({
       html={editableHealth}
       onChange={handleChange}
       onBlur={handleBlur}
-      onKeyDown={(e) => {
+      onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (e.key === "Enter") {
           e.preventDefault();
           (e.target as HTMLElement).blur();

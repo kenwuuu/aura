@@ -9,7 +9,7 @@ export interface CardImageUris {
 
 export interface CardImages {
   front: CardImageUris | null;
-  back: CardImageUris | null; // For double-faced cards
+  back?: CardImageUris | null; // For double-faced cards
 }
 
 export interface Card {
