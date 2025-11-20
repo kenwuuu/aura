@@ -47,7 +47,8 @@ export class ScryfallApiService {
   /**
    * Fetch card data from Scryfall with rate limiting and retries
    */
-  private async fetchCardData(cardName: string): Promise<ScryfallCard> {
+  private async fetchCardDataByName(cardLineItem: DeckLineItem): Promise<ScryfallCard> {
+    const cardName = cardLineItem.name;
     const exactUrl = `${ScryfallApiService.BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`;
     const fuzzyUrl = `${ScryfallApiService.BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`;
     const attemptNumberToSwitchToFuzzySearch = 2;
@@ -77,6 +78,37 @@ export class ScryfallApiService {
     ) as ScryfallCard;
   }
 
+  /**
+   * Fetch card data from Scryfall with rate limiting and retries
+   */
+  private async fetchCardDataBySet(cardLineItem: DeckLineItem): Promise<ScryfallCard> {
+    const encodedSetCode = encodeURIComponent(cardLineItem.setCode!);
+    const encodedCollectorNumber = encodeURIComponent(cardLineItem.collectorNumber!);
+
+    const url = `${ScryfallApiService.BASE_URL}/cards/${encodedSetCode}/${encodedCollectorNumber}`;
+
+    return await this.queue.add(() =>
+      pRetry(
+        async () => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error(`Card "${cardLineItem.name}" not found`);
+            }
+            throw new Error(`Scryfall API error: ${response.status} ${response.statusText}. URL: ${url}.`);
+          }
+          return await response.json();
+        },
+        {
+          retries: 3,
+          onFailedAttempt: (error) => {
+            console.warn(`Attempt ${error.attemptNumber} failed for "${cardLineItem.name}". ${error.retriesLeft} retries left.`);
+          },
+        }
+      )
+    ) as ScryfallCard;
+  }
+
 
   /**
    * Fetch images for a list of cards with progress callback
@@ -90,7 +122,12 @@ export class ScryfallApiService {
 
     for (const entry of entries) {
       try {
-        const cardObj = await this.fetchCardData(entry.name);
+        let cardObj: ScryfallCard;
+        if (entry.setCode && entry.collectorNumber) {
+          cardObj = await this.fetchCardDataBySet(entry);
+        } else { // fall back to using name
+          cardObj = await this.fetchCardDataByName(entry);
+        }
         results.push(toCardDataResult(cardObj, entry.count));
       } catch (err) {
         console.error(`Error fetching "${entry.name}":`, err);
@@ -178,6 +215,7 @@ export class ScryfallApiService {
    * Fetch card by name (public API for adding arbitrary cards)
    */
   public async fetchCardByName(cardName: string): Promise<ScryfallCard> {
-    return this.fetchCardData(cardName);
+    const card:DeckLineItem = {name: cardName, count: 1}
+    return this.fetchCardDataByName(card);
   }
 }
