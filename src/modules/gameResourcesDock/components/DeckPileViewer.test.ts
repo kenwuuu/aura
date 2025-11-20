@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DeckPileViewer } from './DeckPileViewer';
+import { PileViewer } from './PileViewer';
 import { Card } from '../../deck';
 
 // Helper to create mock cards
@@ -19,7 +19,7 @@ function createMockCard(id: string, cardNumber: number, name?: string, type_line
 }
 
 describe('DeckPileViewer', () => {
-  let viewer: DeckPileViewer;
+  let viewer: PileViewer;
   let mockCards: Card[];
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('DeckPileViewer', () => {
       createMockCard(`card-${i}`, i + 1, `Card ${i + 1}`)
     );
 
-    viewer = new DeckPileViewer();
+    viewer = new PileViewer();
   });
 
   afterEach(() => {
@@ -386,7 +386,7 @@ describe('DeckPileViewer', () => {
   describe('Keyboard shortcuts', () => {
     it('should trigger onPlayToBattlefield when Z is pressed on hovered card', () => {
       const onPlayToBattlefield = vi.fn();
-      viewer = new DeckPileViewer({ onPlayToBattlefield });
+      viewer = new PileViewer({ onPlayToBattlefield });
 
       viewer.show(mockCards, 'deck');
 
@@ -406,7 +406,7 @@ describe('DeckPileViewer', () => {
 
     it('should trigger onMoveToHand when H is pressed on hovered card', () => {
       const onMoveToHand = vi.fn();
-      viewer = new DeckPileViewer({ onMoveToHand });
+      viewer = new PileViewer({ onMoveToHand });
 
       viewer.show(mockCards, 'deck');
 
@@ -426,7 +426,7 @@ describe('DeckPileViewer', () => {
 
     it('should not trigger shortcuts when no card is hovered', () => {
       const onPlayToBattlefield = vi.fn();
-      viewer = new DeckPileViewer({ onPlayToBattlefield });
+      viewer = new PileViewer({ onPlayToBattlefield });
 
       viewer.show(mockCards, 'deck');
 
@@ -439,7 +439,7 @@ describe('DeckPileViewer', () => {
 
     it('should update hovered card when mouse moves between cards', () => {
       const onPlayToBattlefield = vi.fn();
-      viewer = new DeckPileViewer({ onPlayToBattlefield });
+      viewer = new PileViewer({ onPlayToBattlefield });
 
       viewer.show(mockCards, 'deck');
 
@@ -464,7 +464,7 @@ describe('DeckPileViewer', () => {
 
     it('should not trigger shortcuts when typing in search box', () => {
       const onPlayToBattlefield = vi.fn();
-      viewer = new DeckPileViewer({ onPlayToBattlefield });
+      viewer = new PileViewer({ onPlayToBattlefield });
 
       viewer.show(mockCards, 'deck');
 
@@ -555,7 +555,7 @@ describe('DeckPileViewer', () => {
 
     it('should clean up event listeners when closed', () => {
       const onPlayToBattlefield = vi.fn();
-      viewer = new DeckPileViewer({ onPlayToBattlefield });
+      viewer = new PileViewer({ onPlayToBattlefield });
 
       viewer.show(mockCards, 'deck');
 

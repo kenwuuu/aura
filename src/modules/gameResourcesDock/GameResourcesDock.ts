@@ -1,7 +1,7 @@
 import { Player, PlayerState } from '../player';
 import { GameResourcesDockConfig } from './types';
 import {Card, Deck} from '../deck';
-import { DeckPileViewer } from './components';
+import { PileViewer } from './components';
 import { CardPreview } from '../cardPreview';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
@@ -20,10 +20,10 @@ export class GameResourcesDock {
   private container: HTMLElement;
   private player: Player;
   private config: GameResourcesDockConfig;
-  private deckViewer: DeckPileViewer;
-  private scryViewer: DeckPileViewer;
-  private exileViewer: DeckPileViewer;
-  private discardViewer: DeckPileViewer;
+  private deckViewer: PileViewer;
+  private scryViewer: PileViewer;
+  private exileViewer: PileViewer;
+  private discardViewer: PileViewer;
   private elements: {
     exile: HTMLElement;
     discard: HTMLElement;
@@ -67,7 +67,7 @@ export class GameResourcesDock {
     this.controlsTooltipManager = controlsTooltipManager;
 
     // Initialize all pile viewers with appropriate callbacks
-    this.deckViewer = new DeckPileViewer({
+    this.deckViewer = new PileViewer({
       onPlayToBattlefield: (card) => this.handlePileCardToBattlefield(card, 'deck'),
       onMoveToHand: (card) => this.handlePileCardToHand(card, 'deck'),
       onMoveToDiscard: (card) => this.handlePileCardToDiscard(card, 'deck'),
@@ -76,13 +76,13 @@ export class GameResourcesDock {
       onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'deck'),
     }, this.player.getYPlayerState());
 
-    this.scryViewer = new DeckPileViewer({
+    this.scryViewer = new PileViewer({
       onMoveToDiscard: (card) => this.handlePileCardToDiscard(card, 'scry'),
       onMoveToDeckTop: (card) => this.handlePileCardToDeckTop(card, 'scry'),
       onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'scry'),
     });
 
-    this.exileViewer = new DeckPileViewer({
+    this.exileViewer = new PileViewer({
       onPlayToBattlefield: (card) => this.handlePileCardToBattlefield(card, 'exile'),
       onMoveToHand: (card) => this.handlePileCardToHand(card, 'exile'),
       onMoveToDiscard: (card) => this.handlePileCardToDiscard(card, 'exile'),
@@ -90,7 +90,7 @@ export class GameResourcesDock {
       onMoveToDeckBottom: (card) => this.handlePileCardToDeckBottom(card, 'exile'),
     });
 
-    this.discardViewer = new DeckPileViewer({
+    this.discardViewer = new PileViewer({
       onPlayToBattlefield: (card) => this.handlePileCardToBattlefield(card, 'discard'),
       onMoveToHand: (card) => this.handlePileCardToHand(card, 'discard'),
       onMoveToExile: (card) => this.handlePileCardToExile(card, 'discard'),

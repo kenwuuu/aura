@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { HealthDisplay } from './HealthDisplay';
 import { CustomCounter } from '@/modules/player/types';
 import { Card } from '@/modules/deck';
-import { DeckPileViewer } from '@/modules/gameResourcesDock/components';
+import { PileViewer } from '@/modules/gameResourcesDock/components';
 
 interface OpponentHealthListProps {
   yDoc: Y.Doc;
@@ -26,7 +26,7 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
   localPlayerId,
 }) => {
   const [opponents, setOpponents] = useState<OpponentData[]>([]);
-  const pileViewersRef = useRef<Map<string, { exile: DeckPileViewer; discard: DeckPileViewer; hand: DeckPileViewer }>>(new Map());
+  const pileViewersRef = useRef<Map<string, { exile: PileViewer; discard: PileViewer; hand: PileViewer }>>(new Map());
 
   // Notify MultiPlayerBoardManager when opponent count changes
   useEffect(() => {
@@ -160,13 +160,13 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
     yPlayerState.set('customCounters', updatedCounters);
   };
 
-  const getOrCreateViewer = (playerId: string, pileType: 'exile' | 'discard' | 'hand'): DeckPileViewer => {
+  const getOrCreateViewer = (playerId: string, pileType: 'exile' | 'discard' | 'hand'): PileViewer => {
     let viewers = pileViewersRef.current.get(playerId);
     if (!viewers) {
       viewers = {
-        exile: new DeckPileViewer({}),
-        discard: new DeckPileViewer({}),
-        hand: new DeckPileViewer({})
+        exile: new PileViewer({}),
+        discard: new PileViewer({}),
+        hand: new PileViewer({})
       };
       pileViewersRef.current.set(playerId, viewers);
     }
