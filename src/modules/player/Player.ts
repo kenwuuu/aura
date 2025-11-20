@@ -17,11 +17,13 @@ export class Player {
   private playerId: string;
   private yPlayerState: Y.Map<any>;
   private yCardsOnBoard: Y.Map<any>; // Battlefield cards
+  private config: PlayerConfig;
   private deck: Deck;
   private hand: Deck;
   private exile: Deck;
   private discard: Deck;
-  private config: PlayerConfig;
+  private scry: Deck;
+  private piles: Record<PileType, Deck>;
 
   constructor(
     playerId: string,
@@ -34,6 +36,14 @@ export class Player {
     this.hand = new Deck([]);
     this.exile = new Deck([]);
     this.discard = new Deck([]);
+    this.scry = new Deck([]);
+    this.piles = {
+      hand: this.hand,
+      deck: this.deck,
+      discard: this.discard,
+      exile: this.exile,
+      scry: this.scry,
+    };
     this.config = {
       initialHealth: config.initialHealth ?? 40,
     };
@@ -80,11 +90,11 @@ export class Player {
     this.deck = newDeck;
 
     // get cards
-    const deckCards = this.deck.getCards();
+    const deckCards: Card[] = this.deck.getCards();
 
     if (deckCards.length > 0) {  // TODO: change logic based on if deck is commander or not
       // move commander to hand
-      const commander = deckCards[deckCards.length - 1];
+      const commander: Card = deckCards[deckCards.length - 1];
       this.deck.removeCardById(commander.id);
       this.deck.addCardToTop(commander);
       this.drawCard();
@@ -100,7 +110,7 @@ export class Player {
   }
 
   public drawCard(): Card | null {
-    const card = this.deck.drawCard();
+    const card: Card | null = this.deck.drawCard();
     if (!card) return null;
 
     this.hand.addCardToTop(card);
@@ -143,48 +153,27 @@ export class Player {
   }
 
   public removeCardFromHand(cardId: string): Card | null {
-    const card = this.hand.removeCardById(cardId);
-    if (card) {
-      this.syncToYState();
-    }
+    const card: Card | null = this.hand.removeCardById(cardId);
+    this.syncToYState();
     return card;
   }
 
   public removeCardFromPileById(cardId: string, pileType: PileType): Card | null {
-    let result = null;
-    switch (pileType) {
-      case "hand":
-        result = this.hand.removeCardById(cardId);
-        break;
-      case "deck":
-        result = this.deck.removeCardById(cardId);
-        break;
-      case "discard":
-        result = this.discard.removeCardById(cardId);
-        break;
-      case "exile":
-        result = this.exile.removeCardById(cardId);
-        break;
-    }
+    let result: Card | null = this.piles[pileType].removeCardById(cardId);
     this.syncToYState();
     return result;
   }
 
-  public drawCardFromPile(pile: 'deck' | 'discard' | 'exile') {
-    let card;
-    switch (pile) {
-      case "deck":
-        card = this.deck.drawCard();
-        break;
-      case "discard":
-        card = this.discard.drawCard();
-        break;
-      case "exile":
-        card = this.exile.drawCard();
-        break;
-    }
+  public drawCardFromPile(pileType: 'deck' | 'discard' | 'exile'): Card | null {
+    let result: Card | null = this.piles[pileType].drawCard();
     this.syncToYState();
-    return card;
+    return result;
+  }
+
+  public placeCardInPile(card: Card, pileType: PileType, position: number = Infinity): void {
+    // Places card on top of pile by default
+    this.piles[pileType].placeCardAtPosition(card, position);
+    this.syncToYState();
   }
 
   public setHealth(health: number): void {
@@ -194,26 +183,6 @@ export class Player {
   public modifyHealth(delta: number): void {
     const currentHealth = this.yPlayerState.get(YSTATE_HEALTH) ?? this.config.initialHealth;
     this.yPlayerState.set(YSTATE_HEALTH, currentHealth + delta);
-  }
-
-  public placeCardInPile(card: Card, pileType: PileType, position: number = Infinity) {
-    // Places card on top of pile by default
-    switch (pileType) {
-      case "deck":
-        this.deck.placeCardAtPosition(card, position);
-        break;
-      case "discard":
-        this.discard.placeCardAtPosition(card, position);
-        break;
-      case "exile":
-        this.exile.placeCardAtPosition(card, position);
-        break;
-      case "hand":
-        this.hand.placeCardAtPosition(card, position)
-        break;
-    }
-    this.syncToYState();
-    return card;
   }
 
   public shuffleDeck(): void {
@@ -233,7 +202,7 @@ export class Player {
     this.deck.shuffleDeck();
 
     // Draw new hand
-    for (let i = 0; i < cardsToDraw; i++) {
+    for (let i: number = 0; i < cardsToDraw; i++) {
       this.drawCard();
     }
   }
