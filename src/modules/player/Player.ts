@@ -12,31 +12,44 @@ import {
   YSTATE_DECK
 } from "../../constants";
 import {PileType} from "../gameResourcesDock/components";
+import { CardPile } from './CardPile';
 
 export class Player {
   private playerId: string;
   private yPlayerState: Y.Map<any>;
   private yCardsOnBoard: Y.Map<any>; // Battlefield cards
   private config: PlayerConfig;
-  private deck: Deck;
-  private hand: Deck;
-  private exile: Deck;
-  private discard: Deck;
-  private scry: Deck;
-  private piles: Record<PileType, Deck>;
+  private deck: CardPile;
+  private hand: CardPile;
+  private exile: CardPile;
+  private discard: CardPile;
+  private scry: CardPile;
+  private piles: Record<PileType, CardPile>;
 
   constructor(
     playerId: string,
     yDoc: Y.Doc,
-    deck: Deck,
+    initialDeckCards: Deck,
     config: Partial<PlayerConfig> = {}
   ) {
     this.playerId = playerId;
-    this.deck = deck;
-    this.hand = new Deck([]);
-    this.exile = new Deck([]);
-    this.discard = new Deck([]);
-    this.scry = new Deck([]);
+    this.config = {
+      initialHealth: config.initialHealth ?? 40,
+    };
+
+    this.yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
+    this.yCardsOnBoard = yDoc.getMap(YDOC_CARDS_ON_BOARD); // Store reference to battlefield
+
+    // Initialize state first so yPlayerState has the arrays
+    this.initializeState(initialDeckCards);
+
+    // Create CardPile instances that reference yPlayerState
+    this.deck = new CardPile(this.yPlayerState, YSTATE_DECK);
+    this.hand = new CardPile(this.yPlayerState, YSTATE_HAND);
+    this.exile = new CardPile(this.yPlayerState, YSTATE_EXILE_PILE);
+    this.discard = new CardPile(this.yPlayerState, YSTATE_DISCARD_PILE);
+    this.scry = new CardPile(this.yPlayerState, 'scry');
+
     this.piles = {
       hand: this.hand,
       deck: this.deck,
@@ -44,33 +57,26 @@ export class Player {
       exile: this.exile,
       scry: this.scry,
     };
-    this.config = {
-      initialHealth: config.initialHealth ?? 40,
-    };
-
-    this.yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
-    this.yCardsOnBoard = yDoc.getMap(YDOC_CARDS_ON_BOARD); // Store reference to battlefield
-    this.initializeState();
   }
 
-  private initializeState(): void {
+  private initializeState(initialDeckCards: Deck): void {
     if (!this.yPlayerState.has(YSTATE_HEALTH)) {
       this.yPlayerState.set(YSTATE_HEALTH, this.config.initialHealth);
-      this.yPlayerState.set(YSTATE_DECK, this.deck.getCards());
+      this.yPlayerState.set(YSTATE_DECK, initialDeckCards.getCards());
       this.yPlayerState.set(YSTATE_HAND, []);
       this.yPlayerState.set(YSTATE_EXILE_PILE, []);
       this.yPlayerState.set(YSTATE_DISCARD_PILE, []);
+      this.yPlayerState.set('scry', []);
       this.yPlayerState.set(YSTATE_CUSTOM_COUNTERS, []);
       this.yPlayerState.set('deckRevealCount', 0); // 0=hidden, -1=all, N>0=top N cards
     }
   }
 
-  // Sync local Deck instances to yPlayerState
+  // Deprecated: CardPile now syncs directly to yPlayerState
+  // Keeping for backward compatibility but it's a no-op
   public syncToYState(): void {
-    this.yPlayerState.set(YSTATE_DECK, this.deck.getCards());
-    this.yPlayerState.set(YSTATE_HAND, this.hand.getCards());
-    this.yPlayerState.set(YSTATE_EXILE_PILE, this.exile.getCards());
-    this.yPlayerState.set(YSTATE_DISCARD_PILE, this.discard.getCards());
+    // CardPile instances now sync automatically to yPlayerState
+    // This method is kept for backward compatibility but does nothing
   }
 
   public getState(): PlayerState {
@@ -86,8 +92,8 @@ export class Player {
   }
 
   public async loadNewDeck(newDeck: Deck): Promise<void> {
-    // assign deck
-    this.deck = newDeck;
+    // Replace deck cards with new deck
+    this.deck.setCards(newDeck.getCards());
 
     // get cards
     const deckCards: Card[] = this.deck.getCards();
@@ -99,7 +105,7 @@ export class Player {
       this.deck.addCardToTop(commander);
       this.drawCard();
 
-      this.deck.shuffleDeck();
+      this.deck.shuffle();
 
       // draw 7
       for (let i = 0; i < 7; i++) {
@@ -148,7 +154,7 @@ export class Player {
     this.yPlayerState.set(YSTATE_HEALTH, this.config.initialHealth);
 
     // Step 5: Shuffle deck and sync
-    this.deck.shuffleDeck();
+    this.deck.shuffle();
     this.syncToYState();
   }
 
@@ -186,7 +192,7 @@ export class Player {
   }
 
   public shuffleDeck(): void {
-    this.deck.shuffleDeck();
+    this.deck.shuffle();
   }
 
   public mulligan(cardsToDraw: number = 7): void {
@@ -199,7 +205,7 @@ export class Player {
     this.hand.clear();
 
     // Shuffle deck
-    this.deck.shuffleDeck();
+    this.deck.shuffle();
 
     // Draw new hand
     for (let i: number = 0; i < cardsToDraw; i++) {
@@ -215,19 +221,19 @@ export class Player {
     return this.deck.getCards();
   }
 
-  public getDeck(): Deck {
+  public getDeck(): CardPile {
     return this.deck;
   }
 
-  public getHand(): Deck {
+  public getHand(): CardPile {
     return this.hand;
   }
 
-  public getExilePile(): Deck {
+  public getExilePile(): CardPile {
     return this.exile;
   }
 
-  public getDiscardPile(): Deck {
+  public getDiscardPile(): CardPile {
     return this.discard;
   }
 
@@ -276,6 +282,16 @@ export class Player {
 
   public reorderHand(newOrder: Card[]): void {
     this.yPlayerState.set('hand', newOrder);
+  }
+
+  public flipHandCard(cardId: string): void {
+    const hand = this.hand.getCards();
+    const card = hand.find(c => c.id === cardId);
+    if (card) {
+      const updatedCard = { ...card, isFlipped: !card.isFlipped };
+      const updatedHand = hand.map(c => c.id === cardId ? updatedCard : c);
+      this.yPlayerState.set('hand', updatedHand);
+    }
   }
 
   public getYPlayerState(): Y.Map<any> {

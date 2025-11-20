@@ -8,7 +8,7 @@ import {createRoot, Root} from 'react-dom/client';
 import {HealthDisplay} from '../../components/health/HealthDisplay';
 import {HotkeyTooltip} from '../../components/HotkeyTooltip';
 import {HotkeyContext} from '../../data/hotkeys';
-import {DEFAULT_CARD_BACK, YSTATE_DECK_CARD_COUNT} from '../../constants';
+import {DEFAULT_CARD_BACK} from '../../constants';
 import {animate} from "motion";
 import {ScryModal} from '../../components/ScryModal';
 
@@ -44,11 +44,6 @@ export class GameResourcesDock {
   private currentMouseY: number = 0;
   private isMouseDown: boolean = false;
   private isModalOpen: boolean = false;
-  private handDragState: {
-    draggedIndex: number;
-    draggedElement: HTMLElement;
-    placeholder: HTMLElement | null;
-  } | null = null;
   private _dragState: { mode: string; draggedElement: HTMLDivElement; startIndex: number; } | undefined;
   private requestAnimationFrameId: number | null = null;
 
@@ -672,8 +667,11 @@ export class GameResourcesDock {
 
   private replaceRemainingScriedCards(): void {
     // returns any remaining cards in scryViewer on top of deck, in order
-    const newDeck = [...this.player['deck'].getCards(), ...this.scriedCards.getCards()]
-    this.player['deck'].setCardsDO_NOT_USE(newDeck);
+    // Add remaining scried cards back to the top of the deck
+    this.scriedCards.getCards().forEach((card) => {
+      this.player.getDeck().addCardToTop(card);
+    });
+    this.scriedCards.clearDeck();
   }
 
   private scryCards(count: number): void {
@@ -682,7 +680,7 @@ export class GameResourcesDock {
     // Cards are stored bottom-to-top, so we need to slice from the end
     this.scriedCards.setCardsDO_NOT_USE(deckCards.slice(-count));
     this.scriedCards.getCards().forEach((card) => {
-      this.player['deck'].removeCardById(card.id);
+      this.player.getDeck().removeCardById(card.id);
     });
 
     // Show them in the deck viewer
@@ -712,24 +710,12 @@ export class GameResourcesDock {
 
   // Handler methods for pile viewer callbacks
   private handlePileViewerCardToBattlefield(card: Card, pileType: 'deck' | 'exile' | 'discard'): void {
-    if (pileType === 'deck') {
-      // Remove card from deck
-      this.player['deck'].removeCardById(card.id);
-      this.player['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.player['deck'].getCardCount());
-    } else {
-      // Remove from exile or discard pile
-      const state = this.player.getState();
-      const pile = pileType === 'exile' ? state.exilePile : state.discardPile;
-      const index = pile.findIndex(c => c.id === card.id);
-      if (index !== -1) {
-        pile.splice(index, 1);
-        this.player['yPlayerState'].set(pileType === 'exile' ? 'exilePile' : 'discardPile', pile);
-      }
-    }
+    // Remove card from the appropriate pile
+    this.player.removeCardFromPileById(card.id, pileType);
 
     // Dispatch event to play card to battlefield
     const event = new CustomEvent('playCard', {
-      detail: { card, playerId: this.player['playerId'] }
+      detail: { card, playerId: this.player.getId() }
     });
     window.dispatchEvent(event);
 
@@ -854,14 +840,7 @@ export class GameResourcesDock {
           this.player.syncToYState();
         },
         flipHandCard: (cardId: string) => {
-          const hand = this.player.getHand().getCards();
-          const card = hand.find(c => c.id === cardId);
-          if (card) {
-            // Toggle flip state
-            const updatedCard = { ...card, isFlipped: !card.isFlipped };
-            const updatedHand = hand.map(c => c.id === cardId ? updatedCard : c);
-            this.player['yPlayerState'].set('hand', updatedHand);
-          }
+          this.player.flipHandCard(cardId);
           this.player.syncToYState();
         },
         movePileCardToPile: (originPileType: 'deck' | 'discard' | 'exile', destinationPileType: PileType, position?: number) => {

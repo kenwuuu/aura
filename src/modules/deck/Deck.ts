@@ -45,6 +45,10 @@ export class Deck {
     this.cards = cards;
   }
 
+  public clearDeck(): void {
+    this.cards = [];
+  }
+
   public addCardToTop(card: Card): void {
     this.placeCardAtPosition(card, Infinity);
   }
