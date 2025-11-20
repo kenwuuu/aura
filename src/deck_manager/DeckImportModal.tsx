@@ -4,7 +4,7 @@ import { ScryfallDeckImporter } from '@/services/deckImporter';
 import { DeckStorageService } from '@/services/deckStorage';
 import { SavedDeck } from '@/modules/deck/types';
 import { DeckImportHelpDialog } from './DeckImportHelpDialog';
-import { ModalFooter } from './ModalFooter';
+import { ModalFooter } from '@/components/ModalFooter';
 import {InfoIcon} from "lucide-react"
 import {
   Alert,
