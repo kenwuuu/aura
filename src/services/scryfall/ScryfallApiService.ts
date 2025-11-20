@@ -1,7 +1,7 @@
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
-import { CardImages, CardImageUris } from '@/modules/deck/types';
-import { toCardDataResult } from './ScryfallCardAdapter';
+import {CardImages, CardImageUris} from '@/modules/deck/types';
+import {toCardDataResult} from './ScryfallCardAdapter';
 
 export type ScryfallCard = {
   id: string;
@@ -20,9 +20,12 @@ export type ScryfallCard = {
   }>;
 }
 
-export type ParsedDeckEntry = {
-  count: number;
-  name: string;
+export type DeckLineItem = {
+  // example: 1 Mabel, Heir to Cragflame (BLB) 336
+  count: number;  // quantity of card
+  name: string;  // card name, "Mabel, Heir to Cragflame"
+  set_code?: string;  // three to five-letter set code, "BLB"
+  collector_number?: string;  // number that points to a specific card when paired with a set code, e.g. "336"
 }
 
 export type CardDataResult = {
@@ -120,7 +123,7 @@ export class ScryfallApiService {
    * Fetch images for a list of cards with progress callback
    */
   public async fetchImagesForList(
-    entries: ParsedDeckEntry[],
+    entries: DeckLineItem[],
     onProgress?: (current: number, total: number) => void
   ): Promise<CardDataResult[]> {
     const results: CardDataResult[] = [];
