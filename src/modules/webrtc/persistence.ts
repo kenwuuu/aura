@@ -1,3 +1,5 @@
+import {v4 as uuidv4} from 'uuid';
+
 /**
  * Session Persistence Utilities
  *
@@ -68,7 +70,7 @@ export function getOrCreatePeerId(): string {
   let peerId = localStorage.getItem(STORAGE_KEYS.PEER_ID);
 
   if (!peerId) {
-    peerId = crypto.randomUUID();
+    peerId = uuidv4();
     localStorage.setItem(STORAGE_KEYS.PEER_ID, peerId);
   }
 

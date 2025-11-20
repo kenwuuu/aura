@@ -6,7 +6,7 @@
  *
  * Returns an array of { count, name } entries.
  */
-function parseList(text) {
+function parseList(text: string) {
   return text
     .trim()
     .split("\n")
@@ -22,7 +22,7 @@ function parseList(text) {
  * Given a card name, fetch the Scryfall card data (named endpoint).
  * Use the `exact` parameter so it matches precisely.
  */
-async function fetchCardData(cardName) {
+async function fetchCardData(cardName: string) {
   const url = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`;
   console.log(url)
   const resp = await fetch(url);
@@ -38,7 +38,7 @@ async function fetchCardData(cardName) {
  * If the card has `image_uris`, return those.
  * If it's a double-sided (or multi-face) card, use card_faces[].image_uris.
  */
-function extractImageUris(cardObj) {
+function extractImageUris(cardObj: { image_uris: any; card_faces: [any, any]; }) {
   // For single-face cards, cardObj.image_uris exists. :contentReference[oaicite:0]{index=0}
   if (cardObj.image_uris) {
     return {
@@ -67,7 +67,7 @@ function extractImageUris(cardObj) {
 /**
  * Main function: given the plain text list, fetch images for each entry.
  */
-async function fetchImagesForList(listText) {
+async function fetchImagesForList(listText: string) {
   const entries = parseList(listText);
 
   const results = await Promise.all(entries.map(async (entry) => {
@@ -79,7 +79,7 @@ async function fetchImagesForList(listText) {
         name: entry.name,
         imageUris: uris
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching", entry.name, err);
       return {
         count: entry.count,

@@ -436,7 +436,7 @@ export class DeckPileViewer {
     }
 
     const showHover = (e: MouseEvent) =>
-      this.tooltipManager?.showOnHover(card.id, context, e.clientX, e.clientY);
+      this.tooltipManager?.showOnHover(card.id, context);
 
     const showPinned = (e: MouseEvent) =>
       this.tooltipManager?.show(card.id, context, e.clientX, e.clientY);

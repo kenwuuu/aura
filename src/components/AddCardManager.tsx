@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AddCardModal } from './AddCardModal';
-import { ScryfallApiService } from '../services/scryfall/ScryfallApiService';
-import { toCard } from '../services/scryfall/ScryfallCardAdapter';
-import { Card } from '../modules/deck/types';
+import { ScryfallApiService } from '@/services/scryfall';
+import { toCard } from '@/services/scryfall/ScryfallCardAdapter';
+import { Card } from '@/modules/deck';
 import * as Sentry from '@sentry/react';
 
 interface AddCardManagerProps {
@@ -19,7 +19,7 @@ export const AddCardManager: React.FC<AddCardManagerProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       try {
-        if (e.key.toLowerCase() === 'a' && !e.repeat) {
+        if (e.key?.toLowerCase() === 'a' && !e.repeat) {
           // Only trigger if not focused on an input element
           if (
             document.activeElement?.tagName !== 'INPUT' &&
