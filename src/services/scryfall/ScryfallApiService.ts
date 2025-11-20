@@ -2,6 +2,7 @@ import PQueue from 'p-queue';
 import pRetry from 'p-retry';
 import {CardImages, CardImageUris} from '@/modules/deck/types';
 import {toCardDataResult} from './ScryfallCardAdapter';
+import {DeckLineItem} from "@/services/deckImporter/DeckListParser";
 
 export type ScryfallCard = {
   id: string;
@@ -18,14 +19,6 @@ export type ScryfallCard = {
     type_line?: string;
     uri: string;
   }>;
-}
-
-export type DeckLineItem = {
-  // example: 1 Mabel, Heir to Cragflame (BLB) 336
-  count: number;  // quantity of card
-  name: string;  // card name, "Mabel, Heir to Cragflame"
-  set_code?: string;  // three to five-letter set code, "BLB"
-  collector_number?: string;  // number that points to a specific card when paired with a set code, e.g. "336"
 }
 
 export type CardDataResult = {
@@ -49,40 +42,6 @@ export class ScryfallApiService {
       intervalCap: ScryfallApiService.RATE_LIMIT_CAP,
       timeout: 30000, // 30 second timeout for whole import
     });
-  }
-
-  /**
-   * Parse a decklist in the format:
-   * 1 Mountain
-   * 2 Island
-   * 4x Lightning Bolt (supports 'x' notation)
-   *
-   * Lines that don't start with a numeral are ignored.
-   */
-  public parseDecklist(text: string): ParsedDeckEntry[] {
-    return text
-      .trim()
-      .split('\n')
-      .filter(line => line.trim().length > 0)
-      .filter(line => {
-        // Ignore lines that don't start with a numeral
-        const trimmed = line.trim();
-        return /^\d/.test(trimmed);
-      })
-      .map(line => {
-        const parts = line.trim().split(/\s+/);
-        let firstPart = parts[0];
-
-        // Handle 'x' notation (e.g., "20x" -> "20")
-        if (firstPart.toLowerCase().endsWith('x')) {
-          firstPart = firstPart.slice(0, -1);
-        }
-
-        const count = parseInt(firstPart, 10);
-        const name = parts.slice(1).join(' ');
-        return { count, name };
-      })
-      .filter(entry => !isNaN(entry.count) && entry.name.length > 0);
   }
 
   /**
