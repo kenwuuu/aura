@@ -1,9 +1,15 @@
+// Example: 1 Mabel, Heir to Cragflame (BLB) 336
 export type DeckLineItem = {
-  // example: 1 Mabel, Heir to Cragflame (BLB) 336
-  count: number;  // quantity of card
-  name: string;  // card name, "Mabel, Heir to Cragflame"
-  set_code?: string;  // three to five-letter set code, "BLB"
-  collector_number?: string;  // number that points to a specific card when paired with a set code, e.g. "336"
+  // Quantity of card
+  count: number;
+  // Card name, "Mabel, Heir to Cragflame"
+  name: string;
+  // Three to five-letter set code, "BLB"
+  set_code?: string;
+  // Number that points to a specific card when paired with a set code, e.g. "336"
+  collector_number?: string;
+  // Whether this card was under a commander header
+  commander?: boolean;
 }
 
 export function parseDecklist(text: string): DeckLineItem[] {
