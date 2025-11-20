@@ -25,9 +25,22 @@ export function parseDecklist(text: string): DeckLineItem[] {
         firstPart = firstPart.slice(0, -1);
       }
 
+      // set count and name
       const count = parseInt(firstPart, 10);
       const name = parts.slice(1).join(' ');
-      return {count, name};
+
+      // set set_code
+      const startIndex = text.indexOf('(');
+      const endIndex = text.indexOf(')');
+      let set_code = undefined;
+      let collector_number = undefined;
+      if (startIndex >= 0) {
+        set_code = text.substring(startIndex + 1, endIndex);
+        collector_number = parts.slice(-1)?.join(' ');
+        return {count, name, set_code, collector_number};
+      }
+
+      return {count, name}
     })
     .filter(entry => !isNaN(entry.count) && entry.name.length > 0);
 }
