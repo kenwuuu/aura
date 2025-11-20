@@ -2,6 +2,7 @@
 
 ### Feature
 - Add ability to import cards by set, example: `1 Rhystic Study (WOT) 71`
+- Add keyword tokens and mana tokens
 
 ### Bug fixes
 - Fix tooltip disappearing after hovering a card on board
