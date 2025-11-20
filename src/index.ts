@@ -4,7 +4,7 @@ import { createRoot, Root } from 'react-dom/client';
 import { Deck } from './modules/deck';
 import { MultiPlayerBoardManager, KeyboardHandlerCallbacks } from './modules/whiteboard';
 import { WebRTCProvider } from './modules/webrtc';
-import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/webrtc/persistence';
+import { getOrCreatePlayerId, getOrCreatePeerId } from '@/modules/webrtc';
 import { Player } from './modules/player';
 import { GameResourcesDock } from './modules/gameResourcesDock';
 import { WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal } from './components';
@@ -12,7 +12,7 @@ import { DeckManager } from './deck_manager';
 import { OpponentHealthList } from './components/health/OpponentHealthList';
 import { SavedDeck } from './modules/deck/types';
 import { TokenService } from './services/scryfall';
-import { ScryfallApiService } from './services/scryfall/ScryfallApiService';
+import { ScryfallApiService } from '@/services/scryfall';
 import { CardPreview } from './modules/cardPreview';
 import { DeckStorageService } from './services/deckStorage';
 import { DeckPersistenceService } from './services/deckPersistence';
@@ -482,7 +482,7 @@ class AuraApp {
     root.render(
       React.createElement(AddCardManager, {
         scryfallApiService: this.scryfallApiService,
-        onAddCard: (card) => this.localPlayer.putCardInHand(card),
+        player: this.localPlayer,
       })
     );
   }

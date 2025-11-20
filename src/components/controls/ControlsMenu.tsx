@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import styles from './ControlsMenu.module.css';
 import { KeywordTokenGrid } from '../KeywordTokenGrid';
-import { KeywordTokenTemplate } from '../../modules/keywordTokens/types';
+import { KeywordTokenTemplate } from '@/modules/keywordTokens/types';
+import { useUIStore } from '@/stores/uiStore';
 
 interface ControlsMenuProps {
-  onScry: () => void;
-  onAddCard: () => void;
   tokenTemplates?: KeywordTokenTemplate[]; // Allow customization
   tokenGridColumns?: number; // Grid columns configuration (default: 5)
   tokenGridRows?: number; // Grid rows configuration (auto if not specified)
@@ -142,13 +141,14 @@ const getFadeDuration = (): number => {
 };
 
 export const ControlsMenu: React.FC<ControlsMenuProps> = ({
-  onScry,
-  onAddCard,
   tokenTemplates = DEFAULT_TOKEN_TEMPLATES,
   tokenGridColumns = 7,
   tokenGridRows,
   tokenGridGap = 12,
 }) => {
+  const openScryModal = useUIStore((state) => state.openScryModal);
+  const openAddCardModal = useUIStore((state) => state.openAddCardModal);
+
   const [isHovered, setIsHovered] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -213,14 +213,14 @@ export const ControlsMenu: React.FC<ControlsMenuProps> = ({
         </div>
         <button
           className="draw-button"
-          onClick={onScry}
+          onClick={openScryModal}
           title="Scry"
         >
           Scry
         </button>
         <button
           className="draw-button"
-          onClick={onAddCard}
+          onClick={openAddCardModal}
           title="Add Card (A)"
         >
           Add Card

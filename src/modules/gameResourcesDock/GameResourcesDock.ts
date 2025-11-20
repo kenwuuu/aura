@@ -298,14 +298,7 @@ export class GameResourcesDock {
       React.createElement(
         TooltipProvider,
         { value: this.controlsTooltipManager ?? null },
-        React.createElement(ControlsMenu, {
-          onScry: () => this.openScryModal(),
-          onAddCard: () => {
-            // Trigger the AddCardManager by simulating the 'a' key press
-            const event = new KeyboardEvent('keydown', { key: 'a' });
-            document.dispatchEvent(event);
-          }
-        })
+        React.createElement(ControlsMenu, {})
       )
     );
   }

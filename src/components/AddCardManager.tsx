@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { AddCardModal } from './AddCardModal';
 import { ScryfallApiService } from '@/services/scryfall';
 import { toCard } from '@/services/scryfall/ScryfallCardAdapter';
-import { Card } from '@/modules/deck';
+import { useUIStore } from '@/stores/uiStore';
+import { Player } from '@/modules/player/Player';
 import * as Sentry from '@sentry/react';
 
 interface AddCardManagerProps {
   scryfallApiService: ScryfallApiService;
-  onAddCard: (card: Card) => void;
+  player: Player;
 }
 
 export const AddCardManager: React.FC<AddCardManagerProps> = ({
   scryfallApiService,
-  onAddCard,
+  player,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const openAddCardModal = useUIStore((state) => state.openAddCardModal);
+  const addCard = useUIStore((state) => state.addCard);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -26,7 +28,7 @@ export const AddCardManager: React.FC<AddCardManagerProps> = ({
             document.activeElement?.tagName !== 'TEXTAREA'
           ) {
             e.preventDefault();
-            setIsOpen(true);
+            openAddCardModal();
           }
         }
       } catch (error) {
@@ -46,14 +48,14 @@ export const AddCardManager: React.FC<AddCardManagerProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [openAddCardModal]);
 
   const handleAddCard = async (cardName: string) => {
     const scryfallCard = await scryfallApiService.fetchCardByName(cardName);
     const card = toCard(scryfallCard, -1); // -1 indicates dynamically added card
-    onAddCard(card);
+    addCard(player, card);
     console.log(`Added ${cardName} to hand`);
   };
 
-  return <AddCardModal isOpen={isOpen} onClose={() => setIsOpen(false)} onAddCard={handleAddCard} />;
+  return <AddCardModal onAddCard={handleAddCard} />;
 };

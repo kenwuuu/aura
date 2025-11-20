@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useUIStore } from '@/stores/uiStore';
 
 interface AddCardModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   onAddCard: (cardName: string) => Promise<void>;
 }
 
-export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onAddCard }) => {
+export const AddCardModal: React.FC<AddCardModalProps> = ({ onAddCard }) => {
+  const isOpen = useUIStore((state) => state.isAddCardModalOpen);
+  const onClose = useUIStore((state) => state.closeAddCardModal);
   const [cardName, setCardName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
