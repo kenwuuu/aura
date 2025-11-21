@@ -186,7 +186,7 @@ body {
 /* Hand Container */
 .hand-container {
   flex: 1;
-  max-width: 600px;
+  width: 600px;
   background-color: #1a1a1a;
   border: 2px solid #3d3d3d;
   border-radius: 12px;
