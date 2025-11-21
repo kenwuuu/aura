@@ -341,9 +341,9 @@ export function PileViewerReact({
   // Get subtitle text
   const getSubtitle = () => {
     if (pileType === 'scry') {
-      return 'Hover card and move to... \nD: Discard • T: Deck Top • Y: Deck Bottom';
+      return 'Hover card and move to... D: Graveyard • T: Deck Top • Y: Deck Bottom';
     }
-    return 'Hover card and move to... \nH: Hand • D: Discard • S: Exile • T: Deck Top • Y: Deck Bottom';
+    return 'Hover card and move to... H: Hand • D: Graveyard • S: Exile • T: Deck Top • Y: Deck Bottom';
   };
 
   // Get hotkey context for tooltip
@@ -366,7 +366,13 @@ export function PileViewerReact({
     <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="deck-pile-viewer-content max-w-[90vw] max-h-[90vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-            <DialogTitle className="text-2xl font-bold text-left">{getTitle()}</DialogTitle>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+            <DialogTitle className="text-2xl font-bold">{getTitle()}</DialogTitle>
+            <p className="text-sm text-muted-foreground text-center">
+              {getSubtitle()}
+            </p>
+            <div></div>
+          </div>
         </DialogHeader>
 
         {/* Controls */}
