@@ -41,7 +41,6 @@ export class Player {
     this.yPlayerState = yDoc.getMap(`player-${playerId}`);
     this.yCardsOnBoard = yDoc.getMap('cards'); // Store reference to battlefield
     this.yTokens = yDoc.getMap('tokens'); // Store reference to keyword tokens
-    this.initializeState();
 
     // Initialize state first so yPlayerState has the arrays
     this.initializeState(initialDeckCards);
