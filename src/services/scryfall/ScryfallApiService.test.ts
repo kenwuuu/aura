@@ -281,6 +281,16 @@ MAYBEBOARD:`;
           name: 'The Ultimate Nightmare of Wizards of the Coast Customer Service',
         });
       });
+
+      it('should handle cards with slashes and Japan exclusives', () => {
+        const deckText = `1 Birgi, God of Storytelling / Harnfel, Horn of Bounty (J21) 416 *F*
+          1 Faithless Looting (STA) 101e *F*`;
+        const result = parseDecklist(deckText);
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toEqual({ count: 1, name: 'Birgi, God of Storytelling / Harnfel, Horn of Bounty', setCode: 'J21', collectorNumber: '416' });
+        expect(result[1]).toEqual({ count: 1, name: 'Faithless Looting', setCode: 'STA', collectorNumber: '101e' });
+      });
     });
 
     describe('real-world formats', () => {
