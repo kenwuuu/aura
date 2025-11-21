@@ -69,25 +69,11 @@ export function PileViewerReact({
   const [hoveredCard, setHoveredCard] = React.useState<Card | null>(null);
   const [revealAll, setRevealAll] = React.useState(false);
   const [revealCount, setRevealCount] = React.useState(0);
-  const [cardsReady, setCardsReady] = React.useState(false);
+  const [visibleCardCount, setVisibleCardCount] = React.useState(0);
 
   // Refs
   const tooltipManagerRef = React.useRef<TooltipManager | null>(null);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  // Defer card rendering to allow modal to open immediately
-  React.useEffect(() => {
-    if (isOpen) {
-      // Reset on open
-      setCardsReady(false);
-      // Use requestAnimationFrame to defer rendering until after modal is painted
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setCardsReady(true);
-        });
-      });
-    }
-  }, [isOpen]);
 
   // Initialize reveal state from yPlayerState
   React.useEffect(() => {
@@ -298,6 +284,32 @@ export function PileViewerReact({
     return filtered;
   }, [cards, searchQuery, sortOrder]);
 
+  // Micro-batch card mounting to prevent blocking the main thread
+  // Opens modal instantly, then progressively renders cards in small batches
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    // Reset visible count
+    setVisibleCardCount(0);
+
+    // Determine batch size based on total card count
+    const totalCards = filteredAndSortedCards.length;
+    const batchSize = 5;
+    const batchInterval = 25; // ms between batches
+
+    const intervalId = setInterval(() => {
+      setVisibleCardCount((prev) => {
+        const nextCount = Math.min(prev + batchSize, totalCards);
+        if (nextCount >= totalCards) {
+          clearInterval(intervalId);
+        }
+        return nextCount;
+      });
+    }, batchInterval);
+
+    return () => clearInterval(intervalId);
+  }, [isOpen, filteredAndSortedCards.length]);
+
   // Get dialog title
   const getTitle = () => {
     switch (pileType) {
@@ -408,26 +420,32 @@ export function PileViewerReact({
             </div>
           ) : (
             <div className="deck-pile-viewer-grid grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
-              {filteredAndSortedCards.map((card) => {
+              {filteredAndSortedCards.map((card, index) => {
                 const absoluteIndex =
                   cards.length - 1 - cards.findIndex((c) => c.id === card.id);
                 const shouldShowFaceDown =
                   !revealAll &&
                   (revealCount === 0 || absoluteIndex >= revealCount);
 
-                return cardsReady ? (
-                  <CardGridItemReact
-                    key={card.id}
-                    card={card}
-                    position={absoluteIndex}
-                    showPosition={true}
-                    positionPrefix="Top"
-                    showFaceDown={shouldShowFaceDown}
-                    onHover={setHoveredCard}
-                    tooltipManager={tooltipManagerRef.current}
-                    hotkeyContext={getHotkeyContext()}
-                  />
-                ) : (
+                // Only render actual card if it's within visible batch
+                if (index < visibleCardCount) {
+                  return (
+                    <CardGridItemReact
+                      key={card.id}
+                      card={card}
+                      position={absoluteIndex}
+                      showPosition={true}
+                      positionPrefix="Top"
+                      showFaceDown={shouldShowFaceDown}
+                      onHover={setHoveredCard}
+                      tooltipManager={tooltipManagerRef.current}
+                      hotkeyContext={getHotkeyContext()}
+                    />
+                  );
+                }
+
+                // Show skeleton for cards not yet mounted
+                return (
                   <div key={card.id} className={`card-grid-item ${styles.skeleton}`}>
                     <div className="card-grid-item-image">
                       <div className={styles.shimmer}></div>
