@@ -15,7 +15,6 @@ import * as Y from 'yjs';
 import { Card } from '../../deck';
 import { TooltipManager } from '../../whiteboard/TooltipManager';
 import { HotkeyContext, HotkeyDefinition } from '@/data/hotkeys';
-import { DEFAULT_CARD_BACK } from '@/constants';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { CardGridItemReact } from './CardGridItemReact';
 import styles from './PileViewerReact.module.css';
 
 export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
@@ -470,89 +470,3 @@ export function PileViewerReact({
     </Dialog>
   );
 }
-
-// Card Grid Item Component
-interface CardGridItemReactProps {
-  card: Card;
-  position: number;
-  showPosition: boolean;
-  positionPrefix: string;
-  showFaceDown: boolean;
-  onHover: (card: Card | null) => void;
-  tooltipManager: TooltipManager | null;
-  hotkeyContext: HotkeyContext;
-}
-
-const CardGridItemReact = React.memo(function CardGridItemReact({
-  card,
-  position,
-  showPosition,
-  positionPrefix,
-  showFaceDown,
-  onHover,
-  tooltipManager,
-  hotkeyContext,
-}: CardGridItemReactProps) {
-  const [imageLoaded, setImageLoaded] = React.useState(false);
-  const [imageError, setImageError] = React.useState(false);
-  const cardRef = React.useRef<HTMLDivElement>(null);
-
-  const imageUrl = showFaceDown
-    ? DEFAULT_CARD_BACK
-    : card.images?.front?.normal || card.images?.front?.small;
-
-  const handleMouseEnter = (e: React.MouseEvent) => {
-    onHover(card);
-    tooltipManager?.showOnHover(card.id, hotkeyContext);
-    cardRef.current?.focus();
-  };
-
-  const handleMouseLeave = () => {
-    onHover(null);
-    tooltipManager?.hideOnLeave();
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    tooltipManager?.show(card.id, hotkeyContext, e.clientX, e.clientY);
-  };
-
-  return (
-    <div
-      ref={cardRef}
-      className="card-grid-item"
-      data-card-id={card.id}
-      tabIndex={0}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
-    >
-      {/* Card Image */}
-      <div className={`card-grid-item-image ${imageLoaded ? 'loaded' : ''}`}>
-        {imageUrl && !imageError ? (
-          <img
-            src={imageUrl}
-            alt={showFaceDown ? 'Card Back' : card.name || `Card #${card.cardNumber}`}
-            className="card-grid-item-img"
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="card-grid-item-fallback">#{card.cardNumber}</div>
-        )}
-      </div>
-
-      {/* Card Name */}
-      {card.name && !showFaceDown && (
-        <div className="card-grid-item-name">{card.name}</div>
-      )}
-
-      {/* Position Label */}
-      {showPosition && (
-        <div className="card-grid-item-position">
-          {positionPrefix} {position + 1}
-        </div>
-      )}
-    </div>
-  );
-});

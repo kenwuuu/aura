@@ -1,11 +1,2 @@
-/* Skeleton loading state */
-.skeleton {
-  pointer-events: none;
-  cursor: default;
-}
-
-.skeleton:hover {
-  border-color: #3d3d3d !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
+/* PileViewerReact specific styles */
+/* Note: Card grid item styles have been moved to CardGridItemReact.module.css */
