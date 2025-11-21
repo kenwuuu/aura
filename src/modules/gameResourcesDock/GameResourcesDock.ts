@@ -11,6 +11,8 @@ import { HotkeyContext } from '../../data/hotkeys';
 import { DEFAULT_CARD_BACK } from '../../constants';
 import {animate} from "motion";
 import { ScryModal } from '../../components/ScryModal';
+import DeckDiceRolling from './components/DeckDiceRolling';
+import * as Y from 'yjs';
 
 export class GameResourcesDock {
   private container: HTMLElement;
@@ -51,16 +53,20 @@ export class GameResourcesDock {
   } | null = null;
   private _dragState: { mode: string; draggedElement: HTMLDivElement; startIndex: number; } | undefined;
   private requestAnimationFrameId: number | null = null;
+  private diceRollerRoot: Root | null = null;
+  private yDoc: Y.Doc;
 
   constructor(
     container: HTMLElement,
     player: Player,
     config: GameResourcesDockConfig,
-    cardPreview: CardPreview
+    cardPreview: CardPreview,
+    yDoc: Y.Doc
   ) {
     this.container = container;
     this.player = player;
     this.config = config;
+    this.yDoc = yDoc
 
     // Initialize all pile viewers with appropriate callbacks
     this.deckViewer = new DeckPileViewer({
@@ -172,12 +178,14 @@ export class GameResourcesDock {
     const hand = this.createHandElement();
     const deck = this.createDeckElement();
     const health = this.createHealthElement();
+    const diceRoller = this.createDiceRollerElement();
 
     this.container.appendChild(exile);
     this.container.appendChild(discard);
     this.container.appendChild(hand);
     this.container.appendChild(deck);
     this.container.appendChild(health);
+    this.container.appendChild(diceRoller);
 
     this.elements = { exile, discard, hand, deck, health };
   }
@@ -302,6 +310,23 @@ export class GameResourcesDock {
     });
 
     return healthElement;
+  }
+
+  private createDiceRollerElement(): HTMLElement {
+    const diceRollerElement = document.createElement('div');
+    this.diceRollerRoot = createRoot(diceRollerElement);
+    this.renderDiceRoller();
+    return diceRollerElement;
+  }
+  private renderDiceRoller():void {
+    if(!this.diceRollerRoot) return;
+
+    this.diceRollerRoot.render(
+      React.createElement(DeckDiceRolling, {
+        yDoc: this.yDoc,
+        localPlayerId: this.player.getId(),
+      })
+    );
   }
 
   private renderHealthComponent(): void {
@@ -1142,6 +1167,10 @@ export class GameResourcesDock {
     }
     if (this.zoomControls) {
       this.zoomControls.remove();
+    }
+    if (this.diceRollerRoot){
+      this.diceRollerRoot.unmount();
+      this.diceRollerRoot = null;
     }
     // Close all pile viewers
     this.scryViewer.close();

@@ -30,27 +30,19 @@ export default function DeckDiceRolling({
     }
   };
 
-  const handleRoll = () => {
-    const newRoll = generateRoll(selectedSides);
-    const yDiceRolls = yDoc.getMap("diceRolls");
-    yDiceRolls.set("latestRoll", {
-      number: newRoll,
-      localPlayerId,
-      selectedSides,
-    });
-  };
-
   const formatRollResult = () => {
-    if (!latestRoll) return "No rolls made";
-
-    const shortPlayerId = latestRoll.localPlayerId.slice(0, 9);
+    if (!latestRoll) return "0";
 
     if (latestRoll.selectedSides === 2) {
       const result = latestRoll.number === 1 ? "Heads" : "Tails";
-      return `Player ${shortPlayerId} flipped ${result}`;
+      return `${result}`;
     } else {
-      return `Player ${shortPlayerId} rolled ${latestRoll.number}`;
+      return `${latestRoll.number}`;
     }
+  };
+
+  const isCoinFlip = () => {
+    return latestRoll?.selectedSides === 2;
   };
 
   useEffect(() => {
@@ -69,15 +61,35 @@ export default function DeckDiceRolling({
 
   return (
     <div className="resource-pile">
+      <output
+        className={`dice-result-display ${
+          isCoinFlip() ? "dice-result-coin" : "dice-result-number"
+        }`}
+      >
+        {formatRollResult()}
+      </output>
       <select
         name="diceSelector"
         id="diceSelector"
+        className="dice-selector"
         value={selectedSides ?? ""}
-        onChange={(e) =>
-          setSelectedSides(
-            Number(e.target.value === "" ? null : Number(e.target.value))
-          )
-        }
+        onChange={(e) => {
+          const newValue =
+            e.target.value === "" ? null : Number(e.target.value);
+          setSelectedSides(newValue);
+          if (newValue !== null) {
+            setTimeout(() => {
+              const newRoll = generateRoll(newValue);
+              const yDiceRolls = yDoc.getMap("diceRolls");
+              yDiceRolls.set("latestRoll", {
+                number: newRoll,
+                localPlayerId,
+                selectedSides: newValue,
+              });
+              setSelectedSides(null);
+            }, 0);
+          }
+        }}
       >
         <option value={""}>Select dice...</option>
         <option value={2}>Coin</option>
@@ -87,14 +99,6 @@ export default function DeckDiceRolling({
         <option value={12}>d12</option>
         <option value={20}>d20</option>
       </select>
-      <button
-        className="draw-button"
-        onClick={handleRoll}
-        disabled={selectedSides === null}
-      >
-        Roll / Flip
-      </button>
-      <output className="pile-count">{formatRollResult()}</output>
     </div>
   );
 }
