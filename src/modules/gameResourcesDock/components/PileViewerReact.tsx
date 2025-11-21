@@ -31,8 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import styles from './PileViewerReact.module.css';
 
 export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
 
@@ -70,10 +69,25 @@ export function PileViewerReact({
   const [hoveredCard, setHoveredCard] = React.useState<Card | null>(null);
   const [revealAll, setRevealAll] = React.useState(false);
   const [revealCount, setRevealCount] = React.useState(0);
+  const [cardsReady, setCardsReady] = React.useState(false);
 
   // Refs
   const tooltipManagerRef = React.useRef<TooltipManager | null>(null);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Defer card rendering to allow modal to open immediately
+  React.useEffect(() => {
+    if (isOpen) {
+      // Reset on open
+      setCardsReady(false);
+      // Use requestAnimationFrame to defer rendering until after modal is painted
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setCardsReady(true);
+        });
+      });
+    }
+  }, [isOpen]);
 
   // Initialize reveal state from yPlayerState
   React.useEffect(() => {
@@ -401,7 +415,7 @@ export function PileViewerReact({
                   !revealAll &&
                   (revealCount === 0 || absoluteIndex >= revealCount);
 
-                return (
+                return cardsReady ? (
                   <CardGridItemReact
                     key={card.id}
                     card={card}
@@ -413,6 +427,12 @@ export function PileViewerReact({
                     tooltipManager={tooltipManagerRef.current}
                     hotkeyContext={getHotkeyContext()}
                   />
+                ) : (
+                  <div key={card.id} className={`card-grid-item ${styles.skeleton}`}>
+                    <div className="card-grid-item-image">
+                      <div className={styles.shimmer}></div>
+                    </div>
+                  </div>
                 );
               })}
             </div>

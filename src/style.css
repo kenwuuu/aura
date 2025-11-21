@@ -1130,6 +1130,7 @@ body {
   flex-direction: column;
   height: fit-content;
   outline: none; /* Remove focus outline for cleaner look */
+  will-change: transform, opacity;
 }
 
 .card-grid-item:hover {
@@ -1161,7 +1162,7 @@ body {
   object-fit: cover;
   display: block;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.8s ease;
 }
 
 .card-grid-item-image.loaded .card-grid-item-img {

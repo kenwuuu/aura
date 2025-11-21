@@ -1,0 +1,36 @@
+/* Skeleton loading state */
+.skeleton {
+  pointer-events: none;
+  cursor: default;
+}
+
+.skeleton:hover {
+  border-color: #3d3d3d !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes shimmerAnimation {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    #1a1a1a 0%,
+    #2a2a2a 25%,
+    #3a3a3a 50%,
+    #2a2a2a 75%,
+    #1a1a1a 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerAnimation 1.5s ease-in-out infinite;
+}
+
