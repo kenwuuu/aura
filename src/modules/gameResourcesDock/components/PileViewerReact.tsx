@@ -30,8 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CardGridItemReact } from './CardGridItemReact';
-import styles from './PileViewerReact.module.css';
+import { CardGrid } from './CardGrid';
 
 export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
 
@@ -436,41 +435,17 @@ export function PileViewerReact({
               {searchQuery ? 'No cards found' : `No cards in ${pileType}`}
             </div>
           ) : (
-            <div className="deck-pile-viewer-grid grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
-              {filteredAndSortedCards.map((card, index) => {
-                const absoluteIndex =
-                  cards.length - 1 - cards.findIndex((c) => c.id === card.id);
-                const shouldShowFaceDown =
-                  !revealAll &&
-                  (revealCount === 0 || absoluteIndex >= revealCount);
-
-                // Only render actual card if it's within visible batch
-                if (index < visibleCardCount) {
-                  return (
-                    <CardGridItemReact
-                      key={card.id}
-                      card={card}
-                      position={absoluteIndex}
-                      showPosition={true}
-                      positionPrefix="Top"
-                      showFaceDown={shouldShowFaceDown}
-                      onHover={setHoveredCard}
-                      tooltipManager={tooltipManagerRef.current}
-                      hotkeyContext={getHotkeyContext()}
-                    />
-                  );
-                }
-
-                // Show skeleton for cards not yet mounted
-                return (
-                  <div key={card.id} className={`card-grid-item ${styles.skeleton}`}>
-                    <div className="card-grid-item-image">
-                      <div className={styles.shimmer}></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <CardGrid
+              cards={filteredAndSortedCards}
+              pileType={pileType}
+              visibleCardCount={visibleCardCount}
+              revealAll={revealAll}
+              revealCount={revealCount}
+              onHover={setHoveredCard}
+              tooltipManager={tooltipManagerRef.current}
+              hotkeyContext={getHotkeyContext()}
+              enableReordering={pileType === 'deck' || pileType === 'exile' || pileType === 'discard'}
+            />
           )}
         </div>
       </DialogContent>

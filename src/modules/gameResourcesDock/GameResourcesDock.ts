@@ -69,7 +69,7 @@ export class GameResourcesDock {
     this.config = config;
     this.controlsTooltipManager = controlsTooltipManager;
 
-    // Initialize all pile viewers with appropriate callbacks
+    // Initialize all pile viewers with appropriate callbacks and yPlayerState
     this.deckViewer = new PileViewer({
       onPlayToBattlefield: (card) => this.handlePileViewerCardToBattlefield(card, 'deck'),
       onMoveToHand: (card) => this.handlePileViewerCardToHand(card, 'deck'),
@@ -77,13 +77,13 @@ export class GameResourcesDock {
       onMoveToExile: (card) => this.handlePileViewerCardToExile(card, 'deck'),
       onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'deck'),
       onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'deck'),
-    });
+    }, this.player.yPlayerState);
 
     this.scryViewer = new PileViewer({
       onMoveToDiscard: (card) => this.handlePileViewerCardToDiscard(card, 'scry'),
       onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'scry'),
       onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'scry'),
-    });
+    }, this.player.yPlayerState);
 
     this.exileViewer = new PileViewer({
       onPlayToBattlefield: (card) => this.handlePileViewerCardToBattlefield(card, 'exile'),
@@ -91,7 +91,7 @@ export class GameResourcesDock {
       onMoveToDiscard: (card) => this.handlePileViewerCardToDiscard(card, 'exile'),
       onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'exile'),
       onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'exile'),
-    });
+    }, this.player.yPlayerState);
 
     this.discardViewer = new PileViewer({
       onPlayToBattlefield: (card) => this.handlePileViewerCardToBattlefield(card, 'discard'),
@@ -99,7 +99,7 @@ export class GameResourcesDock {
       onMoveToExile: (card) => this.handlePileViewerCardToExile(card, 'discard'),
       onMoveToDeckTop: (card) => this.handlePileViewerCardToDeckTop(card, 'discard'),
       onMoveToDeckBottom: (card) => this.handlePileViewerCardToDeckBottom(card, 'discard'),
-    });
+    }, this.player.yPlayerState);
 
     this.handZoomLevel = parseFloat(localStorage.getItem('hand-zoom') || '1');
     this.cardPreview = cardPreview;

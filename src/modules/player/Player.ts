@@ -16,7 +16,7 @@ import { CardPile } from './CardPile';
 
 export class Player {
   private playerId: string;
-  private yPlayerState: Y.Map<any>;
+  public yPlayerState: Y.Map<any>;
   private yCardsOnBoard: Y.Map<any>; // Battlefield cards
   private yTokens: Y.Map<any>; // Keyword tokens on battlefield
   private config: PlayerConfig;
