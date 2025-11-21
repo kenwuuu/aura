@@ -720,8 +720,16 @@ export class GameResourcesDock {
   }
 
   private adjustHandZoom(delta: number): void {
+    function alignCardsBasedOnSize() {
+      const container: HTMLElement | null = document.querySelector('.hand-cards') as HTMLElement;
+      if (!container) return;
+      const isOverflowing = container.scrollHeight > container.clientHeight;
+      container.style.alignItems = isOverflowing ? "flex-start" : "center";
+    }
+
     const newZoom = Math.max(0.5, Math.min(2.5, this.handZoomLevel + delta));
     this.setHandZoom(newZoom);
+    alignCardsBasedOnSize();
   }
 
   private setHandZoom(zoom: number): void {
