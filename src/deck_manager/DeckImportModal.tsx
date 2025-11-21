@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ScryfallDeckImporter } from '@/services/deckImporter';
+import { MtgTextListDeckImporter } from '@/services/deckImporter';
 import { DeckStorageService } from '@/services/deckStorage';
 import { SavedDeck } from '@/modules/deck/types';
 import { DeckImportHelpDialog } from './DeckImportHelpDialog';
@@ -103,7 +103,7 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
     setProgress({ current: 0, total: 0 });
 
     try {
-      const importer = new ScryfallDeckImporter((current, total) => {
+      const importer = new MtgTextListDeckImporter((current, total) => {
         setProgress({ current, total });
       });
 

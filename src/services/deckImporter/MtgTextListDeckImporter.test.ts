@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ScryfallDeckImporter } from './ScryfallDeckImporter';
+import { MtgTextListDeckImporter } from './MtgTextListDeckImporter';
 import {parseDecklist} from "@/services/deckImporter/DeckListParser";
 
 // Mock the ScryfallApiService but use real parseDecklist
@@ -25,11 +25,11 @@ vi.mock('../scryfall', async () => {
   };
 });
 
-describe('ScryfallDeckImporter - Section Header Detection', () => {
-  let importer: ScryfallDeckImporter;
+describe('MtgTextListDeckImporter - Section Header Detection', () => {
+  let importer: MtgTextListDeckImporter;
 
   beforeEach(() => {
-    importer = new ScryfallDeckImporter();
+    importer = new MtgTextListDeckImporter();
   });
 
   describe('Section header detection', () => {

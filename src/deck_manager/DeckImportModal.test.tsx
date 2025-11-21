@@ -5,7 +5,7 @@ import { DeckImportModal } from './DeckImportModal';
 
 // Mock the deck importer and storage services
 vi.mock('../services/deckImporter', () => ({
-  ScryfallDeckImporter: vi.fn().mockImplementation(() => ({
+  MtgTextListDeckImporter: vi.fn().mockImplementation(() => ({
     importFromText: vi.fn().mockResolvedValue({
       cards: [
         { id: 'card-1', cardNumber: 1, name: 'Lightning Bolt' },

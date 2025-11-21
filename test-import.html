@@ -45,7 +45,7 @@
     <div id="previews"></div>
 
     <script type="module">
-        import { ScryfallDeckImporter } from './src/services/deckImporter/ScryfallDeckImporter.js';
+        import { MtgTextListDeckImporter } from '@/services/deckImporter/MtgTextListDeckImporter.ts';
         import { DeckStorageService } from './src/services/deckStorage/DeckStorageService.js';
 
         const output = document.getElementById('output');
@@ -58,7 +58,7 @@
 1 Mountain
 1 Island`;
 
-            const importer = new ScryfallDeckImporter((current, total) => {
+            const importer = new MtgTextListDeckImporter((current, total) => {
                 output.textContent += `Progress: ${current}/${total}\n`;
             });
 

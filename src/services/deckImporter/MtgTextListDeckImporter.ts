@@ -3,7 +3,7 @@ import {DeckLineItem, parseDecklist} from "@/services/deckImporter/DeckListParse
 import {CardDataResult, ScryfallApiService} from '../scryfall';
 import { Card } from '@/modules/deck';
 
-export class ScryfallDeckImporter implements DeckImporter {
+export class MtgTextListDeckImporter implements DeckImporter {
   private scryfallApi: ScryfallApiService;
   private onProgress?: (current: number, total: number) => void;
 
