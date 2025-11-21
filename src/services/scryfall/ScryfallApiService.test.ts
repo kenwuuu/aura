@@ -291,6 +291,18 @@ MAYBEBOARD:`;
         expect(result[0]).toEqual({ count: 1, name: 'Birgi, God of Storytelling / Harnfel, Horn of Bounty', setCode: 'J21', collectorNumber: '416' });
         expect(result[1]).toEqual({ count: 1, name: 'Faithless Looting', setCode: 'STA', collectorNumber: '101e' });
       });
+
+      it('should handle lines with Archidekt formatting', () => {
+        const deckText = `Commander
+1 Ms. Bumbleflower (blc) 3 [Commander{top}]
+1 Arcane Signet (blc) 127 [Artifact]
+`;
+        const result = parseDecklist(deckText);
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toEqual({ count: 1, name: 'Ms. Bumbleflower', setCode: 'blc', collectorNumber: '3' });
+        expect(result[1]).toEqual({ count: 1, name: 'Arcane Signet', setCode: 'blc', collectorNumber: '127' });
+      });
     });
 
     describe('real-world formats', () => {
