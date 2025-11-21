@@ -53,6 +53,7 @@ export class GameResourcesDock {
   private isModalOpen: boolean = false;
   private _dragState: { mode: string; draggedElement: HTMLDivElement; startIndex: number; } | undefined;
   private requestAnimationFrameId: number | null = null;
+  private preloadedPiles: Set<'deck' | 'exile' | 'discard'> = new Set();
 
   constructor(
     container: HTMLElement,
@@ -210,6 +211,8 @@ export class GameResourcesDock {
       this.hoveredResource = type as 'deck' | 'exile' | 'discard' | 'health';
       this.hoveredHandCardId = null;
       this.updateHotkeyTooltip();
+      // Pre-load images on hover
+      this.preloadPileImages(type as 'deck' | 'exile' | 'discard');
     });
 
     pile.addEventListener('mouseleave', () => {
@@ -266,6 +269,8 @@ export class GameResourcesDock {
     deck.addEventListener('mouseenter', () => {
       this.hoveredResource = 'deck';
       this.hoveredHandCardId = null;
+      // Pre-load images on hover
+      // this.preloadPileImages('deck');
     });
 
     deck.addEventListener('mouseleave', () => {
@@ -1117,6 +1122,31 @@ export class GameResourcesDock {
 
     cardEl.style.width = `${width}px`;
     cardEl.style.height = `${height}px`;
+  }
+
+  private preloadPileImages(pileType: 'deck' | 'exile' | 'discard'): void {
+    // Only preload once per pile
+    if (this.preloadedPiles.has(pileType)) return;
+    this.preloadedPiles.add(pileType);
+
+    // Get cards for this pile
+    let cards: Card[] = [];
+    if (pileType === 'deck') {
+      cards = this.player.getDeckCards();
+    } else {
+      const state = this.player.getState();
+      cards = pileType === 'exile' ? state.exilePile : state.discardPile;
+    }
+
+    // Pre-load images by creating hidden img elements
+    cards.forEach(card => {
+      const imageUrl = card.images?.front?.normal || card.images?.front?.small;
+      if (imageUrl) {
+        const img = new Image();
+        img.src = imageUrl;
+        // Browser caches the image automatically
+      }
+    });
   }
 
   public destroy(): void {
