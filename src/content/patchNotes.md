@@ -2,15 +2,26 @@
 
 ### Feature
 - Add ability to import cards by set, example: `1 Rhystic Study (WOT) 71`
+- Add keyword tokens and mana tokens
 
 ### Bug fixes
 - Fix tooltip disappearing after hovering a card on board
 
 ---
 
+## 2025 November 18
+
+### Features
+- Add keyword tokens
+
+### Changes
+- Move add card and scry actions into a dock menu
+
+---
+
 ## 2025 November 17 - Daily patch 4
 
-### Feature
+### Features
 - Language support: Add ability to import cards in any language that Scryfall supports. Import as usual, e.g.: 
 `1 Anillo solar`, `1 Sonnenring`, `1 Anneau solaire`
 - Alert opponents when players reveal any cards in their deck

@@ -12,6 +12,8 @@ import { createRoot, Root } from 'react-dom/client';
 import { CardCounter } from '../../components';
 import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
 import {HotkeyContext} from "../../data/hotkeys";
+import { KeywordToken } from '@/modules/keywordTokens/types';
+import { KeywordTokenFactory } from '@/modules/keywordTokens/KeywordTokenFactory';
 
 const DEFAULT_OPPONENT_OPACITY = 1.0;
 const FOCUSED_OPACITY = 1.0;
@@ -19,8 +21,10 @@ const FOCUSED_OPACITY = 1.0;
 export class MultiPlayerBoardManager {
   private boardContainerManager: BoardContainerManager;
   private cards: Map<string, WhiteboardCard> = new Map();
+  private tokens: Map<string, KeywordToken> = new Map();
   private dragState: DragState = { cardId: null, offsetX: 0, offsetY: 0 };
   private yCards: Y.Map<WhiteboardCard>;
+  private yTokens: Y.Map<KeywordToken>;
   private yDoc: Y.Doc;
   private maxZIndex: number = 0;
   private keyboardHandler: KeyboardHandler;
@@ -32,6 +36,10 @@ export class MultiPlayerBoardManager {
   private mousePosition: { x: number; y: number; } | null = null;
   private readonly DRAG_THRESHOLD = 5; // pixels
   private isDragging: boolean = false;
+  private mouseDownPosition: { x: number; y: number } | null = null; // Position at mousedown for drag detection
+
+  // Token hover tracking
+  private hoveredTokenId: string | null = null;
 
   // Opponent opacity state management
   private pinnedOpponentId: string | null = null;
@@ -40,6 +48,8 @@ export class MultiPlayerBoardManager {
 
   // Configuration for overlay vs underlay (easy to debug/change)
   private useOverlay: boolean = true; // true = overlay, false = underlay
+
+  private backgroundColor: string;
 
   constructor(
     container: HTMLElement,
@@ -53,6 +63,7 @@ export class MultiPlayerBoardManager {
     this.cardPreview = cardPreview;
 
     this.yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
+    this.yTokens = yDoc.getMap('tokens');
 
     // Initialize BoardContainerManager
     this.boardContainerManager = new BoardContainerManager(
@@ -148,6 +159,40 @@ export class MultiPlayerBoardManager {
       this.boardContainerManager.ensureContainer(card.ownerId);
 
       this.updateCardElement(card);
+    });
+
+    // Observe token changes from other clients
+    this.yTokens.observe((event) => {
+      event.changes.keys.forEach((change, key) => {
+        if (change.action === 'add' || change.action === 'update') {
+          const token = this.yTokens.get(key);
+          if (token) {
+            // Update maxZIndex if this token has a higher zIndex
+            if (token.zIndex > this.maxZIndex) {
+              this.maxZIndex = token.zIndex;
+            }
+
+            // Ensure player container exists
+            this.boardContainerManager.ensureContainer(token.ownerId);
+
+            this.updateTokenElement(token);
+          }
+        } else if (change.action === 'delete') {
+          this.removeTokenElement(key);
+        }
+      });
+    });
+
+    // Load existing tokens and find max zIndex
+    this.yTokens.forEach((token) => {
+      if (token.zIndex > this.maxZIndex) {
+        this.maxZIndex = token.zIndex;
+      }
+
+      // Ensure player container exists
+      this.boardContainerManager.ensureContainer(token.ownerId);
+
+      this.updateTokenElement(token);
     });
 
     // Monitor for new players joining
@@ -537,6 +582,175 @@ export class MultiPlayerBoardManager {
     }
   }
 
+  // Token rendering methods
+  private updateTokenElement(token: KeywordToken): void {
+    this.tokens.set(token.id, token);
+
+    const container = this.boardContainerManager.getContainer(token.ownerId);
+    if (!container) {
+      console.warn(`No board container found for player ${token.ownerId}`);
+      return;
+    }
+
+    let tokenElement = container.querySelector(
+      `[data-token-id="${token.id}"]`
+    ) as HTMLElement;
+
+    if (!tokenElement) {
+      tokenElement = this.createTokenElement(token);
+      container.appendChild(tokenElement);
+    } else {
+      // Update count display using factory method
+      KeywordTokenFactory.updateCount(tokenElement, token.count);
+
+      // Update background color if changed
+      const background = tokenElement.querySelector('.token-background') as HTMLElement;
+      if (background) {
+        background.style.backgroundColor = token.backgroundColor;
+      }
+    }
+
+    this.updateTokenPosition(tokenElement, token);
+  }
+
+  private createTokenElement(token: KeywordToken): HTMLElement {
+    const tokenElement = KeywordTokenFactory.createTokenElement(token, {
+      mode: 'board',
+      onMouseEnter: (e: MouseEvent, tokenId: string) => {
+        this.hoveredTokenId = tokenId;
+        this.tooltipManager.show(tokenId, HotkeyContext.KeywordToken, e.clientX, e.clientY, false, token.title);
+      },
+      onMouseMove: (e: MouseEvent, tokenId: string) => {
+        this.tooltipManager.setMouseLocation(e.clientX, e.clientY);
+        this.mousePosition = { x: e.clientX, y: e.clientY };
+
+        // Detect dragging - only start drag state once threshold is crossed
+        if (this.mouseDownPosition && !this.isDragging) {
+          const dx = e.clientX - this.mouseDownPosition.x;
+          const dy = e.clientY - this.mouseDownPosition.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance > this.DRAG_THRESHOLD) {
+            this.isDragging = true;
+            this.onTokenMouseDown(e, tokenId);
+          }
+        }
+      },
+      onMouseLeave: (tokenId: string) => {
+        if (this.hoveredTokenId === tokenId) {
+          this.hoveredTokenId = null;
+          this.tooltipManager.hide();
+        }
+      },
+      onMouseDown: (e: MouseEvent, tokenId: string) => {
+        // Record starting position for drag detection but don't start drag yet
+        this.mouseDownPosition = { x: e.clientX, y: e.clientY };
+        this.isDragging = false;
+
+        if (this.hoveredTokenId === tokenId) {
+          // this.hoveredTokenId = null;
+          // this.tooltipManager.hide();
+        }
+      },
+      onMouseUp: (e: MouseEvent, tokenId: string) => {
+        if (!this.mouseDownPosition) return;
+
+        if (!this.isDragging && token.ownerId === this.localPlayerId && e.button === 0) {
+          // It was a click, not a drag (left button only)
+          e.stopPropagation();
+          this.modifyTokenCount(tokenId, 1);
+        }
+
+        // Reset
+        this.mouseDownPosition = null;
+        this.isDragging = false;
+      },
+      onContextMenu: (e: MouseEvent, tokenId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (token.ownerId === this.localPlayerId) {
+          this.modifyTokenCount(tokenId, -1);
+        }
+      },
+    });
+
+    return tokenElement;
+  }
+
+  private updateTokenPosition(element: HTMLElement, token: KeywordToken): void {
+    // Tokens don't rotate, so we can use a simpler transform
+    const transformable = {
+      ...token,
+      rotation: 0,
+      isTapped: false,
+      cardNumber: 0,
+      isFlipped: false,
+      counters: []
+    };
+    const { x, y } = OpponentCoordinateTransformer.transform(transformable, this.localPlayerId, BOARD_HEIGHT, this.zoomController.getZoomLevel());
+    element.style.left = `${x}px`;
+    element.style.top = `${y}px`;
+    element.style.zIndex = token.zIndex.toString();
+  }
+
+  private removeTokenElement(tokenId: string): void {
+    const token = this.tokens.get(tokenId);
+    if (!token) return;
+
+    this.tokens.delete(tokenId);
+
+    const container = this.boardContainerManager.getContainer(token.ownerId);
+    if (!container) return;
+
+    const tokenElement = container.querySelector(`[data-token-id="${tokenId}"]`);
+    if (tokenElement) {
+      tokenElement.remove();
+    }
+  }
+
+  private modifyTokenCount(tokenId: string, delta: number): void {
+    const token = this.yTokens.get(tokenId);
+    if (!token) return;
+
+    // Default to 1 if count is undefined
+    const currentCount = token.count ?? 0;
+    const newCount = currentCount + delta;
+    const updatedToken = { ...token, count: newCount };
+    this.yTokens.set(tokenId, updatedToken);
+  }
+
+  private onTokenMouseDown(e: MouseEvent, tokenId: string): void {
+    e.preventDefault();
+
+    // get token. return if we don't own it
+    const token = this.tokens.get(tokenId);
+    if (!token || token.ownerId !== this.localPlayerId) return;
+
+    // hide tooltip
+    this.tooltipManager.hide();
+
+    // set drag state
+    this.dragState = {
+      cardId: tokenId,  // Reuse cardId field for tokens
+      offsetX: e.clientX - token.x,
+      offsetY: e.clientY - token.y,
+    };
+
+    // Bring token to front
+    const updatedToken = { ...token, zIndex: ++this.maxZIndex };
+    this.yTokens.set(tokenId, updatedToken);
+
+    const container = this.boardContainerManager.getContainer(token.ownerId);
+    if (!container) return;
+
+    const tokenElement = container.querySelector(
+      `[data-token-id="${tokenId}"]`
+    ) as HTMLElement;
+    if (tokenElement) {
+      tokenElement.style.cursor = 'grabbing';
+    }
+  }
+
   private onMouseDown(e: MouseEvent, cardId: string): void {
     e.preventDefault();
     const card = this.cards.get(cardId);
@@ -592,29 +806,50 @@ export class MultiPlayerBoardManager {
 
     this.tooltipManager.hide()
 
+    // Check if dragging a card or token
     const card = this.cards.get(this.dragState.cardId);
-    if (!card || card.ownerId !== this.localPlayerId) return;
+    const token = this.tokens.get(this.dragState.cardId);
 
-    // Check if we've moved enough to consider this a drag
-    if (this.mousePosition && !this.isDragging) {
-      const dx = Math.abs(e.clientX - this.mousePosition.x);
-      const dy = Math.abs(e.clientY - this.mousePosition.y);
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance >= this.DRAG_THRESHOLD) {
-        this.isDragging = true;
+    if (card && card.ownerId === this.localPlayerId) {
+      // Dragging a card
+      if (this.mousePosition && !this.isDragging) {
+        const dx = Math.abs(e.clientX - this.mousePosition.x);
+        const dy = Math.abs(e.clientY - this.mousePosition.y);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance >= this.DRAG_THRESHOLD) {
+          this.isDragging = true;
+        }
       }
+
+      const x = e.clientX - this.dragState.offsetX;
+      const y = e.clientY - this.dragState.offsetY;
+
+      const updatedCard = { ...card, x, y };
+      this.yCards.set(this.dragState.cardId, updatedCard);
+    } else if (token && token.ownerId === this.localPlayerId) {
+      // Dragging a token
+      if (this.mousePosition && !this.isDragging) {
+        const dx = Math.abs(e.clientX - this.mousePosition.x);
+        const dy = Math.abs(e.clientY - this.mousePosition.y);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance >= this.DRAG_THRESHOLD) {
+          this.isDragging = true;
+        }
+      }
+
+      const x = e.clientX - this.dragState.offsetX;
+      const y = e.clientY - this.dragState.offsetY;
+
+      const updatedToken = { ...token, x, y };
+      this.yTokens.set(this.dragState.cardId, updatedToken);
     }
-
-    const x = e.clientX - this.dragState.offsetX;
-    const y = e.clientY - this.dragState.offsetY;
-
-    const updatedCard = { ...card, x, y };
-    this.yCards.set(this.dragState.cardId, updatedCard);
   }
 
   private onMouseUp(e?: MouseEvent): void {
     if (this.dragState.cardId) {
       const card = this.cards.get(this.dragState.cardId);
+      const token = this.tokens.get(this.dragState.cardId);
+
       if (card && card.ownerId === this.localPlayerId) {
         // Check if mouse is over a dock pile
         if (e) {
@@ -649,11 +884,22 @@ export class MultiPlayerBoardManager {
             cardElement.style.cursor = 'grab';
           }
         }
+      } else if (token && token.ownerId === this.localPlayerId) {
+        // Tokens just dragged around battlefield, restore cursor
+        const container = this.boardContainerManager.getContainer(token.ownerId);
+        if (container) {
+          const tokenElement = container.querySelector(
+            `[data-token-id="${this.dragState.cardId}"]`
+          ) as HTMLElement;
+          if (tokenElement) {
+            tokenElement.style.cursor = 'grab';
+          }
+        }
       }
     }
 
     this.dragState = { cardId: null, offsetX: 0, offsetY: 0 };
-    
+
     // If we were dragging, clear the mousePosition immediately
     // Otherwise, let the click handler clear it (so it can detect clicks)
     if (this.isDragging || !this.mousePosition) {
@@ -667,6 +913,30 @@ export class MultiPlayerBoardManager {
     document.addEventListener('mousemove', (e) => this.onMouseMove(e));
     document.addEventListener('mouseup', (e) => this.onMouseUp(e));
     window.addEventListener('resize', () => this.boardContainerManager.recenterAll());
+
+    // Token keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (this.hoveredTokenId) {
+        const token = this.tokens.get(this.hoveredTokenId);
+        if (token && token.ownerId === this.localPlayerId) {
+          switch(e.key) {
+            case 'ArrowUp':
+              e.preventDefault();
+              this.modifyTokenCount(this.hoveredTokenId, 1);
+              break;
+            case 'ArrowDown':
+              e.preventDefault();
+              this.modifyTokenCount(this.hoveredTokenId, -1);
+              break;
+            case 'Backspace':
+            case 'Delete':
+              e.preventDefault();
+              this.yTokens.delete(this.hoveredTokenId);
+              break;
+          }
+        }
+      }
+    });
   }
 
   private setupZoomControls(): void {
@@ -693,8 +963,13 @@ export class MultiPlayerBoardManager {
     return this.zoomController.getZoomLevel();
   }
 
+  public getTooltipManager(): TooltipManager {
+    return this.tooltipManager;
+  }
+
   public destroy(): void {
     this.cards.clear();
+    this.tokens.clear();
     this.boardContainerManager.destroy();
     this.zoomController.destroy();
     this.tooltipManager.destroy();

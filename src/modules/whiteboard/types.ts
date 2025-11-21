@@ -1,5 +1,14 @@
 import { Card } from '../deck';
 
+export interface WhiteboardObject {
+  id: string,
+  ownerId: string,
+  x: number,
+  y: number,
+  zIndex: number,
+  rotation: number,
+}
+
 export interface WhiteboardCard extends Card {
   zIndex: number;
   ownerId: string;

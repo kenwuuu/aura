@@ -1,0 +1,103 @@
+/* Shared constants */
+:root {
+  --fade-duration: 300ms;
+}
+
+/* Controls Menu Container */
+.controlsContainer {
+  background-color: #1a1a1a;
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 132px;
+  position: relative;
+}
+
+/* Collapsed Content - Always Visible */
+.collapsedContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+}
+
+/* Hover Indicator Arrow */
+.hoverIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.arrowIcon {
+  color: #3b82f6;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.controlsContainer:hover .arrowIcon {
+  transform: translateY(-2px);
+  opacity: 1;
+}
+
+/* Keyframe animation for fade-up effect */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Keyframe animation for fade-down effect */
+@keyframes fadeDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* Expansion - Positioned absolutely above the dock */
+.expandedContent {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 48px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(2, auto);
+  gap: 8px;
+  overflow: hidden;
+  direction: rtl;
+  background-color: #1a1a1a;
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  padding-top: 12px;
+  padding-left: 12px;
+
+  /* Fade-up animation */
+  animation: fadeUp var(--fade-duration) ease-out;
+}
+
+.expandedContent.closing {
+  /* Fade-down animation when closing */
+  animation: fadeDown var(--fade-duration) ease-out;
+}
+
+.expandedContent > * {
+  direction: ltr;
+}

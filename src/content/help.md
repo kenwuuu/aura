@@ -15,8 +15,11 @@ Example: `https://aura-dqp.pages.dev/?room=mtg-abc123`
 ---
 
 ## Importing Decks
-We support Moxfield's MTGO export format. We can't promise that anything else will work. The format is: 
+We support importing in the following formats: 
+
 [quantity] [card name], e.g. 1 Mountain
+
+[quantity] [card name] [set code] [collector number] [foil], e.g. 1 Steam Vents (RVR) 412z *F*
 
 ### Commander and Command Zone
 To have your commander drawn into your hand automatically, place your commander as the last card in your import list.
@@ -24,15 +27,7 @@ We plan to support deck editing in the near future.
 
 ---
 
-## Multiplayer Features
-
-### 3+ Players
-
-- **Hover** over an opponent's health display to temporarily view their board at full opacity
-- **Click** on an opponent's health display to **pin** their board (keeps it visible)
-- Click again to unpin
-
-### Adding Opponent Counters
+## Player Counters
 
 Hover an opponent and click the **+** on the left side of their health box.
 
@@ -65,33 +60,14 @@ The app has three separate zoom controls located around the screen:
 - Press **C** to draw a card from your deck to your hand
 
 ### Playing Cards
-- **Drag** a card from your hand to the battlefield
-- **Drag** cards on the battlefield to move them around
+- **Drag** a card from your hand to the battlefield or any card pile
+- **Drag** cards from the battlefield to any card area in the dock
 
-### Board Actions
+### Copy a card - Card Steal
+- **K** clones an opponent's card and gives you control of that clone.
 
-When hovering over a card on the battlefield:
-- **Space** - Tap/Untap the card
-- **F** - Flip the card face-down/face-up
-- **U** - Add a +1/+1 counter
-- **I** - Add a -1/-1 counter
-- **K** - Create a copy of the card
-
-### Card Movement
-
-When hovering a card:
-- **D** - Move to discard pile (graveyard)
-- **S** - Move to exile pile
-- **T** - Move to top of deck
-- **Y** - Move to bottom of deck
-- **H** - Return to hand (when hovering over discard/exile piles)
-
-### Other Actions
-- **V** - Shuffle your deck
-- **M** - Mulligan (shuffle hand into deck and draw a new hand)
-- **X** - Untap all your cards
-- **+ or =** - Gain 1 life
-- **- or _** - Lose 1 life
+### Morph and Manifest
+- **Flip a card** in your hand by hovering and pressing **F**. That card will play face-down. 
 
 ---
 

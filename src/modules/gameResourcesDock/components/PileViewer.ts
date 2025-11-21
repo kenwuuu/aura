@@ -33,7 +33,7 @@ import {HotkeyContext, HotkeyDefinition} from '../../../data/hotkeys';
 
 export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
 
-export interface DeckPileViewerCallbacks {
+export interface PileViewerCallbacks {
   onPlayToBattlefield?: (card: Card) => void;
   onMoveToHand?: (card: Card) => void;
   onMoveToExile?: (card: Card) => void;
@@ -42,9 +42,9 @@ export interface DeckPileViewerCallbacks {
   onMoveToDeckBottom?: (card: Card) => void;
 }
 
-export class DeckPileViewer {
+export class PileViewer {
   private modal: HTMLElement | null = null;
-  private callbacks: DeckPileViewerCallbacks;
+  private callbacks: PileViewerCallbacks;
   private allCards: Card[] = [];
   private filteredCards: Card[] = [];
   private hoveredCard: Card | null = null;
@@ -63,7 +63,7 @@ export class DeckPileViewer {
   private revealAll: boolean = false;
   private revealCount: number = 0;
 
-  constructor(callbacks: DeckPileViewerCallbacks = {}, yPlayerState?: Y.Map<any>) {
+  constructor(callbacks: PileViewerCallbacks = {}, yPlayerState?: Y.Map<any>) {
     this.callbacks = callbacks;
     this.yPlayerState = yPlayerState;
   }

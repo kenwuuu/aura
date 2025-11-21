@@ -40,15 +40,22 @@ body {
 }
 
 #room-name {
-  color: #6b7280;
-  font-size: 11px;
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
+  min-width: 170px;
+  color: #b1b5c5;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #opponent-health-container {
   position: fixed;
-  top: 60px;
+  top: 80px;
   right: 10px;
   z-index: 900;
   display: flex;
@@ -196,7 +203,9 @@ body {
   letter-spacing: 0.05em;
   text-align: center;
 }
-
+.svg-black {
+  filter: brightness(0) saturate(100%);
+}
 .hand-cards {
   position: relative;
   height: 120px;

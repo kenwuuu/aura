@@ -264,7 +264,7 @@ src/deck/
 │   └── deckStore.ts                  # Zustand store (optional)
 ├── services/
 │   ├── DeckImporter.ts
-│   ├── ScryfallDeckImporter.ts
+│   ├── MtgTextListDeckImporter.ts
 │   ├── DeckStorageService.ts
 │   └── ScryfallApiService.ts
 ├── types.ts

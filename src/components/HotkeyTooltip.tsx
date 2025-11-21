@@ -7,6 +7,7 @@ interface HotkeyTooltipProps {
   mouseY: number;
   isMouseDown?: boolean;
   onHotkeyClick?: (hotkey: HotkeyDefinition) => void;
+  title?: string;
 }
 
 const styles = {
@@ -51,9 +52,17 @@ const styles = {
     fontSize: '12px',
     whiteSpace: 'nowrap',
   } as React.CSSProperties,
+  tooltipTitle: {
+    fontSize: '14px',
+    fontWeight: 'bold',
+    color: '#f9fafb',
+    padding: '8px',
+    borderBottom: '1px solid #3d3d3d',
+    marginBottom: '4px',
+  } as React.CSSProperties,
 };
 
-export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, mouseY, isMouseDown = false, onHotkeyClick }) => {
+export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, mouseY, isMouseDown = false, onHotkeyClick, title }) => {
   const [position, setPosition] = useState({ x: mouseX, y: mouseY });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -108,6 +117,11 @@ export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, m
       }}
       onClick={(e) => e.stopPropagation()}
     >
+      {title && (
+        <div style={styles.tooltipTitle}>
+          {title}
+        </div>
+      )}
       {hotkeys.map((hotkey, index) => (
         <div
           key={`${hotkey.key}-${index}`}

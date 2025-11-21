@@ -13,6 +13,8 @@ export const HotkeyContext = {
   Scry: 'scry',
   Discard: 'discard',
   Health: 'health',
+  KeywordToken: 'kwToken',
+  KeywordTokenStack: 'kwTokenStack',
 } as const;
 
 export type HotkeyContext = typeof HotkeyContext[keyof typeof HotkeyContext];
@@ -29,13 +31,13 @@ export const HOTKEYS: HotkeyDefinition[] = [
   {
     key: 'C',
     context: ['global', 'deck'],
-    shortDescription: 'Draw card',
-    longDescription: 'Draw card',
+    shortDescription: 'Draw',
+    longDescription: 'Draw',
   },
   {
     key: 'V',
     context: ['global', 'deck'],
-    shortDescription: 'Shuffle deck',
+    shortDescription: 'Shuffle',
     longDescription: 'Shuffle deck',
   },
   {
@@ -64,7 +66,6 @@ export const HOTKEYS: HotkeyDefinition[] = [
   },
 
   // Battlefield card shortcuts
-
   {
     key: 'X',
     context: ['global', 'battlefield'],
@@ -79,7 +80,7 @@ export const HOTKEYS: HotkeyDefinition[] = [
   },
   {
     key: 'F',
-    context: ['battlefield'],
+    context: ['battlefield', 'hand'],
     shortDescription: 'Flip',
     longDescription: 'Flip card face-down/face-up',
   },
@@ -98,33 +99,51 @@ export const HOTKEYS: HotkeyDefinition[] = [
   {
     key: 'K',
     context: ['battlefield'],
-    shortDescription: 'Copy card',
+    shortDescription: 'Copy/clone',
     longDescription: 'Create copy of card',
   },
   {
     key: 'Back', // leaving this icon here: ⌫
     context: ['battlefield'],
-    shortDescription: 'Delete card',
+    shortDescription: 'Delete',
     longDescription: 'Delete a card',
   },
   {
     key: 'H',
     context: ['battlefield', 'deck', 'exile', 'discard', 'deckcard'],
-    shortDescription: 'To hand',
+    shortDescription: 'Hand',
     longDescription: 'Move card to hand',
+  },
+  {
+    key: '▲ / Left Click',
+    context: ['kwToken'],
+    shortDescription: '+1',
+    longDescription: '+1',
+  },
+  {
+    key: '▼ / Right Click',
+    context: ['kwToken'],
+    shortDescription: '-1',
+    longDescription: '-1',
+  },
+  {
+    key: 'Back',
+    context: ['kwToken'],
+    shortDescription: 'Delete token',
+    longDescription: 'Delete a keyword token',
   },
 
   // Hand and pile shortcuts
   {
     key: 'D',
     context: ['battlefield', 'hand', 'exile', 'deck', 'deckcard', 'scry'],
-    shortDescription: 'To discard',
-    longDescription: 'Move card from hand/deck to discard',
+    shortDescription: 'Discard',
+    longDescription: 'Move card to discard',
   },
   {
     key: 'S',
     context: ['battlefield', 'hand', 'deck', 'discard', 'deckcard'],
-    shortDescription: 'To exile',
+    shortDescription: 'Exile',
     longDescription: 'Move card from hand/deck to exile',
   },
   {

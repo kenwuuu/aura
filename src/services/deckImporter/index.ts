@@ -1,2 +1,2 @@
 export * from './DeckImporter';
-export * from './ScryfallDeckImporter';
+export * from './MtgTextListDeckImporter';
