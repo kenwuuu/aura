@@ -1119,6 +1119,7 @@ body {
 
 /* Card Grid Item Component */
 .card-grid-item {
+  position: relative; /* Positioning context for absolute children */
   background-color: #2d2d2d;
   border: 2px solid #3d3d3d;
   border-radius: 12px;
