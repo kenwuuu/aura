@@ -1,0 +1,136 @@
+/* Card Grid Item Component Styles */
+
+.cardGridItem {
+  position: relative; /* Positioning context for absolute children */
+  background-color: #2d2d2d;
+  border: 2px solid #3d3d3d;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  outline: none; /* Remove focus outline for cleaner look */
+  will-change: transform, opacity;
+}
+
+.cardGridItem:hover {
+  border-color: #3b82f6;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.cardGridItem:focus {
+  /* No visible focus indicator since hover already provides visual feedback */
+  outline: none;
+}
+
+.cardGridItemImage {
+  width: 100%;
+  height: 250px;
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cardImageContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.cardGridItemImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Changed from cover to contain to show full height */
+  display: block;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.cardGridItemImg.loaded {
+  opacity: 1;
+}
+
+.cardGridItemImg.hidden {
+  opacity: 0 !important;
+}
+
+.cardGridItemFallback {
+  font-size: 32px;
+  font-weight: bold;
+  color: #6b7280;
+}
+
+.cardGridItemName {
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  border-top: 1px solid #3d3d3d;
+  background-color: #1a1a1a;
+  line-height: 1.3;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardGridItemPosition {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+/* Skeleton loading state */
+.skeleton {
+  pointer-events: none;
+  cursor: default;
+}
+
+.skeleton:hover {
+  border-color: #3d3d3d !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Shimmer animation for skeleton loading */
+.shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

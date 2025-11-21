@@ -303,6 +303,16 @@ MAYBEBOARD:`;
         expect(result[0]).toEqual({ count: 1, name: 'Ms. Bumbleflower', setCode: 'blc', collectorNumber: '3' });
         expect(result[1]).toEqual({ count: 1, name: 'Arcane Signet', setCode: 'blc', collectorNumber: '127' });
       });
+
+      it('should handle lines with incorrect set formatting', () => {
+        const deckText = `1 Weatherlight nec [Draw]
+          1 Worthy Cost tdm [Removal]`;
+        const result = parseDecklist(deckText);
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toEqual({ count: 1, name: 'Weatherlight',});
+        expect(result[1]).toEqual({ count: 1, name: 'Worthy Cost', });
+      });
     });
 
     describe('real-world formats', () => {
