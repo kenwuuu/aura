@@ -435,7 +435,7 @@ interface CardGridItemReactProps {
   hotkeyContext: HotkeyContext;
 }
 
-function CardGridItemReact({
+const CardGridItemReact = React.memo(function CardGridItemReact({
   card,
   position,
   showPosition,
@@ -485,6 +485,7 @@ function CardGridItemReact({
             src={imageUrl}
             alt={showFaceDown ? 'Card Back' : card.name || `Card #${card.cardNumber}`}
             className="card-grid-item-img"
+            loading="lazy"
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
           />
@@ -506,4 +507,4 @@ function CardGridItemReact({
       )}
     </div>
   );
-}
+});
