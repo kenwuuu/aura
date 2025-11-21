@@ -1,7 +1,7 @@
 import {Player, PlayerState} from '../player';
 import {GameResourcesDockConfig} from './types';
 import {Card, Deck} from '../deck';
-import { PileViewer } from './components';
+import { PileViewer, PileType } from './components';
 import { CardPreview } from '../cardPreview';
 import React from 'react';
 import {createRoot, Root} from 'react-dom/client';
@@ -15,6 +15,7 @@ import { ControlsMenu } from '@/components/controls/ControlsMenu';
 import { setElementDragPoint } from "@/utils/centerHtmlElementOnDrag";
 import { TooltipManager } from '../whiteboard/TooltipManager';
 import { TooltipProvider } from '@/contexts/TooltipContext';
+import { HandCardsContainer } from './HandCardsContainer';
 
 export class GameResourcesDock {
   private container: HTMLElement;
@@ -40,6 +41,7 @@ export class GameResourcesDock {
   private cardPreview: CardPreview;
   private healthRoot: Root | null = null;
   private controlsRoot: Root | null = null;
+  private handRoot: Root | null = null;
   private controlsTooltipManager: TooltipManager | undefined;
   private tooltipRoot: Root | null = null;
   private tooltipContainer: HTMLElement | null = null;
@@ -225,15 +227,41 @@ export class GameResourcesDock {
 
   private createHandElement(): HTMLElement {
     const hand = document.createElement('div');
-    hand.className = 'hand-container';
 
-    const cards = document.createElement('div');
-    cards.className = 'hand-cards';
-    cards.dataset.hand = this.config.playerId;
-
-    hand.appendChild(cards);
+    // Mount React component for hand cards
+    this.handRoot = createRoot(hand);
+    this.renderHandComponent();
 
     return hand;
+  }
+
+  private renderHandComponent(): void {
+    if (!this.handRoot) return;
+
+    this.handRoot.render(
+      React.createElement(HandCardsContainer, {
+        yPlayerState: this.player.getYPlayerState(),
+        playerId: this.config.playerId,
+        zoomLevel: this.handZoomLevel,
+        cardPreview: this.cardPreview,
+        onHoveredCardChange: (cardId) => {
+          this.hoveredHandCardId = cardId;
+          if (cardId) {
+            this.hoveredResource = null;
+          }
+          this.updateHotkeyTooltip();
+        },
+        onDraggedCardChange: (draggedCard) => {
+          this.draggedCard = draggedCard;
+        },
+        onDragStateChange: (dragState) => {
+          this._dragState = dragState;
+        },
+        onHandReorder: (reorderedHand) => {
+          this.player.reorderHand(reorderedHand);
+        }
+      })
+    );
   }
 
   private createDeckElement(): HTMLElement {
@@ -420,224 +448,7 @@ export class GameResourcesDock {
     // Update health React component
     this.renderHealthComponent();
 
-    // Update hand
-    this.updateHandDisplay(state.hand);
-  }
-
-  private updateHandDisplay(hand: Card[]): void {
-    if (!this.elements) return;
-
-    const handCards = this.elements.hand.querySelector('.hand-cards');
-    if (!handCards) return;
-
-    handCards.innerHTML = '';
-
-    hand.forEach((card) => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'hand-card';
-      cardEl.dataset.cardId = card.id;
-      cardEl.draggable = true;
-
-      // Apply zoom level to card
-      this.applyHandZoomToCard(cardEl);
-
-      // Determine which image to show based on flip state
-      const shouldHaveImage = card.isFlipped
-        ? (card.images?.back?.normal || DEFAULT_CARD_BACK)
-        : card.images?.front?.normal;
-
-      if (shouldHaveImage) {
-        const img = document.createElement('img');
-        img.src = shouldHaveImage;
-        img.alt = card.isFlipped ? 'Card Back' : (card.name || `Card #${card.cardNumber}`);
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.borderRadius = '8px';
-        img.style.pointerEvents = 'none';
-        cardEl.appendChild(img);
-
-        // Add card number badge
-        const badge = document.createElement('div');
-        badge.className = 'card-number-badge';
-        badge.textContent = `#${card.cardNumber}`;
-        cardEl.appendChild(badge);
-      } else {
-        // Fallback: Display card number only (no image available)
-        const cardNumber = document.createElement('div');
-        cardNumber.className = 'card-number-badge';
-        cardNumber.textContent = `#${card.cardNumber}`;
-        cardEl.appendChild(cardNumber);
-      }
-
-      // Add hover event listeners for keyboard shortcuts, card preview, and tooltip
-      cardEl.addEventListener('mouseenter', () => {
-        this.hoveredHandCardId = card.id;
-        this.hoveredResource = null;
-        this.cardPreview.show(card);
-        this.updateHotkeyTooltip();
-      });
-
-      cardEl.addEventListener('mousemove', (e: MouseEvent) => {
-        this.cardPreview.updatePosition(e);
-      });
-
-      cardEl.addEventListener('mouseleave', () => {
-        this.hoveredHandCardId = null;
-        this.cardPreview.hide();
-        this.updateHotkeyTooltip();
-      });
-
-      // Drag events
-      cardEl.addEventListener('dragstart', (e) => {
-        this.cardPreview.hide();
-        this.hoveredHandCardId = null;
-        this.hoveredResource = null;
-        this.updateHotkeyTooltip();
-
-        // Track the card globally for board drop logic
-        this.draggedCard = { card, element: cardEl };
-
-        // Starting state: we assume play mode, not reorder mode
-        this._dragState = {
-          mode: 'play',   // 'play' or 'reorder'
-          draggedElement: cardEl,
-          startIndex: Array.from(handCards.children).indexOf(cardEl)
-        };
-
-        cardEl.classList.add('dragging');
-        cardEl.classList.remove('hover');
-
-        // Use your normal card-centered drag image first
-        setElementDragPoint(cardEl, e, 'card');
-
-        e.dataTransfer!.effectAllowed = 'move';
-        e.dataTransfer!.setData('text/plain', card.id);
-      });
-
-      cardEl.addEventListener('dragend', () => {
-        cardEl.classList.remove('dragging');
-      });
-
-      handCards.appendChild(cardEl);
-    });
-
-    animate(handCards.scrollLeft, handCards.scrollWidth - handCards.clientWidth, {  // TODO: animation gets heavy when you draw 40+ cards in hand. we can probably use a compressed image
-      duration: 0.3,
-      ease: 'easeOut',
-      onUpdate(value) {
-        handCards.scrollLeft = value;
-      }
-    });
-
-    // Setup hand reordering with vanilla drag and drop
-    this.setupHandReordering(handCards as HTMLElement);
-  }
-
-  private setupHandReordering(handCards: HTMLElement): void {
-    const buffer = 60; // px allowed above/below hand before switching to play mode
-    const transparentDragImage = new Image();
-    transparentDragImage.src =
-      'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-
-    handCards.addEventListener('dragover', (e: DragEvent) => {
-      if (!this._dragState) return;
-      e.preventDefault();
-
-      // Throttle with requestAnimationFrame to prevent layout thrashing
-      if (this.requestAnimationFrameId !== null) return;
-
-      this.requestAnimationFrameId = requestAnimationFrame(() => {
-        this.requestAnimationFrameId = null;
-
-        if (!this._dragState) return;
-        const { draggedElement, mode } = this._dragState;
-        if (!draggedElement) return;
-
-        // Read phase: batch all layout reads together
-        const handRect = handCards.getBoundingClientRect();
-        const outOfBounds =
-          e.clientY < handRect.top - buffer ||
-          e.clientY > handRect.bottom + buffer;
-
-        //
-        // ───────────────────────────────────────────────────────────────
-        // MODE SWITCHING LOGIC
-        // ───────────────────────────────────────────────────────────────
-        //
-        if (outOfBounds) {
-          // Switch to PLAY MODE
-          if (mode !== 'play') {
-            this._dragState.mode = 'play';
-
-            // Switch BACK to your full-size centered drag image
-            try {
-              setElementDragPoint(draggedElement, e, 'card');
-            } catch {}
-          }
-          return;
-        } else {
-          // Switch into REORDER MODE
-          if (mode !== 'reorder') {
-            this._dragState.mode = 'reorder';
-
-            // Use transparent drag image so reorder looks clean
-            try {
-              e.dataTransfer?.setDragImage(transparentDragImage, 0, 0);
-            } catch {}
-          }
-        }
-
-        //
-        // ───────────────────────────────────────────────────────────────
-        // REORDER MODE BEHAVIOR
-        // ───────────────────────────────────────────────────────────────
-        //
-        if (this._dragState.mode === 'reorder') {
-          const target = (e.target as HTMLElement).closest('.hand-card') as HTMLElement | null;
-          if (!target || target === draggedElement) return;
-
-          const rect = target.getBoundingClientRect();
-          const midpoint = rect.left + rect.width / 2;
-
-          // Write phase: batch all DOM mutations together
-          if (e.clientX < midpoint) {
-            handCards.insertBefore(draggedElement, target);
-          } else {
-            handCards.insertBefore(draggedElement, target.nextSibling);
-          }
-        }
-      });
-    });
-
-    handCards.addEventListener('dragend', () => {
-      // Cancel any pending animation frame
-      if (this.requestAnimationFrameId !== null) {
-        cancelAnimationFrame(this.requestAnimationFrameId);
-        this.requestAnimationFrameId = null;
-      }
-
-      if (!this._dragState) return;
-      const { draggedElement, startIndex, mode } = this._dragState;
-
-      if (mode === 'reorder') {
-        //
-        // Apply Yjs reorder
-        //
-        const newIndex = Array.from(handCards.children).indexOf(draggedElement);
-
-        if (newIndex !== startIndex) {
-          const currentHand = this.player.getHand().getCards();
-          const reordered = [...currentHand];
-          const movedCard = reordered.splice(startIndex, 1)[0];
-          reordered.splice(newIndex, 0, movedCard);
-
-          this.player.reorderHand(reordered);
-        }
-      }
-
-      this._dragState.mode = 'none';
-    });
+    // Hand updates are now handled automatically by React via Yjs observation
   }
 
   private onDrawCard(): void {
@@ -925,19 +736,8 @@ export class GameResourcesDock {
       }
     }
 
-    // Re-render hand with new zoom
-    const state = this.player.getState();
-    this.updateHandDisplay(state.hand);
-  }
-
-  private applyHandZoomToCard(cardEl: HTMLElement): void {
-    const baseWidth = 63;
-    const baseHeight = 88;
-    const width = baseWidth * this.handZoomLevel;
-    const height = baseHeight * this.handZoomLevel;
-
-    cardEl.style.width = `${width}px`;
-    cardEl.style.height = `${height}px`;
+    // Re-render React component with new zoom
+    this.renderHandComponent();
   }
 
   public destroy(): void {
@@ -948,6 +748,10 @@ export class GameResourcesDock {
     if (this.controlsRoot) {
       this.controlsRoot.unmount();
       this.controlsRoot = null;
+    }
+    if (this.handRoot) {
+      this.handRoot.unmount();
+      this.handRoot = null;
     }
     if (this.tooltipRoot) {
       this.tooltipRoot.unmount();

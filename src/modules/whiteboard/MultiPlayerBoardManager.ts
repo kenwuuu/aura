@@ -49,8 +49,6 @@ export class MultiPlayerBoardManager {
   // Configuration for overlay vs underlay (easy to debug/change)
   private useOverlay: boolean = true; // true = overlay, false = underlay
 
-  private backgroundColor: string;
-
   constructor(
     container: HTMLElement,
     yDoc: Y.Doc,
