@@ -52,10 +52,16 @@ function extractCardName(line: string, parts: string[]): string {
 }
 
 function parseLine(line: string): DeckLineItem {
+  console.log(`Parsing line: line = ${line}`);
+
+  line = line.trim()
   const parts = line.trim().split(/\s+/);
   const count = parseCount(parts[0]);
   const name = extractCardName(line, parts);
   const setInfo = extractSetInfo(line);
+
+  console.log(`Parsing line: name = ${name}`);
+  console.log(`Parsing line: setCode = ${setInfo?.setCode}; collectorNumber = ${setInfo?.collectorNumber}`);
 
   if (setInfo) {
     return { count, name, setCode: setInfo.setCode, collectorNumber: setInfo.collectorNumber };

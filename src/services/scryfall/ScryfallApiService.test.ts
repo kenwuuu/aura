@@ -282,7 +282,7 @@ MAYBEBOARD:`;
         });
       });
 
-      it('should handle cards with slashes and Japan exclusives', () => {
+      it('should handle cards with slashes and incorrect collectorNumber', () => {
         const deckText = `1 Birgi, God of Storytelling / Harnfel, Horn of Bounty (J21) 416 *F*
           1 Faithless Looting (STA) 101e *F*`;
         const result = parseDecklist(deckText);
@@ -290,6 +290,16 @@ MAYBEBOARD:`;
         expect(result).toHaveLength(2);
         expect(result[0]).toEqual({ count: 1, name: 'Birgi, God of Storytelling / Harnfel, Horn of Bounty', setCode: 'J21', collectorNumber: '416' });
         expect(result[1]).toEqual({ count: 1, name: 'Faithless Looting', setCode: 'STA', collectorNumber: '101e' });
+      });
+
+      it('should handle lines with incorrect set formatting', () => {
+        const deckText = `1 Weatherlight nec [Draw]
+          1 Worthy Cost tdm [Removal]`;
+        const result = parseDecklist(deckText);
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toEqual({ count: 1, name: 'Weatherlight',});
+        expect(result[1]).toEqual({ count: 1, name: 'Worthy Cost', });
       });
     });
 

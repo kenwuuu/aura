@@ -47,7 +47,7 @@ export class ScryfallApiService {
   /**
    * Fetch card data from Scryfall with rate limiting and retries
    */
-  private async fetchCardDataByName(cardLineItem: DeckLineItem): Promise<ScryfallCard> {
+  private async fetchCardDataByName(cardLineItem: DeckLineItem, retries: number = 3): Promise<ScryfallCard> {
     const cardName = cardLineItem.name;
     const exactUrl = `${ScryfallApiService.BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`;
     const fuzzyUrl = `${ScryfallApiService.BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`;
@@ -69,9 +69,10 @@ export class ScryfallApiService {
           return await response.json();
         },
         {
-          retries: 3,
+          retries: retries,
           onFailedAttempt: (error) => {
-            console.warn(`Attempt ${error.attemptNumber} failed for "${cardName}". ${error.retriesLeft} retries left.`);
+            const errorText = `Importing by card name failed. Attempt ${error.attemptNumber} failed for "${cardName}". ${error.retriesLeft} retries left.`
+            console.error(errorText);
           },
         }
       )
@@ -81,7 +82,7 @@ export class ScryfallApiService {
   /**
    * Fetch card data from Scryfall with rate limiting and retries
    */
-  private async fetchCardDataBySet(cardLineItem: DeckLineItem): Promise<ScryfallCard> {
+  private async fetchCardDataBySet(cardLineItem: DeckLineItem, retries: number = 3): Promise<ScryfallCard> {
     const encodedSetCode = encodeURIComponent(cardLineItem.setCode!);
     const encodedCollectorNumber = encodeURIComponent(cardLineItem.collectorNumber!);
 
@@ -100,9 +101,10 @@ export class ScryfallApiService {
           return await response.json();
         },
         {
-          retries: 3,
+          retries: retries,
           onFailedAttempt: (error) => {
-            console.warn(`Attempt ${error.attemptNumber} failed for "${cardLineItem.name}". ${error.retriesLeft} retries left.`);
+            const errorText = `Importing by setCode failed. Attempt ${error.attemptNumber} failed for "${cardLineItem.name}". ${error.retriesLeft} retries left.`;
+            console.error(errorText);
           },
         }
       )
@@ -121,24 +123,44 @@ export class ScryfallApiService {
     let completed = 0;
 
     for (const entry of entries) {
+      let cardObj: ScryfallCard | undefined;
       try {
-        let cardObj: ScryfallCard;
         if (entry.setCode && entry.collectorNumber) {
-          cardObj = await this.fetchCardDataBySet(entry);
+          cardObj = await this.fetchCardDataBySet(entry, 2);
         } else { // fall back to using name
-          cardObj = await this.fetchCardDataByName(entry);
+          cardObj = await this.fetchCardDataByName(entry, 1);
         }
-        results.push(toCardDataResult(cardObj, entry.count));
       } catch (err) {
-        console.error(`Error fetching "${entry.name}":`, err);
-        results.push({
-          count: entry.count,
-          name: entry.name,
-          type_line: undefined,
-          scryfallId: '',
-          imageUris: { front: null, back: null },
-          error: err instanceof Error ? err.message : 'Unknown error',
-        });
+        // If set-based search failed, try falling back to name search
+        if (entry.setCode && entry.collectorNumber) {
+          try {
+            cardObj = await this.fetchCardDataByName(entry, 1);
+          } catch (fallbackErr) {
+            console.error(`Fallback to name search also failed for "${entry.name}"`, fallbackErr);
+          }
+        }
+
+        // If cardObj is still undefined, both attempts failed
+        if (!cardObj) {
+          console.error(`Error fetching card. Name: "${entry.name}". Full line: ${entry.count} ${entry.name} ${entry.setCode} ${entry.collectorNumber} `, err);
+          results.push({
+            count: entry.count,
+            name: entry.name,
+            type_line: undefined,
+            scryfallId: '',
+            imageUris: { front: null, back: null },
+            error: err instanceof Error ? err.message : 'Unknown error',
+          });
+
+          completed++;
+          onProgress?.(completed, entries.length);
+          continue; // Skip to next entry
+        }
+      }
+
+      // Only push success result if we have a valid cardObj
+      if (cardObj) {
+        results.push(toCardDataResult(cardObj, entry.count));
       }
 
       completed++;

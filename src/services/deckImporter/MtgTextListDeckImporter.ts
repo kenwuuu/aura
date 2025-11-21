@@ -2,14 +2,87 @@ import { DeckImporter, DeckImportResult } from './DeckImporter';
 import {DeckLineItem, parseDecklist} from "@/services/deckImporter/DeckListParser";
 import {CardDataResult, ScryfallApiService} from '../scryfall';
 import { Card } from '@/modules/deck';
+import * as Sentry from "@sentry/browser";
 
-export class MtgTextListDeckImporter implements DeckImporter {
+export class MtgTextListDeckImporter extends DeckImporter {
   private scryfallApi: ScryfallApiService;
   private onProgress?: (current: number, total: number) => void;
 
   constructor(onProgress?: (current: number, total: number) => void) {
+    super();
     this.scryfallApi = new ScryfallApiService();
     this.onProgress = onProgress;
+  }
+
+  /**
+   * Import deck from Scryfall-formatted text
+   */
+  public async importFromText(text: string): Promise<DeckImportResult> {
+    let deck: DeckImportResult = {
+      cards: [],
+      metadata: {},
+      errors: [],
+    }
+
+    if (!this.validateFormat(text)) {
+      deck.errors.push("Invalid deck format. Expected format: \"[count] [card name]\" per line");
+      return deck;
+    }
+
+    // Check for section headers and error if they exist
+    const sectionHeaders = this.detectSectionHeaders(text);
+    if (sectionHeaders.length > 0) {
+      this.setSectionHeaderErrors(deck, sectionHeaders);
+      return deck;
+    }
+
+    // call Scryfall API
+    try {
+      const entries: DeckLineItem[] = parseDecklist(text);
+      const results: CardDataResult[] = await this.scryfallApi.fetchImagesForList(entries, this.onProgress);
+
+      // Create cards from CardDataResult
+      this.parseResultsIntoDeck(deck, results);
+
+      // set import metadata
+      deck.metadata = {
+        source: 'scryfall',
+        cardCount: deck.cards.length,
+        importedAt: new Date(),
+        lastModified: new Date(),
+      }
+
+      if (deck.errors.length > 0) {
+        Sentry.captureMessage("Error when importing deck. ", {
+          level: "error",
+          extra: {
+            deck: deck
+          }
+      });
+      }
+
+      return deck;
+    } catch (e) {
+      Sentry.captureMessage("Error when importing deck. Full text import:", {
+        level: "error",
+        extra: {
+          text: text
+        }
+      });
+    }
+    return deck;
+  }
+
+  private setSectionHeaderErrors(deck: DeckImportResult, sectionHeaders: string[]) {
+    const headerList = sectionHeaders.slice(0, 3).map(h => `"${h}"`).join(', ');
+    const more = sectionHeaders.length > 3 ? ` and ${sectionHeaders.length - 3} more` : '';
+
+    deck.errors.push(
+      `Section headers detected: ${headerList}${more}. \n` +
+      'Please remove section headers like "SIDEBOARD:", "COMMANDER:", etc. \n' +
+      'Use the MTGO preset from Moxfield for best results. \n' +
+      'Click the Help button below for more information.'
+    );
   }
 
   /**
@@ -36,11 +109,11 @@ export class MtgTextListDeckImporter implements DeckImporter {
   }
 
   /**
-   * Validate if text is in Scryfall decklist format
+   * Validate if text is in decklist format
    * Format: "<count> <card name>" per line
    * Example: "4 Lightning Bolt" or "4x Lightning Bolt"
    */
-  validateFormat(text: string): boolean {
+  public validateFormat(text: string): boolean {
     if (!text || text.trim().length === 0) {
       return false;
     }
@@ -73,55 +146,19 @@ export class MtgTextListDeckImporter implements DeckImporter {
     return validLines.length > 0;
   }
 
-  /**
-   * Import deck from Scryfall-formatted text
-   */
-  async importFromText(text: string): Promise<DeckImportResult> {
-    if (!this.validateFormat(text)) {
-      return {
-        cards: [],
-        metadata: {},
-        errors: ['Invalid deck format. Expected format: "<count> <card name>" per line'],
-      };
-    }
-
-    // Check for section headers
-    const sectionHeaders = this.detectSectionHeaders(text);
-    if (sectionHeaders.length > 0) {
-      const headerList = sectionHeaders.slice(0, 3).map(h => `"${h}"`).join(', ');
-      const more = sectionHeaders.length > 3 ? ` and ${sectionHeaders.length - 3} more` : '';
-
-      return {
-        cards: [],
-        metadata: {},
-        errors: [
-          `Section headers detected: ${headerList}${more}. \n` +
-          'Please remove section headers like "SIDEBOARD:", "COMMANDER:", etc. \n' +
-          'Use the MTGO preset from Moxfield for best results. \n' +
-          'Click the Help button below for more information.'
-        ],
-      };
-    }
-
-    // call Scryfall API
-    const entries: DeckLineItem[] = parseDecklist(text);
-    const results: CardDataResult[] = await this.scryfallApi.fetchImagesForList(entries, this.onProgress);
-
-    const cards: Card[] = [];
-    const errors: string[] = [];
+  private parseResultsIntoDeck(deckImportResult: DeckImportResult, results: CardDataResult[]) {
     let cardNumberCounter = 1;
 
-    // Expand cards based on count (e.g., "4 Lightning Bolt" → 4 card objects)
     for (const result of results) {
       if (result.error) {
-        errors.push(`${result.name}: ${result.error}`);
+        deckImportResult.errors.push(`${result.name}: ${result.error}`);
         continue;
       }
 
       console.log(`Importing ${result.count}x ${result.name}`);
 
       for (let i = 0; i < result.count; i++) {
-        cards.push({
+        let card: Card = {
           id: `card-${Math.random().toString(36).substring(2, 11)}`,
           cardNumber: cardNumberCounter++,
           name: result.name,
@@ -134,19 +171,9 @@ export class MtgTextListDeckImporter implements DeckImporter {
           isTapped: false,
           isFlipped: false,
           counters: [],
-        });
+        }
+        deckImportResult.cards.push(card);
       }
     }
-
-    return {
-      cards,
-      metadata: {
-        source: 'scryfall',
-        cardCount: cards.length,
-        importedAt: new Date(),
-        lastModified: new Date(),
-      },
-      errors: errors.length > 0 ? errors : undefined,
-    };
   }
 }

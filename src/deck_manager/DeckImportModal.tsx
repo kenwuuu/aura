@@ -189,6 +189,8 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
             <InfoIcon />
             <AlertTitle>Set imports available now!</AlertTitle>
             <AlertDescription>
+              Must include set code in parentheses and collector number.
+              <br/>
               Example: 1 Rhystic Study (WOT) 71
             </AlertDescription>
           </Alert>
