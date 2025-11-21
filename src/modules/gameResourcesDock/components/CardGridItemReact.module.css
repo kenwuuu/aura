@@ -41,7 +41,7 @@
 .cardGridItemImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Changed from cover to contain to show full height */
   display: block;
   opacity: 0;
   transition: opacity 0.8s ease;

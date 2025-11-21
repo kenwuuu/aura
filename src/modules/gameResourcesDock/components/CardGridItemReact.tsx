@@ -48,7 +48,6 @@ export const CardGridItemReact = React.memo(function CardGridItemReact({
   const handleMouseEnter = (e: React.MouseEvent) => {
     onHover(card);
     tooltipManager?.showOnHover(card.id, hotkeyContext);
-    cardRef.current?.focus();
   };
 
   const handleMouseLeave = () => {
