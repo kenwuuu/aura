@@ -328,13 +328,13 @@ export function PileViewerReact({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="deck-pile-viewer-content max-w-[90vw] max-h-[90vh] p-0">
-        <DialogHeader className="deck-pile-viewer-header px-6 pt-6 pb-4 border-b">
-            <DialogTitle className="text-2xl font-bold ">{getTitle()}</DialogTitle>
+        <DialogContent className="deck-pile-viewer-content max-w-[90vw] max-h-[90vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+            <DialogTitle className="text-2xl font-bold text-left">{getTitle()}</DialogTitle>
         </DialogHeader>
 
         {/* Controls */}
-        <div className=" px-6 py-4 border-b flex flex-wrap gap-4 items-center">
+        <div className="px-6 pb-4 border-b flex flex-wrap gap-4 items-center">
           {/* Search */}
           <div className="flex-1 min-w-[200px]">
             <Input
@@ -387,7 +387,7 @@ export function PileViewerReact({
         </div>
 
         {/* Card Grid */}
-        <div className="deck-pile-viewer-grid-container overflow-auto px-6 py-4">
+        <div className="deck-pile-viewer-grid-container overflow-auto">
           {filteredAndSortedCards.length === 0 ? (
             <div className="deck-pile-viewer-empty text-center py-12 text-muted-foreground">
               {searchQuery ? 'No cards found' : `No cards in ${pileType}`}
