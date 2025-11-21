@@ -1,6 +1,16 @@
+## 2025 November 20
+
+### Features
+- Add "Copy Game Link" button
+
+### Changes
+- Change how deck viewers work. Opening deck and revealing cards are now much faster.
+
+---
+
 ## 2025 November 19
 
-### Feature
+### Features
 - Add ability to import cards by set, example: `1 Rhystic Study (WOT) 71`
 - Add keyword tokens and mana tokens
 
@@ -26,7 +36,7 @@
 `1 Anillo solar`, `1 Sonnenring`, `1 Anneau solaire`
 - Alert opponents when players reveal any cards in their deck
 
-### Change
+### Changes
 - Put player ID on health displays
 
 ### Major bug fix
