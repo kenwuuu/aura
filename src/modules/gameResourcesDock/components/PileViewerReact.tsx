@@ -14,8 +14,8 @@ import * as React from 'react';
 import * as Y from 'yjs';
 import { Card } from '../../deck';
 import { TooltipManager } from '../../whiteboard/TooltipManager';
-import { HotkeyContext, HotkeyDefinition } from '../../../data/hotkeys';
-import { DEFAULT_CARD_BACK } from '../../../constants';
+import { HotkeyContext, HotkeyDefinition } from '@/data/hotkeys';
+import { DEFAULT_CARD_BACK } from '@/constants';
 import {
   Dialog,
   DialogContent,
@@ -75,34 +75,44 @@ export function PileViewerReact({
   const tooltipManagerRef = React.useRef<TooltipManager | null>(null);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize reveal state from yPlayerState
-  React.useEffect(() => {
-    if (isOpen && pileType === 'deck' && yPlayerState) {
-      const deckRevealCount = yPlayerState.get('deckRevealCount') ?? 0;
-      if (deckRevealCount === -1) {
-        setRevealAll(true);
-        setRevealCount(0);
-      } else if (deckRevealCount > 0) {
-        setRevealAll(false);
-        setRevealCount(deckRevealCount);
-      } else {
-        setRevealAll(false);
-        setRevealCount(0);
-      }
-    } else if (isOpen) {
-      setRevealAll(pileType !== 'deck');
-      setRevealCount(0);
-    }
-  }, [isOpen, pileType, yPlayerState]);
-
-  // Reset state when dialog opens
+  // Reset state when dialog opens or closes
   React.useEffect(() => {
     if (isOpen) {
       setSearchQuery('');
       setSortOrder('top-to-bottom');
       setHoveredCard(null);
+
+      // Initialize reveal state from yPlayerState
+      if (pileType === 'deck' && yPlayerState) {
+        const deckRevealCount = yPlayerState.get('deckRevealCount') ?? 0;
+        if (deckRevealCount === -1) {
+          setRevealAll(true);
+          setRevealCount(0);
+        } else if (deckRevealCount > 0) {
+          setRevealAll(false);
+          setRevealCount(deckRevealCount);
+        } else {
+          setRevealAll(false);
+          setRevealCount(0);
+        }
+      } else {
+        setRevealAll(pileType !== 'deck');
+        setRevealCount(0);
+      }
+    } else {
+      // Reset state when closing
+      setSearchQuery('');
+      setSortOrder('top-to-bottom');
+      setHoveredCard(null);
+      setRevealAll(false);
+      setRevealCount(0);
+
+      // Clear deck reveal count in Yjs when closing
+      if (pileType === 'deck' && yPlayerState) {
+        yPlayerState.set('deckRevealCount', 0);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, pileType, yPlayerState]);
 
   // Setup tooltip manager
   React.useEffect(() => {
