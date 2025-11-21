@@ -1,0 +1,524 @@
+/**
+ * PileViewer React Component
+ *
+ * Full React implementation using shadcn/ui components for:
+ * - Modal dialog
+ * - Search input with debouncing
+ * - Sort select dropdown
+ * - Reveal controls with checkbox
+ * - Card grid rendering
+ * - Keyboard shortcuts
+ */
+
+import * as React from 'react';
+import * as Y from 'yjs';
+import { Card } from '../../deck';
+import { TooltipManager } from '../../whiteboard/TooltipManager';
+import { HotkeyContext, HotkeyDefinition } from '../../../data/hotkeys';
+import { DEFAULT_CARD_BACK } from '../../../constants';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
+
+export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
+
+export interface PileViewerCallbacks {
+  onPlayToBattlefield?: (card: Card) => void;
+  onMoveToHand?: (card: Card) => void;
+  onMoveToExile?: (card: Card) => void;
+  onMoveToDiscard?: (card: Card) => void;
+  onMoveToDeckTop?: (card: Card) => void;
+  onMoveToDeckBottom?: (card: Card) => void;
+}
+
+export interface PileViewerReactProps {
+  isOpen: boolean;
+  onClose: () => void;
+  cards: Card[];
+  pileType: PileType;
+  callbacks?: PileViewerCallbacks;
+  yPlayerState?: Y.Map<any>;
+}
+
+type SortOrder = 'top-to-bottom' | 'bottom-to-top' | 'alphabetical';
+
+export function PileViewerReact({
+  isOpen,
+  onClose,
+  cards,
+  pileType,
+  callbacks = {},
+  yPlayerState,
+}: PileViewerReactProps) {
+  // State
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [sortOrder, setSortOrder] = React.useState<SortOrder>('top-to-bottom');
+  const [hoveredCard, setHoveredCard] = React.useState<Card | null>(null);
+  const [revealAll, setRevealAll] = React.useState(false);
+  const [revealCount, setRevealCount] = React.useState(0);
+
+  // Refs
+  const tooltipManagerRef = React.useRef<TooltipManager | null>(null);
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize reveal state from yPlayerState
+  React.useEffect(() => {
+    if (isOpen && pileType === 'deck' && yPlayerState) {
+      const deckRevealCount = yPlayerState.get('deckRevealCount') ?? 0;
+      if (deckRevealCount === -1) {
+        setRevealAll(true);
+        setRevealCount(0);
+      } else if (deckRevealCount > 0) {
+        setRevealAll(false);
+        setRevealCount(deckRevealCount);
+      } else {
+        setRevealAll(false);
+        setRevealCount(0);
+      }
+    } else if (isOpen) {
+      setRevealAll(pileType !== 'deck');
+      setRevealCount(0);
+    }
+  }, [isOpen, pileType, yPlayerState]);
+
+  // Reset state when dialog opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setSearchQuery('');
+      setSortOrder('top-to-bottom');
+      setHoveredCard(null);
+    }
+  }, [isOpen]);
+
+  // Setup tooltip manager
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    tooltipManagerRef.current = new TooltipManager();
+    tooltipManagerRef.current.setup((hotkey: HotkeyDefinition, cardId: string) => {
+      const card = cards.find((c) => c.id === cardId);
+      if (!card) return;
+
+      const key = hotkey.key.toLowerCase();
+
+      if (key === 'h' && callbacks.onMoveToHand) {
+        callbacks.onMoveToHand(card);
+      } else if (key === 'd' && callbacks.onMoveToDiscard && pileType !== 'discard') {
+        callbacks.onMoveToDiscard(card);
+      } else if (key === 's' && callbacks.onMoveToExile && pileType !== 'exile') {
+        callbacks.onMoveToExile(card);
+      } else if (key === 't' && callbacks.onMoveToDeckTop && pileType !== 'deck') {
+        callbacks.onMoveToDeckTop(card);
+      } else if (key === 'y' && callbacks.onMoveToDeckBottom && pileType !== 'deck') {
+        callbacks.onMoveToDeckBottom(card);
+      }
+    });
+
+    return () => {
+      tooltipManagerRef.current?.destroy();
+      tooltipManagerRef.current = null;
+    };
+  }, [isOpen, cards, callbacks, pileType]);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+
+      // Escape always closes
+      if (key === 'escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      // Don't handle shortcuts if typing in input
+      if (e.target instanceof HTMLInputElement) {
+        return;
+      }
+
+      // All other shortcuts require hovered card
+      if (!hoveredCard) return;
+
+      // H - Move to hand
+      if (key === 'h' && callbacks.onMoveToHand) {
+        e.preventDefault();
+        callbacks.onMoveToHand(hoveredCard);
+      }
+
+      // D - Move to discard
+      if (key === 'd' && callbacks.onMoveToDiscard && pileType !== 'discard') {
+        e.preventDefault();
+        callbacks.onMoveToDiscard(hoveredCard);
+      }
+
+      // S - Move to exile
+      if (key === 's' && callbacks.onMoveToExile && pileType !== 'exile') {
+        e.preventDefault();
+        callbacks.onMoveToExile(hoveredCard);
+      }
+
+      // T - Move to deck top
+      if (key === 't' && callbacks.onMoveToDeckTop && pileType !== 'deck') {
+        e.preventDefault();
+        callbacks.onMoveToDeckTop(hoveredCard);
+      }
+
+      // Y - Move to deck bottom
+      if (key === 'y' && callbacks.onMoveToDeckBottom && pileType !== 'deck') {
+        e.preventDefault();
+        callbacks.onMoveToDeckBottom(hoveredCard);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, hoveredCard, callbacks, pileType, onClose]);
+
+  // Emit scry viewer closing event
+  React.useEffect(() => {
+    if (!isOpen && pileType === 'scry') {
+      window.dispatchEvent(new Event('scryViewer closing'));
+    }
+  }, [isOpen, pileType]);
+
+  // Debounced search
+  const handleSearchChange = (value: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      setSearchQuery(value);
+    }, 150);
+  };
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Handle reveal all change
+  const handleRevealAllChange = (checked: boolean) => {
+    setRevealAll(checked);
+    if (checked) {
+      setRevealCount(0);
+      if (yPlayerState) {
+        yPlayerState.set('deckRevealCount', -1);
+      }
+    } else {
+      if (yPlayerState) {
+        yPlayerState.set('deckRevealCount', 0);
+      }
+    }
+  };
+
+  // Handle reveal count change
+  const handleRevealCountChange = (value: string) => {
+    const count = parseInt(value) || 0;
+    const boundedCount = Math.max(0, Math.min(cards.length, count));
+    setRevealCount(boundedCount);
+    if (boundedCount > 0) {
+      setRevealAll(false);
+      if (yPlayerState) {
+        yPlayerState.set('deckRevealCount', boundedCount);
+      }
+    } else {
+      if (yPlayerState) {
+        yPlayerState.set('deckRevealCount', 0);
+      }
+    }
+  };
+
+  // Filter and sort cards
+  const filteredAndSortedCards = React.useMemo(() => {
+    let filtered = cards;
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = cards.filter((card) => {
+        const name = card.name?.toLowerCase() || '';
+        const typeLine = card.type_line?.toLowerCase() || '';
+        const cardNumber = card.cardNumber.toString();
+        return (
+          name.includes(query) ||
+          cardNumber.includes(query) ||
+          typeLine.includes(query)
+        );
+      });
+    }
+
+    // Sort
+    if (sortOrder === 'alphabetical') {
+      filtered = [...filtered].sort((a, b) => {
+        const nameA = a.name?.toLowerCase() || `card${a.cardNumber}`;
+        const nameB = b.name?.toLowerCase() || `card${b.cardNumber}`;
+        return nameA.localeCompare(nameB);
+      });
+    } else if (sortOrder === 'top-to-bottom') {
+      filtered = [...filtered].reverse();
+    } else if (sortOrder === 'bottom-to-top') {
+      filtered = [...filtered];
+    }
+
+    return filtered;
+  }, [cards, searchQuery, sortOrder]);
+
+  // Get dialog title
+  const getTitle = () => {
+    switch (pileType) {
+      case 'deck':
+        return 'Search Deck';
+      case 'exile':
+        return 'Exile Pile';
+      case 'discard':
+        return 'Discard Pile';
+      case 'hand':
+        return "Opponent's Hand";
+      case 'scry':
+        return 'Scry and Surveil';
+      default:
+        return 'Cards';
+    }
+  };
+
+  // Get subtitle text
+  const getSubtitle = () => {
+    if (pileType === 'scry') {
+      return 'Hover card and move to... \nD: Discard • T: Deck Top • Y: Deck Bottom';
+    }
+    return 'Hover card and move to... \nH: Hand • D: Discard • S: Exile • T: Deck Top • Y: Deck Bottom';
+  };
+
+  // Get hotkey context for tooltip
+  const getHotkeyContext = (): HotkeyContext => {
+    switch (pileType) {
+      case 'deck':
+        return HotkeyContext.DeckCard;
+      case 'discard':
+        return HotkeyContext.Discard;
+      case 'exile':
+        return HotkeyContext.Exile;
+      case 'scry':
+        return HotkeyContext.Scry;
+      default:
+        return HotkeyContext.DeckCard;
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="deck-pile-viewer-content max-w-[90vw] max-h-[90vh] p-0">
+        <DialogHeader className="deck-pile-viewer-header px-6 pt-6 pb-4 border-b">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <DialogTitle className="text-2xl font-bold">{getTitle()}</DialogTitle>
+              <div className="deck-pile-viewer-subtitle text-sm text-muted-foreground mt-2 whitespace-pre-line">
+                {getSubtitle()}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="deck-pile-viewer-close -mt-2"
+              onClick={onClose}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </DialogHeader>
+
+        {/* Controls */}
+        <div className="deck-pile-viewer-controls px-6 py-4 border-b flex flex-wrap gap-4 items-center">
+          {/* Search */}
+          <div className="flex-1 min-w-[200px]">
+            <Input
+              type="text"
+              placeholder="Search cards..."
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          {/* Sort */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Sort:</span>
+            <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="top-to-bottom">Top to Bottom</SelectItem>
+                <SelectItem value="bottom-to-top">Bottom to Top</SelectItem>
+                <SelectItem value="alphabetical">Alphabetical</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Reveal controls (deck only) */}
+          {pileType === 'deck' && (
+            <div className="deck-pile-viewer-reveal-controls flex items-center gap-4">
+              <label className="reveal-all-label flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={revealAll}
+                  onCheckedChange={handleRevealAllChange}
+                />
+                <span className="text-sm">Reveal All</span>
+              </label>
+              <div className="reveal-count-container flex items-center gap-2">
+                <span className="text-sm">Reveal top:</span>
+                <Input
+                  type="number"
+                  min="0"
+                  max={cards.length}
+                  placeholder="0"
+                  value={revealCount > 0 ? revealCount : ''}
+                  onChange={(e) => handleRevealCountChange(e.target.value)}
+                  className="reveal-count-input w-[80px]"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Card Grid */}
+        <div className="deck-pile-viewer-grid-container overflow-auto px-6 py-4">
+          {filteredAndSortedCards.length === 0 ? (
+            <div className="deck-pile-viewer-empty text-center py-12 text-muted-foreground">
+              {searchQuery ? 'No cards found' : `No cards in ${pileType}`}
+            </div>
+          ) : (
+            <div className="deck-pile-viewer-grid grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
+              {filteredAndSortedCards.map((card) => {
+                const absoluteIndex =
+                  cards.length - 1 - cards.findIndex((c) => c.id === card.id);
+                const shouldShowFaceDown =
+                  !revealAll &&
+                  (revealCount === 0 || absoluteIndex >= revealCount);
+
+                return (
+                  <CardGridItemReact
+                    key={card.id}
+                    card={card}
+                    position={absoluteIndex}
+                    showPosition={true}
+                    positionPrefix="Top"
+                    showFaceDown={shouldShowFaceDown}
+                    onHover={setHoveredCard}
+                    tooltipManager={tooltipManagerRef.current}
+                    hotkeyContext={getHotkeyContext()}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Card Grid Item Component
+interface CardGridItemReactProps {
+  card: Card;
+  position: number;
+  showPosition: boolean;
+  positionPrefix: string;
+  showFaceDown: boolean;
+  onHover: (card: Card | null) => void;
+  tooltipManager: TooltipManager | null;
+  hotkeyContext: HotkeyContext;
+}
+
+function CardGridItemReact({
+  card,
+  position,
+  showPosition,
+  positionPrefix,
+  showFaceDown,
+  onHover,
+  tooltipManager,
+  hotkeyContext,
+}: CardGridItemReactProps) {
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
+
+  const imageUrl = showFaceDown
+    ? DEFAULT_CARD_BACK
+    : card.images?.front?.normal || card.images?.front?.small;
+
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    onHover(card);
+    tooltipManager?.showOnHover(card.id, hotkeyContext);
+    cardRef.current?.focus();
+  };
+
+  const handleMouseLeave = () => {
+    onHover(null);
+    tooltipManager?.hideOnLeave();
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    tooltipManager?.show(card.id, hotkeyContext, e.clientX, e.clientY);
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      className="card-grid-item"
+      data-card-id={card.id}
+      tabIndex={0}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+    >
+      {/* Card Image */}
+      <div className={`card-grid-item-image ${imageLoaded ? 'loaded' : ''}`}>
+        {imageUrl && !imageError ? (
+          <img
+            src={imageUrl}
+            alt={showFaceDown ? 'Card Back' : card.name || `Card #${card.cardNumber}`}
+            className="card-grid-item-img"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="card-grid-item-fallback">#{card.cardNumber}</div>
+        )}
+      </div>
+
+      {/* Card Name */}
+      {card.name && !showFaceDown && (
+        <div className="card-grid-item-name">{card.name}</div>
+      )}
+
+      {/* Position Label */}
+      {showPosition && (
+        <div className="card-grid-item-position">
+          {positionPrefix} {position + 1}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -30,6 +30,8 @@ import { SortControl } from './SortControl';
 import { CardGridItem } from './CardGridItem';
 import { TooltipManager } from '../../whiteboard/TooltipManager';
 import {HotkeyContext, HotkeyDefinition} from '../../../data/hotkeys';
+import {createRoot, Root} from "react-dom/client";
+import React from "react";
 
 export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
 
@@ -52,7 +54,7 @@ export class PileViewer {
   private yPlayerState?: Y.Map<any>;
 
   // Components
-  private searchBar: SearchBar | null = null;
+  private searchBarRoot: Root | null = null;
   private sortControl: SortControl | null = null;
   private gridContainer: HTMLElement | null = null;
   private tooltipManager: TooltipManager | null = null;
@@ -188,13 +190,18 @@ export class PileViewer {
     controls.className = 'deck-pile-viewer-controls';
 
     // Search bar
-    this.searchBar = new SearchBar({
-      placeholder: 'Search by card name or type...',
-      onSearch: (query) => {
-        this.currentSearchQuery = query;
-        this.filterAndSort();
-      },
-    });
+    const searchBarContainer = document.createElement('div'); // this mirrors SearchBarReact's first HTML element. Remove after PileViewer.ts is rewritten in React
+    searchBarContainer.className = 'search-bar';
+    this.searchBarRoot = createRoot(searchBarContainer);
+    this.searchBarRoot.render(
+      React.createElement(SearchBar, {
+        placeholder: 'Search by card name or type...',
+        onSearch: (query) => {
+          this.currentSearchQuery = query;
+          this.filterAndSort();
+        },
+      })
+    )
 
     // Sort control
     this.sortControl = new SortControl({
@@ -210,7 +217,7 @@ export class PileViewer {
       },
     });
 
-    controls.appendChild(this.searchBar.getElement());
+    controls.appendChild(searchBarContainer);
     controls.appendChild(this.sortControl.getElement());
 
     // Only show reveal controls for deck pile
@@ -533,7 +540,7 @@ export class PileViewer {
       }
 
       this.modal = null;
-      this.searchBar = null;
+      this.searchBarRoot = null;
       this.sortControl = null;
       this.gridContainer = null;
       this.hoveredCard = null;
