@@ -23,11 +23,11 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[900px] w-[95%]">
+      <DialogContent className="lg:min-w-[900px] w-[95vw] max-h-[65vh] top-[45vh]">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
-        <div className="p-6 pt-0">
+        <div className="p-6 pt-0 overflow-y-scroll max-h-[calc(65vh-120px)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="flex flex-col">
