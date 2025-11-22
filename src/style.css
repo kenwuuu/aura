@@ -1245,6 +1245,74 @@ body {
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* Help Modal Markdown Styles */
+.help-h1 {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  margin-top: 24px;
+  color: #f9fafb;
+  border-bottom: 2px solid #3d3d3d;
+  padding-bottom: 8px;
+}
+
+.help-h2 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  margin-top: 24px;
+  color: #f3f4f6;
+}
+
+.help-h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 20px;
+  color: #d0d0d0;
+}
+
+.help-p {
+  margin-bottom: 12px;
+}
+
+.help-list {
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.help-li {
+  margin-bottom: 8px;
+}
+
+.help-strong {
+  font-weight: bold;
+  color: #60a5fa;
+}
+
+.help-code {
+  background-color: #1f2937;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #10b981;
+}
+
+.help-pre {
+  background-color: #1f2937;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.help-hr {
+  margin-bottom: 20px;
+  border: none;
+  border-top: 1px solid #3d3d3d;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
