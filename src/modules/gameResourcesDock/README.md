@@ -514,7 +514,7 @@ cardEl.appendChild(overlay);
    - Draw 5 cards
    - Drag first card to last position
    - Verify order changes in UI
-   - Check Yjs state in console: `yDoc.getMap('player-<id>').get('hand')`
+   - Check Yjs state in console: `yDoc.getMap(YDOC_PLAYER(id)).get('hand')`
 
 2. **Drag to Piles:**
    - Drag hand card to exile → check exile count increments

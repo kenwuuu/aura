@@ -5,7 +5,7 @@ import { HealthDisplay } from './HealthDisplay';
 import { CustomCounter } from '@/modules/player/types';
 import { Card } from '@/modules/deck';
 import { PileViewer } from '@/modules/gameResourcesDock/components';
-import {YSTATE_CUSTOM_COUNTERS, YSTATE_DISCARD_PILE} from "../../constants";
+import {YDOC_PLAYER, YSTATE_CUSTOM_COUNTERS, YSTATE_DISCARD_PILE} from "../../constants";
 
 interface OpponentHealthListProps {
   yDoc: Y.Doc;
@@ -126,13 +126,13 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
   }, [yDoc, localPlayerId]);
 
   const modifyOpponentHealth = (playerId: string, delta: number) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const currentHealth = (yPlayerState.get('health') as number | undefined) ?? 20;
     yPlayerState.set('health', currentHealth + delta);
   };
 
   const addOpponentCounter = (playerId: string, title: string, icon: string) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const newCounter: CustomCounter = {
       id: `counter-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -144,7 +144,7 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
   };
 
   const modifyOpponentCounter = (playerId: string, counterId: string, delta: number) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const updatedCounters = counters.map(counter =>
       counter.id === counterId
@@ -155,7 +155,7 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
   };
 
   const removeOpponentCounter = (playerId: string, counterId: string) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const updatedCounters = counters.filter(counter => counter.id !== counterId);
     yPlayerState.set(YSTATE_CUSTOM_COUNTERS, updatedCounters);

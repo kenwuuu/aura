@@ -9,7 +9,7 @@ import {
   YSTATE_EXILE_PILE,
   YDOC_PLAYER,
   YSTATE_CUSTOM_COUNTERS,
-  YSTATE_DECK
+  YSTATE_DECK, YDOC_KEYWORD_TOKENS
 } from "../../constants";
 import {PileType} from "../gameResourcesDock/components";
 import { CardPile } from './CardPile';
@@ -39,9 +39,9 @@ export class Player {
       initialHealth: config.initialHealth ?? 40,
     };
 
-    this.yPlayerState = yDoc.getMap(`player-${playerId}`);
+    this.yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     this.yCardsOnBoard = yDoc.getMap(YDOC_CARDS_ON_BOARD); // Store reference to battlefield
-    this.yTokens = yDoc.getMap('tokens'); // Store reference to keyword tokens
+    this.yTokens = yDoc.getMap(YDOC_KEYWORD_TOKENS); // Store reference to keyword tokens
 
     // Initialize state first so yPlayerState has the arrays
     const deck = initialDeckCards ?? new Deck();

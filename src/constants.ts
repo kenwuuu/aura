@@ -9,6 +9,7 @@ export const DEFAULT_CARD_BACK = '/assets/card-back.png';
 
 // yDoc constants
 export const YDOC_CARDS_ON_BOARD = 'cards-on-board';
+export const YDOC_KEYWORD_TOKENS = 'tokens';
 export function YDOC_PLAYER(playerId: string): string { return `player-${playerId}` }
 export const YSTATE_HEALTH = 'health';
 export const YSTATE_DECK = 'deck';

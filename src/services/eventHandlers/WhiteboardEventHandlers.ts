@@ -2,7 +2,7 @@ import * as Y from 'yjs';
 import { Player } from '@/modules/player';
 import { MultiPlayerBoardManager } from '@/modules/whiteboard';
 import { TokenService } from '../scryfall';
-import {CARD_HEIGHT, CARD_WIDTH, YDOC_CARDS_ON_BOARD} from '@/constants';
+import {CARD_HEIGHT, CARD_WIDTH, YDOC_CARDS_ON_BOARD, YDOC_KEYWORD_TOKENS} from '@/constants';
 import {getBoardLeftOffset, getBoardTopOffset} from "@/modules/whiteboard/BoardContainerManager";
 import {PileType} from "@/modules/gameResourcesDock/components";
 import {tokenDiameter} from "@/modules/keywordTokens/KeywordTokenFactory";
@@ -70,7 +70,7 @@ export class WhiteboardEventHandlers {
 
           // Create new token instance from template
           const tokenId = `token-${Math.random().toString(36).substring(2, 11)}`;
-          const yTokens = this.yDoc.getMap('tokens');
+          const yTokens = this.yDoc.getMap(YDOC_KEYWORD_TOKENS);
 
           // Get current max zIndex
           let maxZIndex = 0;

@@ -527,7 +527,7 @@ function useHandSync(yDoc: Y.Doc, playerId: string) {
   const [hand, setHand] = useState<Card[]>([]);
 
   useEffect(() => {
-    const yPlayer = yDoc.getMap(`player-${playerId}`);
+    const yPlayer = yDoc.getMap(YDOC_PLAYER(playerId));
 
     const observer = () => {
       setHand(yPlayer.get('hand') ?? []);

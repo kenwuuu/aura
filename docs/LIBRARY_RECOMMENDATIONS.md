@@ -63,7 +63,7 @@ private updateHandDisplay(hand: Card[]): void {
 import { useYjs } from 'y-react';
 
 function HandDisplay({ playerId }: { playerId: string }) {
-  const hand = useYjs<Card[]>(`player-${playerId}`, 'hand', []);
+  const hand = useYjs<Card[]>(YDOC_PLAYER(playerId), 'hand', []);
 
   return (
     <div className="hand-cards">
