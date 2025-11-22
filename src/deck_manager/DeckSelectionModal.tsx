@@ -26,17 +26,20 @@ export function DeckSelectionModal({
   onImportNewDeck,
 }: DeckSelectionModalProps) {
   const [decks, setDecks] = useState<DeckMetadata[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    loadDecks().then(r => {});
+  }, []);
+
+  useEffect(() => {
+    // Reload decks when modal opens to ensure fresh data
     if (isOpen) {
-      loadDecks();
+      loadDecks().then(r => {});
     }
   }, [isOpen]);
 
   const loadDecks = async () => {
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -52,8 +55,6 @@ export function DeckSelectionModal({
     } catch (err) {
       console.error('Error loading decks:', err);
       setError('Failed to load decks');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -109,7 +110,7 @@ export function DeckSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-[700px]">
+      <DialogContent className="w-[90%] xl:min-w-[700px] top-[45%] data-[state=open]:animate-none data-[state=closed]:animate-none">
         <DialogHeader>
           <DialogTitle>Select a Deck</DialogTitle>
           <DialogDescription>
@@ -117,27 +118,25 @@ export function DeckSelectionModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-6 py-4">
-          {isLoading && <p className="text-gray-400">Loading decks...</p>}
-
+        <div>
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          {!isLoading && decks.length === 0 && (
+          {decks.length === 0 && (
             <div className="text-center py-8 text-gray-400">
               <p>No decks found. Import your first deck to get started!</p>
             </div>
           )}
 
-          {!isLoading && decks.length > 0 && (
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+          {decks.length > 0 && (
+            <div className="space-y-2 py-2 max-h-[400px] overflow-y-auto">
               {decks.map((deck) => (
                 <div
                   key={deck.id}
-                  className="flex items-center justify-between p-4 bg-[#2a2a2a] border border-[#3d3d3d] rounded-lg hover:bg-[#333] transition-colors cursor-pointer"
+                  className="mx-6 border-2 flex items-center justify-between p-4 bg-[#2a2a2a] border-[#3d3d3d] rounded-lg hover:bg-[#1a1a1a] hover:border-[#3b82f6] hover:scale-[1.02] ease transition-all duration-200 cursor-pointer"
                   onClick={() => handleSelectDeck(deck.id)}
                 >
                   <div className="flex-1">
