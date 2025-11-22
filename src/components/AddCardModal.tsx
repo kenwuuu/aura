@@ -1,4 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { InfoIcon } from 'lucide-react';
 
 interface AddCardModalProps {
   isOpen: boolean;
@@ -23,19 +33,6 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedName = cardName.trim();
@@ -53,32 +50,40 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
     }
   };
 
-  if (!isOpen) return null;
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+  };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Add Card to Hand</h2>
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
-        </div>
-        <div className="modal-body">
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-[600px]">
+        <DialogHeader className="flex flex-row justify-between items-center px-6 py-5 border-b border-[#3d3d3d]">
+          <div className="space-y-1">
+            <DialogTitle>Add Card to Hand</DialogTitle>
+          </div>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="px-6 pb-6">
+
+          <Alert className="mb-4">
+            <InfoIcon className="h-4 w-4" />
+            <AlertTitle>Token cards are double sided</AlertTitle>
+            <AlertDescription>
+              Press F to flip the card over
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-4">
+            <div className="mb-4">
               <label
                 htmlFor="card-name-input"
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  color: '#9ca3af',
-                  fontSize: '14px',
-                }}
+                className="block mb-2 text-gray-400 text-sm"
               >
                 Enter the exact card name
               </label>
-              <input
+              <Input
                 ref={inputRef}
                 id="card-name-input"
                 type="text"
@@ -86,90 +91,44 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
                 onChange={(e) => setCardName(e.target.value)}
                 placeholder='e.g., "Lightning Bolt"'
                 disabled={isLoading}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  fontSize: '14px',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #3d3d3d',
-                  borderRadius: '6px',
-                  color: '#fff',
-                  outline: 'none',
-                }}
+                className="w-full px-3 py-2.5 text-sm bg-[#2a2a2a] border border-[#3d3d3d] rounded-md text-white outline-none transition-all duration-200 placeholder:text-[#666] focus:border-blue-500 focus:bg-[#333] disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
 
             {error && (
-              <div
-                style={{
-                  padding: '10px 12px',
-                  marginBottom: '16px',
-                  backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                  border: '1px solid rgba(220, 38, 38, 0.3)',
-                  borderRadius: '6px',
-                  color: '#fca5a5',
-                  fontSize: '13px',
-                }}
-              >
-                {error}
-              </div>
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
 
             {isLoading && (
-              <div
-                style={{
-                  padding: '10px 12px',
-                  marginBottom: '16px',
-                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                  borderRadius: '6px',
-                  color: '#93c5fd',
-                  fontSize: '13px',
-                }}
-              >
-                Fetching card from Scryfall...
-              </div>
+              <Alert className="mb-4 bg-blue-500/10 border-blue-500/30">
+                <AlertDescription className="text-blue-300">
+                  Fetching card from Scryfall...
+                </AlertDescription>
+              </Alert>
             )}
+          </div>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isLoading}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #3d3d3d',
-                  borderRadius: '6px',
-                  color: '#9ca3af',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  opacity: isLoading ? 0.5 : 1,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={!cardName.trim() || isLoading}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  backgroundColor: cardName.trim() && !isLoading ? '#3b82f6' : '#1e3a5f',
-                  border: 'none',
-                  borderRadius: '6px',
-                  color: cardName.trim() && !isLoading ? '#fff' : '#6b7280',
-                  cursor: cardName.trim() && !isLoading ? 'pointer' : 'not-allowed',
-                }}
-              >
-                {isLoading ? 'Adding...' : 'Add to Hand'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          <div className="flex gap-3 justify-end mt-6">
+            <Button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="px-5 py-2.5 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 border-none bg-[#2a2a2a] border border-[#3d3d3d] text-gray-400 hover:bg-[#3d3d3d] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={!cardName.trim() || isLoading}
+              className="px-5 py-2.5 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 border-none bg-blue-500 text-white hover:bg-blue-600 disabled:bg-[#1e3a5f] disabled:text-gray-500 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Adding...' : 'Add to Hand'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
