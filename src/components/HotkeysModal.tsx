@@ -1,5 +1,5 @@
 import React from 'react';
-import { getAllHotkeysWithLongDescriptions } from '../data/hotkeys';
+import { getAllHotkeysWithLongDescriptions } from '@/data/hotkeys';
 import {
   Dialog,
   DialogContent,

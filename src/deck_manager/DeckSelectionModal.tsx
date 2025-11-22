@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { DeckStorageService } from '../services/deckStorage';
-import { DeckMetadata, SavedDeck } from '../modules/deck/types';
+import { DeckStorageService } from '@/services/deckStorage';
+import { DeckMetadata, SavedDeck } from '@/modules/deck/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
