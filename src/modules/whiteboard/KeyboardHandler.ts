@@ -15,6 +15,7 @@ export interface KeyboardHandlerCallbacks {
   onHideCardPreview: () => void;
   onHideCardTooltip: () => void;
   onMulligan: () => void;
+  placeInDeck?: () => void;
   loseHealth: () => void;
   gainHealth: () => void;
 }

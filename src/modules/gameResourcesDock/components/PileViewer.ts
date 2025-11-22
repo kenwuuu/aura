@@ -5,7 +5,6 @@
  * with existing class-based API while using React components internally.
  */
 
-import * as Y from 'yjs';
 import { Card } from '../../deck';
 import { createRoot, Root } from 'react-dom/client';
 import React from 'react';
@@ -24,16 +23,14 @@ export interface PileViewerCallbacks {
 
 export class PileViewer {
   private readonly callbacks: PileViewerCallbacks;
-  private readonly yPlayerState?: Y.Map<any>;
   private containerElement: HTMLElement | null = null;
   private root: Root | null = null;
   private isOpen: boolean = false;
   private currentCards: Card[] = [];
   private currentPileType: PileType = 'deck';
 
-  constructor(callbacks: PileViewerCallbacks = {}, yPlayerState?: Y.Map<any>) {
+  constructor(callbacks: PileViewerCallbacks = {}) {
     this.callbacks = callbacks;
-    this.yPlayerState = yPlayerState;
   }
 
   public show(cards: Card[], pileType: PileType): void {
@@ -74,7 +71,6 @@ export class PileViewer {
         cards: this.currentCards,
         pileType: this.currentPileType,
         callbacks: this.callbacks,
-        yPlayerState: this.yPlayerState,
       })
     );
   }

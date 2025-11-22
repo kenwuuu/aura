@@ -31,6 +31,8 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CardGrid } from './CardGrid';
+import { YSTATE_DECK, YSTATE_EXILE_PILE, YSTATE_DISCARD_PILE } from '@/constants';
+import { usePlayerStore } from '@/stores/playerStore';
 
 export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
 
@@ -49,7 +51,6 @@ export interface PileViewerReactProps {
   cards: Card[];
   pileType: PileType;
   callbacks?: PileViewerCallbacks;
-  yPlayerState?: Y.Map<any>;
 }
 
 type SortOrder = 'top-to-bottom' | 'bottom-to-top' | 'alphabetical';
@@ -60,8 +61,8 @@ export function PileViewerReact({
   cards,
   pileType,
   callbacks = {},
-  yPlayerState,
 }: PileViewerReactProps) {
+  const yPlayerState = usePlayerStore((state) => state.yPlayerState);
   // State
   const [searchQuery, setSearchQuery] = React.useState('');
   const [sortOrder, setSortOrder] = React.useState<SortOrder>('top-to-bottom');

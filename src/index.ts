@@ -24,6 +24,7 @@ import './style.css';
 import * as Sentry from "@sentry/react";
 import {YSTATE_DECK_CARD_COUNT} from "./constants";
 import {ReactToasterRoot} from "../ReactToasterRoot";
+import {usePlayerStore} from "./stores/playerStore";
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -94,6 +95,9 @@ class AuraApp {
     this.localPlayer = new Player(this.playerId, this.yDoc, localDeck, {
       initialHealth: 40,
     });
+
+    // Initialize Zustand store with yPlayerState for global access
+    usePlayerStore.getState().setYPlayerState(this.localPlayer.yPlayerState);
 
     // Create shared card preview instance (used by both Whiteboard and GameResourcesDock)
     this.cardPreview = new CardPreview();
