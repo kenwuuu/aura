@@ -13,64 +13,14 @@ interface HelpModalProps {
   onClose: () => void;
 }
 
-// Configure custom renderer using Tailwind-compatible class names
-const renderer = new marked.Renderer();
-
-renderer.heading = ({ tokens, depth }) => {
-  const text = tokens.map(t => t.raw).join('');
-  const classes: Record<number, string> = {
-    1: 'help-h1',
-    2: 'help-h2',
-    3: 'help-h3',
-  };
-  return `<h${depth} class="${classes[depth] || ''}">${text}</h${depth}>`;
-};
-
-renderer.paragraph = ({ tokens }) => {
-  const text = tokens.map(t => t.raw).join('');
-  return `<p class="help-p">${text}</p>`;
-};
-
-renderer.list = ({ ordered, items }) => {
-  const tag = ordered ? 'ol' : 'ul';
-  const itemsHtml = items.map(item => {
-    // Parse the tokens properly to render inline formatting
-    const content = marked.parser(item.tokens);
-    return `<li class="help-li">${content}</li>`;
-  }).join('');
-  return `<${tag} class="help-list">${itemsHtml}</${tag}>`;
-};
-
-renderer.listitem = ({ text }) => {
-  // This won't be called since we handle it in the list renderer
-  return `<li class="help-li">${text}</li>`;
-};
-
-renderer.strong = ({ tokens }) => {
-  const text = tokens.map(t => t.raw).join('');
-  return `<strong class="help-strong">${text}</strong>`;
-};
-
-renderer.codespan = ({ text }) => {
-  return `<code class="help-code">${text}</code>`;
-};
-
-renderer.code = ({ text }) => {
-  return `<pre class="help-pre"><code>${text}</code></pre>`;
-};
-
-renderer.hr = () => {
-  return `<hr class="help-hr">`;
-};
-
+// Configure marked.js with basic options
 marked.setOptions({
   breaks: true,
   gfm: true,
-  renderer,
 });
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
-  // Parse markdown to HTML using marked
+  // Parse markdown to HTML using marked.js's default parser
   const htmlContent = useMemo(() => marked.parse(helpContent), []);
 
   return (
@@ -82,7 +32,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
         <div className="p-6 pt-0">
           <div className="max-h-[65vh] overflow-y-auto px-1">
             <div
-              className="text-sm leading-relaxed text-[#e5e7eb]"
+              className="prose text-sm leading-relaxed text-[#e5e7eb]"
               dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
           </div>
