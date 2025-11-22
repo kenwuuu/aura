@@ -1,73 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 const VISIT_COUNT_KEY = 'aura-visit-count';
 const DISMISSED_KEY = 'aura-welcome-dismissed';
-
-const styles: { [key: string]: React.CSSProperties } = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10000,
-  },
-  modal: {
-    backgroundColor: '#1f1f1f',
-    border: '1px solid #3d3d3d',
-    borderRadius: '8px',
-    padding: '32px',
-    maxWidth: '400px',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-  },
-  h2: {
-    color: '#fff',
-    fontSize: '20px',
-    marginBottom: '16px',
-  },
-  p: {
-    color: '#d1d5db',
-    fontSize: '14px',
-    lineHeight: 1.6,
-    marginBottom: '12px',
-  },
-  strong: {
-    color: '#fff',
-  },
-  buttons: {
-    display: 'flex',
-    gap: '12px',
-    marginTop: '24px',
-  },
-  button: {
-    flex: 1,
-    padding: '10px 16px',
-    fontSize: '14px',
-    fontWeight: 600,
-    borderRadius: '6px',
-    border: '1px solid #3d3d3d',
-    backgroundColor: '#3b82f6',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  buttonSecondary: {
-    flex: 1,
-    padding: '10px 16px',
-    fontSize: '14px',
-    fontWeight: 600,
-    borderRadius: '6px',
-    border: '1px solid #4a4a4a',
-    backgroundColor: '#2d2d2d',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-};
 
 export const WelcomeModal: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -101,27 +44,31 @@ export const WelcomeModal: React.FC = () => {
     setIsVisible(false);
   };
 
-  if (!isVisible) return null;
-
   return (
-    <div style={styles.overlay} onClick={handleClose}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.h2}>Welcome to Aura</h2>
-        <p style={styles.p}>
-          Import a new deck using the <strong style={styles.strong}>Choose Deck</strong> button in the top left.
-        </p>
-        <p style={styles.p}>
-          View all hotkeys in the <strong style={styles.strong}>Hotkeys</strong> button next to it.
-        </p>
-        <div style={styles.buttons}>
+    <Dialog open={isVisible} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Welcome to Aura</DialogTitle>
+          <DialogDescription className="space-y-3 pt-2">
+            <p>
+              Import a new deck using the <strong className="text-white">Choose Deck</strong> button in the top left.
+            </p>
+            <p>
+              View all hotkeys in the <strong className="text-white">Hotkeys</strong> button next to it.
+            </p>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-3 sm:gap-3">
           {showDontShowAgain && (
-            <button style={styles.buttonSecondary} onClick={handleDontShowAgain}>
+            <Button variant="outline" onClick={handleDontShowAgain} className="flex-1">
               Don't show again
-            </button>
+            </Button>
           )}
-          <button style={styles.button} onClick={handleClose}>Got it</button>
-        </div>
-      </div>
-    </div>
+          <Button onClick={handleClose} className="flex-1">
+            Got it
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
