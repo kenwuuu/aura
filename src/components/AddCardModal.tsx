@@ -59,7 +59,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[600px]">
-        <DialogHeader className="flex flex-row justify-between items-center px-6 py-5 border-b border-[#3d3d3d]">
+        <DialogHeader className="flex flex-row justify-between items-center ">
           <div className="space-y-1">
             <DialogTitle>Add Card to Hand</DialogTitle>
           </div>
