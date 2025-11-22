@@ -1,29 +1,18 @@
 import React, { useMemo } from 'react';
 import { marked } from 'marked';
 import patchNotesContent from '../content/patchNotes.md?raw';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PatchNotesModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const styles = {
-  modal: {
-    maxWidth: '700px',
-    width: '95%',
-    maxHeight: '80vh',
-  } as React.CSSProperties,
-  content: {
-    fontSize: '14px',
-    lineHeight: '1.6',
-    color: '#e5e7eb',
-  } as React.CSSProperties,
-  scrollContainer: {
-    maxHeight: '65vh',
-    overflowY: 'scroll',
-    padding: '0 4px',
-  } as React.CSSProperties,
-};
 
 // Configure custom renderer with inline styles
 const renderer = new marked.Renderer();
@@ -82,32 +71,22 @@ marked.setOptions({
 });
 
 export const PatchNotesModal: React.FC<PatchNotesModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   // Parse markdown to HTML using marked
   const htmlContent = useMemo(() => marked.parse(patchNotesContent), []);
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>
-            Patch Notes
-          </h2>
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
-        </div>
-        <div className="modal-body">
-          <div style={styles.scrollContainer}>
-            <div
-              className="markdown-content"
-              style={styles.content}
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-[700px] w-[95%] max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle>Patch Notes</DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="max-h-[65vh] px-1">
+          <div
+            className="text-sm leading-relaxed text-gray-300"
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+          />
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 };
