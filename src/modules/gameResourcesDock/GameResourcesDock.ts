@@ -505,7 +505,9 @@ export class GameResourcesDock {
     // Get the top N cards from the deck
     const deckCards = this.player.getDeckCards();
     // Cards are stored bottom-to-top, so we need to slice from the end
-    this.scriedCards.setCardsDO_NOT_USE(deckCards.slice(-count));
+
+    const scryCards: Card[] = deckCards.slice(-count);
+    this.scriedCards = new Deck(scryCards);
     this.scriedCards.getCards().forEach((card) => {
       this.player.getDeck().removeCardById(card.id);
     });

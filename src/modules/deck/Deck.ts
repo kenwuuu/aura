@@ -39,12 +39,6 @@ export class Deck {
     return this.cards.find(c => c.id === card.id) ?? null;
   }
 
-  public setCardsDO_NOT_USE(cards: Card[]): void {
-    // DO NOT USE THIS FUNCTION. THIS IS AN ANTIPATTERN
-    // THIS IS REQUIRED FOR SCRY TO FUNCTION. WE WILL REFACTOR LATER
-    this.cards = cards;
-  }
-
   public clearDeck(): void {
     this.cards = [];
   }
@@ -95,10 +89,5 @@ export class Deck {
       return this.cards.splice(index, 1)[0];
     }
     return null;
-  }
-
-  // Clear all cards from deck
-  clear(): void {
-    this.cards = [];
   }
 }

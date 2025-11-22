@@ -695,35 +695,6 @@ describe('Deck', () => {
     });
   });
 
-  describe('clear()', () => {
-    it('should remove all cards from deck', () => {
-      const deck = new Deck(undefined, 10);
-
-      deck.clear();
-
-      expect(deck.getCardCount()).toBe(0);
-      expect(deck.getCards()).toEqual([]);
-    });
-
-    it('should work on empty deck', () => {
-      const deck = new Deck();
-
-      expect(() => deck.clear()).not.toThrow();
-      expect(deck.getCardCount()).toBe(0);
-    });
-
-    it('should be functionally equivalent to clearDeck()', () => {
-      const deck1 = new Deck(undefined, 10);
-      const deck2 = new Deck(undefined, 10);
-
-      deck1.clear();
-      deck2.clearDeck();
-
-      expect(deck1.getCardCount()).toBe(deck2.getCardCount());
-      expect(deck1.getCards()).toEqual(deck2.getCards());
-    });
-  });
-
   describe('Integration scenarios', () => {
     it('should handle typical game flow: shuffle, draw hand, add back cards', () => {
       const deck = new Deck(undefined, 20);
