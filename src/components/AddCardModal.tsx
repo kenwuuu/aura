@@ -79,7 +79,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
             <div className="mb-4">
               <label
                 htmlFor="card-name-input"
-                className="block mb-2 text-gray-400 text-sm"
+                className="block mb-2 text-gray-400 text-md"
               >
                 Enter the exact card name
               </label>
