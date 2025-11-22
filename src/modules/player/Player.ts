@@ -13,6 +13,7 @@ import {
 } from "../../constants";
 import {PileType} from "../gameResourcesDock/components";
 import { CardPile } from './CardPile';
+import {SavedDeck} from "@/modules/deck/types";
 
 export class Player {
   private playerId: string;
@@ -30,7 +31,7 @@ export class Player {
   constructor(
     playerId: string,
     yDoc: Y.Doc,
-    initialDeckCards: Deck,
+    initialDeckCards: Deck | null = null,
     config: Partial<PlayerConfig> = {}
   ) {
     this.playerId = playerId;
@@ -39,11 +40,12 @@ export class Player {
     };
 
     this.yPlayerState = yDoc.getMap(`player-${playerId}`);
-    this.yCardsOnBoard = yDoc.getMap('cards'); // Store reference to battlefield
+    this.yCardsOnBoard = yDoc.getMap(YDOC_CARDS_ON_BOARD); // Store reference to battlefield
     this.yTokens = yDoc.getMap('tokens'); // Store reference to keyword tokens
 
     // Initialize state first so yPlayerState has the arrays
-    this.initializeState(initialDeckCards);
+    const deck = initialDeckCards ?? new Deck();
+    this.initializeState(deck);
 
     // Create CardPile instances that reference yPlayerState
     this.deck = new CardPile(this.yPlayerState, YSTATE_DECK);
@@ -93,9 +95,9 @@ export class Player {
     };
   }
 
-  public async loadNewDeck(newDeck: Deck): Promise<void> {
+  public async loadNewDeck(newDeck: SavedDeck): Promise<void> {
     // Replace deck cards with new deck
-    this.deck.setCards(newDeck.getCards());
+    this.deck.setCards(newDeck.cards);
 
     // get cards
     const deckCards: Card[] = this.deck.getCards();

@@ -89,8 +89,8 @@ class AuraApp {
     });
 
     // Initialize local player deck - restore from localStorage if available for this room
-    const restoredDeck = DeckPersistenceService.restoreDeckForRoom(this.roomManager.getRoomName());
-    const localDeck = restoredDeck ?? new Deck();
+    const restoredDeck: Deck | null = DeckPersistenceService.restoreDeckForRoom(this.roomManager.getRoomName());
+    const localDeck: Deck | null = restoredDeck;
 
     // Initialize local player
     this.localPlayer = new Player(this.playerId, this.yDoc, localDeck, {
@@ -375,19 +375,16 @@ class AuraApp {
     // Reset player state: move all cards back to deck, clear piles, reset health
     this.localPlayer.reset();
 
-    // Create a new deck with the imported cards
-    const newDeck = new Deck(savedDeck.cards);
-
     // Update the player state with deck
-    this.localPlayer.loadNewDeck(newDeck).then(() => {
+    this.localPlayer.loadNewDeck(savedDeck).then(() => {
       // Update deck count in Yjs state
-      this.localPlayer['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, newDeck.getCardCount());
+      this.localPlayer['yPlayerState'].set(YSTATE_DECK_CARD_COUNT, this.localPlayer.getDeck().getCardCount());
 
       // Save this as the last loaded deck for auto-loading on next visit
       localStorage.setItem('aura-last-loaded-deck', savedDeck.metadata.id);
 
       // Save the deck state for this room so it persists on refresh
-      DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), newDeck);
+      DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
 
       console.log(`Deck "${savedDeck.metadata.name}" loaded successfully!`);
     });

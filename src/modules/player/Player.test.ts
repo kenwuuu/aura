@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as Y from 'yjs';
 import { Player } from './Player';
 import { Deck } from '../deck';
-import { Card } from '../deck/types';
-import {YDOC_CARDS_ON_BOARD} from "../../constants";
+import {Card, SavedDeck} from '../deck/types';
+import {YDOC_CARDS_ON_BOARD} from "@/constants";
 
 describe('Player.reset()', () => {
   let yDoc: Y.Doc;
@@ -750,8 +750,19 @@ describe('Player.loadNewDeck()', () => {
       counters: [],
     }));
 
-    const newDeck = new Deck(undefined, 10);
-    await player.loadNewDeck(newDeck);
+    const newDeck: SavedDeck = {
+      metadata: {
+        id: '',
+        name: 'test deck',
+        cardCount: newDeckCards.length,
+        importedAt: new Date(2020, 10, 23),
+        lastModified: new Date(2020, 10, 23),
+        source: 'manual',
+      },
+      cards: newDeckCards
+    };
+
+    await player.loadNewDeck((newDeck));
 
     // Should draw 1 card (commander) + 7 cards = 8 total in hand, 2 remaining in deck
     expect(player.getHand().getCardCount()).toBe(8);
@@ -770,7 +781,17 @@ describe('Player.loadNewDeck()', () => {
       counters: [],
     }));
 
-    const newDeck = new Deck(undefined, 15);
+    const newDeck: SavedDeck = {
+      metadata: {
+        id: '',
+        name: 'test deck',
+        cardCount: newDeckCards.length,
+        importedAt: new Date(2020, 10, 23),
+        lastModified: new Date(2020, 10, 23),
+        source: 'manual',
+      },
+      cards: newDeckCards
+    };
 
     // Load deck (draws commander, then shuffles)
     player.loadNewDeck(newDeck);
