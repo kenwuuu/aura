@@ -133,13 +133,13 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
   }, [yDoc, localPlayerId]);
 
   const modifyOpponentHealth = (playerId: string, delta: number) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const currentHealth = (yPlayerState.get(YSTATE_HEALTH) as number | undefined) ?? 20;
     yPlayerState.set(YSTATE_HEALTH, currentHealth + delta);
   };
 
   const addOpponentCounter = (playerId: string, title: string, icon: string) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const newCounter: CustomCounter = {
       id: `counter-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -151,7 +151,7 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
   };
 
   const modifyOpponentCounter = (playerId: string, counterId: string, delta: number) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const updatedCounters = counters.map(counter =>
       counter.id === counterId
@@ -162,7 +162,7 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
   };
 
   const removeOpponentCounter = (playerId: string, counterId: string) => {
-    const yPlayerState = yDoc.getMap(`player-${playerId}`);
+    const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
     const counters = (yPlayerState.get(YSTATE_CUSTOM_COUNTERS) as CustomCounter[] | undefined) ?? [];
     const updatedCounters = counters.filter(counter => counter.id !== counterId);
     yPlayerState.set(YSTATE_CUSTOM_COUNTERS, updatedCounters);

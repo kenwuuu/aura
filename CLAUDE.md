@@ -98,7 +98,7 @@ src/
 
 **1. Yjs for State Synchronization**
 - Battlefield cards: `yDoc.getMap(YDOC_CARDS_ON_BOARD)` - shared across all players
-- Player state: `yDoc.getMap('player-{id}')` - one per player
+- Player state: `yDoc.getMap(YDOC_PLAYER(id))` - one per player
 - Changes to any Yjs map automatically sync to all connected peers
 
 **2. CustomEvents for Cross-Module Actions**
@@ -260,7 +260,7 @@ npm run dev
 const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 console.table(Array.from(yCards.values()));
 
-const yPlayer = yDoc.getMap(`player-${playerId}`);
+const yPlayer = yDoc.getMap(YDOC_PLAYER(playerId));
 console.log('Health:', yPlayer.get(YSTATE_HEALTH));
 console.log('Hand:', yPlayer.get('hand'));
 ```

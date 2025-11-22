@@ -339,7 +339,7 @@ export interface PlayerConfig {
 ```typescript
 // In Y.Doc, each player has a map:
 const yDoc = new Y.Doc();
-const yPlayerState = yDoc.getMap(`player-${playerId}`);
+const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
 
 // Structure:
 {
@@ -725,11 +725,11 @@ const DEFAULT_ICE_SERVERS = [
 | Data | Storage | Synced? | Why |
 |------|---------|---------|-----|
 | **Battlefield cards** | `yDoc.getMap(YDOC_CARDS_ON_BOARD)` | ✓ Yes | All players see all cards |
-| **Your hand** | `yDoc.getMap('player-{id}').hand` | ✓ Yes | *Trust-based privacy* |
+| **Your hand** | `yDoc.getMap(YDOC_PLAYER(id)).hand` | ✓ Yes | *Trust-based privacy* |
 | **Your deck** | `Deck` class (local) | ✗ No | **Private** to you |
-| **Deck count** | `yDoc.getMap('player-{id}').deckCardCount` | ✓ Yes | Opponents see your deck size |
-| **Life total** | `yDoc.getMap('player-{id}').health` | ✓ Yes | All players see all life |
-| **Exile/Graveyard** | `yDoc.getMap('player-{id}').exilePile` | ✓ Yes | Public zones |
+| **Deck count** | `yDoc.getMap(YDOC_PLAYER(id)).deckCardCount` | ✓ Yes | Opponents see your deck size |
+| **Life total** | `yDoc.getMap(YDOC_PLAYER(id)).health` | ✓ Yes | All players see all life |
+| **Exile/Graveyard** | `yDoc.getMap(YDOC_PLAYER(id)).exilePile` | ✓ Yes | Public zones |
 
 ### Privacy Considerations
 
@@ -771,7 +771,7 @@ yCards.observe((event) => {
 ```typescript
 // Get a map from the document
 const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
-const yPlayerState = yDoc.getMap(`player-${playerId}`);
+const yPlayerState = yDoc.getMap(YDOC_PLAYER(playerId));
 
 // Set a value (triggers sync to all peers)
 yCards.set('card-abc123', {
@@ -1401,7 +1401,7 @@ const yCards = yDoc.getMap(YDOC_CARDS_ON_BOARD);
 console.table(Array.from(yCards.values()));
 
 // View player state
-const yPlayer = yDoc.getMap('player-abc123');  // Replace with actual ID
+const yPlayer = yDoc.getMap(YDOC_PlAYER(playerId));  // Replace with actual ID
 console.log('Health:', yPlayer.get(YSTATE_HEALTH));
 console.log('Hand:', yPlayer.get('hand'));
 console.log('Deck count:', yPlayer.get(YSTATE_DECK_CARD_COUNT));
