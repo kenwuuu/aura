@@ -35,7 +35,8 @@ export class OpponentCoordinateTransformer {
       // When opponent places at Y=max (their bottom), it appears at top of our view
       return {
         x: card.x,
-        y: card.y
+        y: card.y,
+        // y: Math.abs(card.y - boardHeight),
       };
     }
   }
