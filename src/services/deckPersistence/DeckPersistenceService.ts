@@ -1,5 +1,5 @@
 import { Deck } from '../../modules/deck';
-import { CardPile } from '../../modules/player';
+import { CardPileObj } from '../../modules/player';
 
 /**
  * Service for persisting deck state per room to localStorage
@@ -53,7 +53,7 @@ export class DeckPersistenceService {
    * @param roomName The room identifier
    * @param deck The deck or card pile instance to save
    */
-  static saveDeckForRoom(roomName: string, deck: Deck | CardPile): void {
+  static saveDeckForRoom(roomName: string, deck: Deck | CardPileObj): void {
     try {
       const key = `${this.STORAGE_PREFIX}${roomName}`;
       const state = {

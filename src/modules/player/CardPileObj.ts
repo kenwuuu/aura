@@ -13,7 +13,7 @@ import { Card } from '../deck';
  * - Drawing/popping happens from the END of the array (LIFO)
  * - Syncs automatically to yPlayerState when modified
  */
-export class CardPile {
+export class CardPileObj {
   private yPlayerState: Y.Map<any>;
   private yStateKey: string;
 

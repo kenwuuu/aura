@@ -12,7 +12,7 @@ import {
   YSTATE_DECK, YDOC_KEYWORD_TOKENS
 } from "../../constants";
 import {PileType} from "../gameResourcesDock/components";
-import { CardPile } from './CardPile';
+import { CardPileObj } from './CardPileObj';
 import {SavedDeck} from "@/modules/deck/types";
 
 export class Player {
@@ -21,12 +21,12 @@ export class Player {
   private yCardsOnBoard: Y.Map<any>; // Battlefield cards
   private yTokens: Y.Map<any>; // Keyword tokens on battlefield
   private config: PlayerConfig;
-  private deck: CardPile;
-  private hand: CardPile;
-  private exile: CardPile;
-  private discard: CardPile;
-  private scry: CardPile;
-  private piles: Record<PileType, CardPile>;
+  private deck: CardPileObj;
+  private hand: CardPileObj;
+  private exile: CardPileObj;
+  private discard: CardPileObj;
+  private scry: CardPileObj;
+  private piles: Record<PileType, CardPileObj>;
 
   constructor(
     playerId: string,
@@ -48,11 +48,11 @@ export class Player {
     this.initializeState(deck);
 
     // Create CardPile instances that reference yPlayerState
-    this.deck = new CardPile(this.yPlayerState, YSTATE_DECK);
-    this.hand = new CardPile(this.yPlayerState, YSTATE_HAND);
-    this.exile = new CardPile(this.yPlayerState, YSTATE_EXILE_PILE);
-    this.discard = new CardPile(this.yPlayerState, YSTATE_DISCARD_PILE);
-    this.scry = new CardPile(this.yPlayerState, 'scry');
+    this.deck = new CardPileObj(this.yPlayerState, YSTATE_DECK);
+    this.hand = new CardPileObj(this.yPlayerState, YSTATE_HAND);
+    this.exile = new CardPileObj(this.yPlayerState, YSTATE_EXILE_PILE);
+    this.discard = new CardPileObj(this.yPlayerState, YSTATE_DISCARD_PILE);
+    this.scry = new CardPileObj(this.yPlayerState, 'scry');
 
     this.piles = {
       hand: this.hand,
@@ -232,19 +232,19 @@ export class Player {
     return this.deck.getCards();
   }
 
-  public getDeck(): CardPile {
+  public getDeck(): CardPileObj {
     return this.deck;
   }
 
-  public getHand(): CardPile {
+  public getHand(): CardPileObj {
     return this.hand;
   }
 
-  public getExilePile(): CardPile {
+  public getExilePile(): CardPileObj {
     return this.exile;
   }
 
-  public getDiscardPile(): CardPile {
+  public getDiscardPile(): CardPileObj {
     return this.discard;
   }
 
