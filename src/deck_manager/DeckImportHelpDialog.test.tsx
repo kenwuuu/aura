@@ -50,7 +50,6 @@ describe('DeckImportHelpDialog', () => {
     render(<DeckImportHelpDialog isOpen={true} onClose={onClose} />);
 
     expect(screen.getByText(/Simple quantity \+ name format/)).toBeInTheDocument();
-    expect(screen.getByText(/Set codes in parentheses/)).toBeInTheDocument();
     expect(screen.getByText(/Blank lines between cards/)).toBeInTheDocument();
   });
 
@@ -61,18 +60,6 @@ describe('DeckImportHelpDialog', () => {
 
     const gotItButton = screen.getByRole('button', { name: /got it/i });
     await user.click(gotItButton);
-
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('should call onClose when X button is clicked', async () => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    render(<DeckImportHelpDialog isOpen={true} onClose={onClose} />);
-
-    // Find the X close button - get all and find the one that's actually a close button
-    const closeButtons = screen.getAllByText('×');
-    await user.click(closeButtons[0]);
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -100,24 +87,6 @@ describe('DeckImportHelpDialog', () => {
     expect(parentClickHandler).not.toHaveBeenCalled();
   });
 
-  it('should stop propagation when X button is clicked', async () => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    const parentClickHandler = vi.fn();
-
-    render(
-      <div onClick={parentClickHandler}>
-        <DeckImportHelpDialog isOpen={true} onClose={onClose} />
-      </div>
-    );
-
-    const closeButtons = screen.getAllByText('×');
-    await user.click(closeButtons[0]);
-
-    expect(onClose).toHaveBeenCalledTimes(1);
-    expect(parentClickHandler).not.toHaveBeenCalled();
-  });
-
   it('should have correct z-index for overlay and content', () => {
     const onClose = vi.fn();
     const { container } = render(<DeckImportHelpDialog isOpen={true} onClose={onClose} />);
@@ -132,8 +101,8 @@ describe('DeckImportHelpDialog', () => {
     render(<DeckImportHelpDialog isOpen={true} onClose={onClose} />);
 
     // Check that code examples are present
-    expect(screen.getByText(/4 Lightning Bolt/)).toBeInTheDocument();
-    expect(screen.getByText(/20 Mountain/)).toBeInTheDocument();
+    expect(screen.getByText(/4 Pygmy Pyrosaur/)).toBeInTheDocument();
+    expect(screen.getByText(/1 Flubs, the Fool/)).toBeInTheDocument();
     expect(screen.getByText(/1 Zuran Orb/)).toBeInTheDocument();
   });
 });

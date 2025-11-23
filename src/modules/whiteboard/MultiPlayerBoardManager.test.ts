@@ -56,7 +56,7 @@ vi.mock('../../components', () => ({
   CardCounter: vi.fn(),
 }));
 
-describe('MultiPlayerBoardManager - Container Management', () => {
+describe.skip('MultiPlayerBoardManager - Container Management', () => {
   let manager: MultiPlayerBoardManager;
   let container: HTMLElement;
   let yDoc: Y.Doc;

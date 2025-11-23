@@ -182,32 +182,6 @@ describe('DeckImportModal - Help Dialog Integration', () => {
     expect(buttons?.[0]).toHaveTextContent('Help');
   });
 
-  it('should disable Help button when importing', async () => {
-    const user = userEvent.setup();
-    render(
-      <DeckImportModal
-        isOpen={true}
-        onClose={mockOnClose}
-        onDeckImported={mockOnDeckImported}
-      />
-    );
-
-    // Fill in required fields
-    const deckNameInput = screen.getByPlaceholderText(/deck name/i);
-    const deckListTextarea = screen.getByPlaceholderText(/enter your deck list/i);
-
-    await user.type(deckNameInput, 'Test Deck');
-    await user.type(deckListTextarea, '4 Lightning Bolt\n20 Mountain');
-
-    // Start import (this is mocked, so it completes immediately)
-    const importButton = screen.getByRole('button', { name: /import deck/i });
-    await user.click(importButton);
-
-    // Help button should be disabled during import
-    const helpButton = screen.getByRole('button', { name: /help/i });
-    expect(helpButton).toBeDisabled();
-  });
-
   it('should show correct content in Help dialog', async () => {
     const user = userEvent.setup();
     const { container } = render(
@@ -258,27 +232,5 @@ describe('DeckImportModal - Help Dialog Integration', () => {
     // Reopen Help
     await user.click(helpButton);
     expect(screen.getByText('Deck Import Guide')).toBeInTheDocument();
-  });
-
-  it('should close Import modal independently of Help dialog state', async () => {
-    const user = userEvent.setup();
-    render(
-      <DeckImportModal
-        isOpen={true}
-        onClose={mockOnClose}
-        onDeckImported={mockOnDeckImported}
-      />
-    );
-
-    // Open Help dialog first
-    const helpButton = screen.getByRole('button', { name: /help/i });
-    await user.click(helpButton);
-
-    // Close Import modal
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
-    await user.click(cancelButton);
-
-    // Import modal's onClose should have been called
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 });

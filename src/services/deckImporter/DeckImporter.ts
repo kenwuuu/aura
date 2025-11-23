@@ -3,7 +3,7 @@ import { Card, DeckMetadata } from '../../modules/deck/types';
 export interface DeckImportResult {
   cards: Card[];
   metadata: Partial<DeckMetadata>;
-  errors: string[];
+  errors?: string[];
 }
 
 export abstract class DeckImporter {

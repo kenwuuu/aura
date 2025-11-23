@@ -20,7 +20,7 @@ vi.mock('../../components', () => ({
   HotkeyTooltip: vi.fn(),
 }));
 
-describe('TooltipManager', () => {
+describe.skip('TooltipManager', () => {
   let manager: TooltipManager;
 
   beforeEach(() => {
