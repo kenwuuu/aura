@@ -14,6 +14,7 @@ interface HandCardsContainerProps {
   onDraggedCardChange: (draggedCard: { card: Card; element: HTMLElement } | null) => void;
   onDragStateChange: (dragState: { mode: string; draggedElement: HTMLDivElement; startIndex: number } | undefined) => void;
   onHandReorder: (reorderedHand: Card[]) => void;
+  adjustHandZoom: (delta: number) => void;
 }
 
 /**
@@ -47,13 +48,18 @@ export const HandCardsContainer: React.FC<HandCardsContainerProps> = ({
   onHoveredCardChange,
   onDraggedCardChange,
   onDragStateChange,
-  onHandReorder
+  onHandReorder,
+  adjustHandZoom
 }) => {
   const hand = useYjsObserver<Card[]>(yPlayerState, 'hand', []);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef<{ mode: string; draggedElement: HTMLDivElement; startIndex: number } | undefined>(undefined);
   const requestAnimationFrameIdRef = useRef<number | null>(null);
   const scrollAnimationRef = useRef<any>(null);
+
+  useEffect(() => {  // useEffect: on load
+    adjustHandZoom(0.0);
+  }, []);
 
   // Scroll to end when hand changes
   useEffect(() => {

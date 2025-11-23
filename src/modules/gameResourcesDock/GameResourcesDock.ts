@@ -260,6 +260,9 @@ export class GameResourcesDock {
         },
         onHandReorder: (reorderedHand) => {
           this.player.reorderHand(reorderedHand);
+        },
+        adjustHandZoom: (delta: number): void => {
+          this.adjustHandZoom(delta)
         }
       })
     );
@@ -725,19 +728,19 @@ export class GameResourcesDock {
   }
 
   private adjustHandZoom(delta: number): void {
+    const newZoom = Math.max(0.5, Math.min(2.5, this.handZoomLevel + delta));
+    this.setHandZoom(newZoom);
+  }
+
+  private setHandZoom(zoom: number): void {
     function alignCardsBasedOnSize() {
       const container: HTMLElement | null = document.querySelector('.hand-cards') as HTMLElement;
       if (!container) return;
+      console.log('adjusting')
       const isOverflowing = container.scrollHeight > container.clientHeight;
       container.style.alignItems = isOverflowing ? "flex-start" : "center";
     }
 
-    const newZoom = Math.max(0.5, Math.min(2.5, this.handZoomLevel + delta));
-    this.setHandZoom(newZoom);
-    alignCardsBasedOnSize();
-  }
-
-  private setHandZoom(zoom: number): void {
     this.handZoomLevel = zoom;
     localStorage.setItem('hand-zoom', zoom.toString());
 
@@ -751,6 +754,10 @@ export class GameResourcesDock {
 
     // Re-render React component with new zoom
     this.renderHandComponent();
+
+    setTimeout(() => {
+      alignCardsBasedOnSize();
+    }, 150);
   }
 
   private preloadPileImages(pileType: 'deck' | 'exile' | 'discard'): void {
