@@ -13,8 +13,15 @@ import { ControlsMenu } from '@/components/controls/ControlsMenu';
 import { TooltipManager } from '../whiteboard/TooltipManager';
 import { TooltipProvider } from '@/contexts/TooltipContext';
 import { HandCardsContainer } from './HandCardsContainer';
+import { ResourcePile } from '@/components/ResourcePile';
 
 export class GameResourcesDock {
+  private static readonly PILE_CONFIGS = {
+    deck: { label: 'Deck', showDrawButton: true, preloadImages: false },
+    exile: { label: 'Exile', showDrawButton: false, preloadImages: true },
+    discard: { label: 'Discard', showDrawButton: false, preloadImages: true },
+  } as const;
+
   private container: HTMLElement;
   private player: Player;
   private config: GameResourcesDockConfig;
@@ -39,6 +46,9 @@ export class GameResourcesDock {
   private healthRoot: Root | null = null;
   private controlsRoot: Root | null = null;
   private handRoot: Root | null = null;
+  private exileRoot: Root | null = null;
+  private discardRoot: Root | null = null;
+  private deckRoot: Root | null = null;
   private controlsTooltipManager: TooltipManager | undefined;
   private tooltipRoot: Root | null = null;
   private tooltipContainer: HTMLElement | null = null;
@@ -172,11 +182,11 @@ export class GameResourcesDock {
   private render(): void {
     this.container.className = `game-resources-dock ${this.config.position}`;
 
-    const exile = this.createPileElement('exile', 'Exile');
-    const discard = this.createPileElement('discard', 'Discard');
+    const exile = this.createExileElement();
+    const discard = this.createDiscardElement();
     const hand = this.createHandElement();
     const controls = this.createControlsElement();
-    const deck = this.createDeckElement();
+    const deck = this.createDeckElementReact();
     const health = this.createHealthElement();
 
     this.container.appendChild(exile);
@@ -189,41 +199,88 @@ export class GameResourcesDock {
     this.elements = { exile, discard, hand, controls, deck, health };
   }
 
-  private createPileElement(type: string, label: string): HTMLElement {
-    const pile = document.createElement('div');
-    pile.className = `resource-pile ${type}-pile`;
-    pile.dataset.pileType = type;
+  private createExileElement(): HTMLElement {
+    const container = document.createElement('div');
+    this.exileRoot = createRoot(container);
+    this.renderPile('exile');
+    return container;
+  }
 
-    const labelEl = document.createElement('div');
-    labelEl.className = 'pile-label';
-    labelEl.textContent = label;
+  private createDiscardElement(): HTMLElement {
+    const container = document.createElement('div');
+    this.discardRoot = createRoot(container);
+    this.renderPile('discard');
+    return container;
+  }
 
-    const count = document.createElement('div');
-    count.className = 'pile-count';
-    count.dataset.pile = type;
-    count.textContent = '0';
+  private createDeckElementReact(): HTMLElement {
+    const container = document.createElement('div');
+    this.deckRoot = createRoot(container);
+    this.renderPile('deck');
+    return container;
+  }
 
-    pile.appendChild(labelEl);
-    pile.appendChild(count);
+  private renderPile(pileType: 'deck' | 'exile' | 'discard'): void {
+    // Get the appropriate root
+    let root: Root | null = null;
+    switch (pileType) {
+      case 'deck':
+        root = this.deckRoot;
+        break;
+      case 'exile':
+        root = this.exileRoot;
+        break;
+      case 'discard':
+        root = this.discardRoot;
+        break;
+    }
 
-    // Hover tracking for keyboard shortcuts and tooltip
-    pile.addEventListener('mouseenter', () => {
-      this.hoveredResource = type as 'deck' | 'exile' | 'discard' | 'health';
-      this.hoveredHandCardId = null;
-      this.updateHotkeyTooltip();
-      // Pre-load images on hover
-      this.preloadPileImages(type as 'deck' | 'exile' | 'discard');
-    });
+    if (!root) return;
 
-    pile.addEventListener('mouseleave', () => {
-      this.hoveredResource = null;
-      this.updateHotkeyTooltip();
-    });
+    const state = this.player.getState();
+    const config = GameResourcesDock.PILE_CONFIGS[pileType];
 
-    // Click to view pile
-    pile.onclick = () => this.viewPile(type as 'exile' | 'discard');
+    // Get pile count based on type
+    const count = pileType === 'deck' ? state.deck.length : state[`${pileType}Pile`].length;
 
-    return pile;
+    root.render(
+      React.createElement(ResourcePile, {
+        type: pileType,
+        label: config.label,
+        count,
+        showDrawButton: config.showDrawButton,
+        onHover: () => {
+          this.hoveredResource = pileType;
+          this.hoveredHandCardId = null;
+          this.updateHotkeyTooltip();
+          if (config.preloadImages) {
+            this.preloadPileImages(pileType);
+          }
+        },
+        onLeave: () => {
+          this.hoveredResource = null;
+          this.updateHotkeyTooltip();
+        },
+        onClick: () => this.viewPile(pileType),
+        onDrop: (e) => this.handlePileDrop(e, pileType),
+        onDraw: pileType === 'deck' ? () => this.player.drawCard() : undefined,
+      })
+    );
+  }
+
+  private handlePileDrop(e: React.DragEvent<HTMLDivElement>, pileType: 'exile' | 'discard' | 'deck'): void {
+    if (!this.draggedCard) return;
+
+    function isPileType(value: string): value is PileType {
+      return ['deck', 'exile', 'discard', 'hand', 'scry'].includes(value);
+    }
+
+    if (isPileType(pileType)) {
+      this.player.placeCardInPile(this.draggedCard.card, pileType);
+    }
+
+    this.player.removeCardFromHand(this.draggedCard.card.id);
+    this.draggedCard = null;
   }
 
   private createHandElement(): HTMLElement {
@@ -263,54 +320,6 @@ export class GameResourcesDock {
         }
       })
     );
-  }
-
-  private createDeckElement(): HTMLElement {
-    const deck = document.createElement('div');
-    deck.className = 'resource-pile deck-pile';
-    deck.dataset.pileType = 'deck';
-
-    const labelEl = document.createElement('div');
-    labelEl.className = 'pile-label';
-    labelEl.textContent = 'Deck';
-
-    const count = document.createElement('div');
-    count.className = 'pile-count';
-    count.dataset.pile = 'deck';
-    count.textContent = '60';
-
-    const drawButton = document.createElement('button');
-    drawButton.className = 'draw-button';
-    drawButton.textContent = 'Draw';
-    drawButton.onclick = (e) => {
-      e.stopPropagation();
-      this.player.drawCard();
-    };
-
-    deck.appendChild(labelEl);
-    deck.appendChild(count);
-    deck.appendChild(drawButton);
-
-    // Add hover event listeners for keyboard shortcuts
-    deck.addEventListener('mouseenter', () => {
-      this.hoveredResource = 'deck';
-      this.hoveredHandCardId = null;
-      // Pre-load images on hover
-      // this.preloadPileImages('deck');
-    });
-
-    deck.addEventListener('mouseleave', () => {
-      this.hoveredResource = null;
-    });
-
-    // Click deck to view it (with search and sort)
-    deck.onclick = (e) => {
-      if (e.target !== drawButton) {
-        this.viewPile('deck');
-      }
-    };
-
-    return deck;
   }
 
   private createControlsElement(): HTMLElement {
@@ -403,50 +412,17 @@ export class GameResourcesDock {
   }
 
   private setupDragDropZones(): void {
-    if (!this.elements) return;
-
-    // Setup drop zones for exile, discard, and deck
-    [this.elements.exile, this.elements.discard, this.elements.deck].forEach((pile) => {
-      pile.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        pile.classList.add('drag-over');
-      });
-
-      pile.addEventListener('dragleave', () => {
-        pile.classList.remove('drag-over');
-      });
-
-      pile.addEventListener('drop', (e) => {
-        e.preventDefault();
-        pile.classList.remove('drag-over');
-
-        if (!this.draggedCard) return;
-
-        function isPileType(value: string): value is PileType {
-          return ['deck', 'exile', 'discard', 'hand', 'scry'].includes(value);
-        }
-
-        const pileType = pile.dataset.pileType;
-        if (pileType && isPileType(pileType)) this.player.placeCardInPile(this.draggedCard.card, pileType);
-
-        this.player.removeCardFromHand(this.draggedCard.card.id);
-        this.draggedCard = null;
-      });
-    });
+    // Drag-drop is now handled by the ResourcePile React components
+    // This method is kept for backward compatibility but does nothing
   }
 
   private updateUI(state: PlayerState): void {
     if (!this.elements) return;
 
-    // Update pile counts
-    const exileCount = this.elements.exile.querySelector('.pile-count');
-    if (exileCount) exileCount.textContent = state.exilePile.length.toString();
-
-    const discardCount = this.elements.discard.querySelector('.pile-count');
-    if (discardCount) discardCount.textContent = state.discardPile.length.toString();
-
-    const deckCount = this.elements.deck.querySelector('.pile-count');
-    if (deckCount) deckCount.textContent = state.deck.length.toString();
+    // Update pile React components
+    this.renderPile('exile');
+    this.renderPile('discard');
+    this.renderPile('deck');
 
     // Update health React component
     this.renderHealthComponent();
@@ -790,6 +766,18 @@ export class GameResourcesDock {
     if (this.handRoot) {
       this.handRoot.unmount();
       this.handRoot = null;
+    }
+    if (this.exileRoot) {
+      this.exileRoot.unmount();
+      this.exileRoot = null;
+    }
+    if (this.discardRoot) {
+      this.discardRoot.unmount();
+      this.discardRoot = null;
+    }
+    if (this.deckRoot) {
+      this.deckRoot.unmount();
+      this.deckRoot = null;
     }
     if (this.tooltipRoot) {
       this.tooltipRoot.unmount();
