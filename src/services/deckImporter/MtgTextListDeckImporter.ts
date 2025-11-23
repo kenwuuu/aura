@@ -21,11 +21,10 @@ export class MtgTextListDeckImporter extends DeckImporter {
     let deck: DeckImportResult = {
       cards: [],
       metadata: {},
-      errors: [],
     }
 
     if (!this.validateFormat(text)) {
-      deck.errors.push("Invalid deck format. Expected format: \"[count] [card name]\" per line");
+      deck.errors = ["Invalid deck format. Expected format: \"[count] [card name]\" per line"];
       return deck;
     }
 
@@ -52,7 +51,7 @@ export class MtgTextListDeckImporter extends DeckImporter {
         lastModified: new Date(),
       }
 
-      if (deck.errors.length > 0) {
+      if (deck.errors && deck.errors.length > 0) {
         Sentry.captureMessage("Error when importing deck. ", {
           level: "error",
           extra: {
@@ -77,12 +76,12 @@ export class MtgTextListDeckImporter extends DeckImporter {
     const headerList = sectionHeaders.slice(0, 3).map(h => `"${h}"`).join(', ');
     const more = sectionHeaders.length > 3 ? ` and ${sectionHeaders.length - 3} more` : '';
 
-    deck.errors.push(
+    deck.errors = [
       `Section headers detected: ${headerList}${more}. \n` +
       'Please remove section headers like "SIDEBOARD:", "COMMANDER:", etc. \n' +
       'Use the MTGO preset from Moxfield for best results. \n' +
       'Click the Help button below for more information.'
-    );
+    ];
   }
 
   /**
@@ -151,6 +150,9 @@ export class MtgTextListDeckImporter extends DeckImporter {
 
     for (const result of results) {
       if (result.error) {
+        if (!deckImportResult.errors) {
+          deckImportResult.errors = [];
+        }
         deckImportResult.errors.push(`${result.name}: ${result.error}`);
         continue;
       }

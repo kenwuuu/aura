@@ -5,23 +5,29 @@ import {parseDecklist} from "@/services/deckImporter/DeckListParser";
 // Mock the ScryfallApiService but use real parseDecklist
 vi.mock('../scryfall', async () => {
   const actual = await vi.importActual<typeof import('../scryfall')>('../scryfall');
-  return {
-    ScryfallApiService: vi.fn().mockImplementation(() => {
+
+  class MockScryfallApiService {
+    parseDecklist: typeof parseDecklist;
+    fetchImagesForList: ReturnType<typeof vi.fn>;
+
+    constructor() {
       const realService = new actual.ScryfallApiService();
-      return {
-        parseDecklist: parseDecklist.bind(realService),
-        fetchImagesForList: vi.fn().mockImplementation(async (entries) => {
-          // Return mock data for each entry
-          return entries.map((entry: any) => ({
-            name: entry.name,
-            count: entry.count,
-            scryfallId: `${entry.name.toLowerCase().replace(/\s+/g, '-')}-id`,
-            type_line: entry.name.includes('Mountain') ? 'Basic Land' : 'Instant',
-            imageUris: { front: { normal: `https://example.com/${entry.name.toLowerCase()}.jpg` } },
-          }));
-        }),
-      };
-    }),
+      this.parseDecklist = parseDecklist.bind(realService);
+      this.fetchImagesForList = vi.fn().mockImplementation(async (entries) => {
+        // Return mock data for each entry
+        return entries.map((entry: any) => ({
+          name: entry.name,
+          count: entry.count,
+          scryfallId: `${entry.name.toLowerCase().replace(/\s+/g, '-')}-id`,
+          type_line: entry.name.includes('Mountain') ? 'Basic Land' : 'Instant',
+          imageUris: { front: { normal: `https://example.com/${entry.name.toLowerCase()}.jpg` } },
+        }));
+      });
+    }
+  }
+
+  return {
+    ScryfallApiService: MockScryfallApiService,
   };
 });
 
