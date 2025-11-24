@@ -65,7 +65,7 @@ export function PileViewerReact({
   const yPlayerState = usePlayerStore((state) => state.yPlayerState);
   // State
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [sortOrder, setSortOrder] = React.useState<SortOrder>('top-to-bottom');
+  const [sortOrder, setSortOrder] = useSortOrder('top-to-bottom');
   const [hoveredCard, setHoveredCard] = React.useState<Card | null>(null);
   const [revealAll, setRevealAll] = React.useState(false);
   const [revealCount, setRevealCount] = React.useState(0);
@@ -74,6 +74,19 @@ export function PileViewerReact({
   // Refs
   const tooltipManagerRef = React.useRef<TooltipManager | null>(null);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Custom hooks
+  function useSortOrder(initial: SortOrder): [SortOrder, (newSortOrder: SortOrder) => void] {
+    const [sortOrder, setSort] = React.useState<SortOrder>(initial);
+
+    const setSortOrder = (newSortOrder: SortOrder)  => {
+      setSort(newSortOrder);
+      setRevealCount(0);
+      setRevealAll(false);
+    };
+
+    return [sortOrder, setSortOrder];
+  }
 
   // Reset state when dialog opens or closes
   React.useEffect(() => {
@@ -391,7 +404,7 @@ export function PileViewerReact({
           {/* Sort */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Sort:</span>
-            <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+            <Select value={sortOrder} onValueChange={(value: string): void => setSortOrder(value as SortOrder)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
