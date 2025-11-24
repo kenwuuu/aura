@@ -365,7 +365,7 @@ export function PileViewerReact({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="deck-pile-viewer-content max-w-[90vw] max-h-[90vh] p-0">
+        <DialogContent className="deck-pile-viewer-content min-w-[80vw] max-h-[70vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
             <DialogTitle className="text-2xl font-bold">{getTitle()}</DialogTitle>

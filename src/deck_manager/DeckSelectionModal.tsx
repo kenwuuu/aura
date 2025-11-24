@@ -110,7 +110,7 @@ export function DeckSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-[90%] xl:min-w-[700px] top-[45%] data-[state=open]:animate-none data-[state=closed]:animate-none">
+      <DialogContent className="w-[90%] xl:min-w-[700px] data-[state=open]:animate-none data-[state=closed]:animate-none">
         <DialogHeader>
           <DialogTitle>Select a Deck</DialogTitle>
           <DialogDescription>

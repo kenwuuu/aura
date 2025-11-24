@@ -18,7 +18,7 @@ interface PatchNotesModalProps {
 export const PatchNotesModal: React.FC<PatchNotesModalProps> = ({ isOpen, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`min-w-[45vw] max-h-[65vh] top-[45%] flex flex-col`}>
+      <DialogContent className={`min-w-[45vw] max-h-[65vh] flex flex-col`}>
         <DialogHeader>
           <DialogTitle>Patch Notes</DialogTitle>
         </DialogHeader>
