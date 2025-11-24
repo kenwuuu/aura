@@ -51,7 +51,6 @@ export class GameResourcesDock {
   private isMouseDown: boolean = false;
   private isModalOpen: boolean = false;
   private _dragState: { mode: string; draggedElement: HTMLDivElement; startIndex: number; } | undefined;
-  private requestAnimationFrameId: number | null = null;
   private preloadedPiles: Set<'deck' | 'exile' | 'discard'> = new Set();
 
   constructor(
@@ -641,6 +640,7 @@ export class GameResourcesDock {
           if (card) {
             this.player.removeCardFromPileById(cardId, 'hand');
             this.player.placeCardInPile(card, 'discard');
+            this.cardPreview.hide();
           }
           this.player.syncToYState();
         },
@@ -650,6 +650,7 @@ export class GameResourcesDock {
           if (card) {
             this.player.removeCardFromPileById(cardId, 'hand');
             this.player.placeCardInPile(card, 'exile');
+            this.cardPreview.hide();
           }
           this.player.syncToYState();
         },
@@ -659,6 +660,7 @@ export class GameResourcesDock {
           if (card) {
             this.player.removeCardFromPileById(cardId, 'hand');
             this.player.placeCardInPile(card, 'deck');
+            this.cardPreview.hide();
           }
           this.player.syncToYState();
         },
@@ -668,12 +670,14 @@ export class GameResourcesDock {
           if (card) {
             this.player.removeCardFromPileById(cardId, 'hand');
             this.player.placeCardInPile(card, 'deck', 0);
+            this.cardPreview.hide();
           }
           this.player.syncToYState();
         },
         flipHandCard: (cardId: string) => {
           this.player.flipHandCard(cardId);
           this.player.syncToYState();
+          this.cardPreview.hide();
         },
         movePileCardToPile: (originPileType: 'deck' | 'discard' | 'exile', destinationPileType: PileType, position?: number) => {
           const card = this.player.drawCardFromPile(originPileType);
