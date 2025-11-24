@@ -12,6 +12,7 @@ yarn-error.log*
 /signaling_server/node_modules/
 
 .env
+/dist/index.html
 
 # Sentry Config File
 .env.sentry-build-plugin

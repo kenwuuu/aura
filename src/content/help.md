@@ -1,8 +1,8 @@
 # Can't see cards? Wonky board?
-Try zooming out on your browser by pressing `Ctrl -` (Windows/Linux) or `Cmd -` (Mac). Reset zoom with `Ctrl 0` or `Cmd 0`.
+Try zooming out on your browser by pressing **Ctrl -** or **⌘ -**. Reset zoom with **Ctrl 0** or **⌘ 0**.
 
 # Need more help?
-Join our Discord (https://discord.gg/PgH2gVZYKq) and reach out!
+Join our [Discord](https://discord.gg/PgH2gVZYKq) and reach out!
 
 # Getting Started
 
@@ -18,9 +18,9 @@ Example: `https://aura-dqp.pages.dev/?room=mtg-abc123`
 ## Importing Decks
 We support importing in the following formats: 
 
-[quantity] [card name], e.g. 1 Mountain
+**[quantity] [card name]**, e.g. `1 Mountain`
 
-[quantity] [card name] [set code] [collector number] [foil], e.g. 1 Steam Vents (RVR) 412z *F*
+**[quantity] [card name] [set code] [collector number]**, e.g. `1 Steam Vents (RVR) 412z`
 
 ## Commander and Command Zone
 To have your commander drawn into your hand automatically, place your commander as the last card in your import list.
@@ -58,7 +58,7 @@ The app has three separate zoom controls located around the screen:
 - **Drag** a card from your hand to the battlefield or any card pile
 - **Drag** cards from the battlefield to any card area in the dock
 
-### Copy a card - Card Steal
+### Stealing Cards
 - **K** clones an opponent's card and gives you control of that clone.
 
 ### Morph and Manifest
