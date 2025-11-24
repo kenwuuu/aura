@@ -1,3 +1,14 @@
+## 2025 November 23
+
+### Features
+- Card text is now searchable when searching a card pile.
+
+### Changes
+- Consolidate popup/modal window styling.
+- Fix windows that were clipping under the dock.
+
+---
+
 ## 2025 November 22
 
 ### Features
