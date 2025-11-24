@@ -229,7 +229,7 @@ export function PileViewerReact({
     searchTimeoutRef.current = setTimeout(() => {
       setSearchQuery(value);
       setRevealAll(true);
-    }, 150);
+    }, 250);
   };
 
   // Cleanup timeout on unmount
@@ -274,20 +274,22 @@ export function PileViewerReact({
   };
 
   // Filter and sort cards
-  const filteredAndSortedCards = React.useMemo(() => {
-    let filtered = cards;
+  const filteredAndSortedCards: Card[] = React.useMemo(() => {
+    let filtered: Card[] = cards;
 
     // Filter by search query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      filtered = cards.filter((card) => {
-        const name = card.name?.toLowerCase() || '';
-        const typeLine = card.type_line?.toLowerCase() || '';
-        const cardNumber = card.cardNumber.toString();
+      const query: string = searchQuery.toLowerCase().trim();
+      filtered = cards.filter((card: Card) => {
+        const name: string = card.name?.toLowerCase() || '';
+        const typeLine: string = card.type_line?.toLowerCase() || '';
+        const cardNumber: string = card.cardNumber.toString();
+        const oracleText: string = card.oracleText?.toLowerCase() || '';
         return (
           name.includes(query) ||
           cardNumber.includes(query) ||
-          typeLine.includes(query)
+          typeLine.includes(query) ||
+          oracleText.includes(query)
         );
       });
     }

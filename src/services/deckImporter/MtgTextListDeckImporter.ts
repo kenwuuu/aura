@@ -164,6 +164,7 @@ export class MtgTextListDeckImporter extends DeckImporter {
           name: result.name,
           type_line: result.type_line,
           images: result.imageUris,
+          oracleText: result.oracleText,
           scryfallId: result.scryfallId,
           x: 100,
           y: 100,

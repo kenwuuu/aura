@@ -17,6 +17,7 @@ export interface Card {
   cardNumber: number; // Persistent numbering for stack tracking
   name?: string; // Actual card name from Scryfall
   type_line?: string; // Card type from Scryfall (e.g., "Basic Land — Mountain", "Creature — Human Wizard")
+  oracleText?: string; // Official card text
   images?: CardImages; // Image URIs from Scryfall
   scryfallId?: string; // Scryfall ID for future API calls
   x: number;

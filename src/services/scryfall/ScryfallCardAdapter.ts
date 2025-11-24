@@ -40,6 +40,7 @@ export function toCardDataResult(
     count,
     name: scryfallCard.name,
     type_line: scryfallCard.type_line,
+    oracleText: scryfallCard.oracle_text,
     scryfallId: scryfallCard.id,
     imageUris: extractImageUris(scryfallCard),
   };
@@ -59,6 +60,7 @@ export function toCard(
     cardNumber,
     name: scryfallCard.name,
     type_line: scryfallCard.type_line,
+    oracleText: scryfallCard.oracle_text,
     images: extractImageUris(scryfallCard),
     scryfallId: scryfallCard.id,
     x: 100,

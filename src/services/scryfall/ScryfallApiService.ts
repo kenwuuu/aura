@@ -9,6 +9,7 @@ export type ScryfallCard = {
   name: string;
   type_line?: string;
   image_uris?: CardImageUris;
+  oracle_text?: string;
   card_faces?: Array<{
     image_uris?: CardImageUris;
   }>;
@@ -25,6 +26,7 @@ export type CardDataResult = {
   count: number;
   name: string;
   type_line?: string;
+  oracleText?: string;
   scryfallId: string;
   imageUris: CardImages;
   error?: string;
