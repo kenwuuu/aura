@@ -2,10 +2,13 @@
 
 ### Features
 - Card text is now searchable when searching a card pile.
+- Hand cards now align to top of card when zooming in.
 
 ### Changes
 - Consolidate popup/modal window styling.
 - Fix windows that were clipping under the dock.
+- Simplify deck logic.
+- Improve automated testing.
 
 ---
 
