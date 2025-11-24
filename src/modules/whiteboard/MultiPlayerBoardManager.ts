@@ -8,7 +8,7 @@ import { BoardContainerManager, BOARD_HEIGHT } from './BoardContainerManager';
 import * as Y from 'yjs';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
-import { CardCounter, BattlefieldHotkeysManager, TokenHotkeysManager } from '../../components';
+import { CardCounter } from '../../components';
 import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
 import {HotkeyContext} from "../../data/hotkeys";
 import { KeywordToken } from '@/modules/keywordTokens/types';
@@ -31,8 +31,6 @@ export class MultiPlayerBoardManager {
   private cardPreview: CardPreview;
   private localPlayerId: string;
   private tooltipManager: TooltipManager;
-  private battlefieldHotkeysRoot: Root | null = null;
-  private tokenHotkeysRoot: Root | null = null;
   // Track mouse movement to distinguish clicks from drags
   private mousePosition: { x: number; y: number; } | null = null;
   private readonly DRAG_THRESHOLD = 5; // pixels
@@ -97,151 +95,6 @@ export class MultiPlayerBoardManager {
         useHotkeyStore.getState().setHoveredBattlefieldCard(originalHoveredCard);
       }, 0);
     });
-
-    // Setup React-based hotkey managers
-    this.setupHotkeyManagers();
-  }
-
-  private setupHotkeyManagers(): void {
-    // Create containers for hotkey managers (invisible React components)
-    const battlefieldHotkeysContainer = document.createElement('div');
-    battlefieldHotkeysContainer.id = 'battlefield-hotkeys-manager';
-    document.body.appendChild(battlefieldHotkeysContainer);
-
-    const tokenHotkeysContainer = document.createElement('div');
-    tokenHotkeysContainer.id = 'token-hotkeys-manager';
-    document.body.appendChild(tokenHotkeysContainer);
-
-    // Mount BattlefieldHotkeysManager
-    this.battlefieldHotkeysRoot = createRoot(battlefieldHotkeysContainer);
-    this.battlefieldHotkeysRoot.render(
-      React.createElement(BattlefieldHotkeysManager, {
-        onTap: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.yCards.set(cardId, { ...card, isTapped: !card.isTapped });
-          }
-        },
-        onFlip: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.yCards.set(cardId, { ...card, isFlipped: !card.isFlipped });
-          }
-        },
-        onAddCounter: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.yCards.set(cardId, { ...card, counters: [...card.counters, 1] });
-          }
-        },
-        onRemoveCounter: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.yCards.set(cardId, { ...card, counters: [...card.counters, -1] });
-          }
-        },
-        onCopy: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card) {
-            // Create copy with slight offset
-            const newCard: WhiteboardCard = {
-              ...card,
-              id: `card-${Math.random().toString(36).substring(2, 11)}`,
-              ownerId: this.localPlayerId,
-              x: card.x + 20,
-              y: card.y + 20,
-              zIndex: ++this.maxZIndex,
-              counters: [...card.counters],
-            };
-            this.yCards.set(newCard.id, newCard);
-          }
-        },
-        onDelete: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.cardPreview.hide();
-            this.tooltipManager.hide();
-            this.yCards.delete(cardId);
-          }
-        },
-        onMoveToHand: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.cardPreview.hide();
-            this.tooltipManager.hide();
-            // Dispatch event to move to hand (handled by index.ts)
-            window.dispatchEvent(new CustomEvent('moveCardToHand', { detail: { card } }));
-            this.yCards.delete(cardId);
-          }
-        },
-        onMoveToDiscard: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.cardPreview.hide();
-            this.tooltipManager.hide();
-            window.dispatchEvent(new CustomEvent('moveCardToDiscard', { detail: { card } }));
-            this.yCards.delete(cardId);
-          }
-        },
-        onMoveToExile: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.cardPreview.hide();
-            this.tooltipManager.hide();
-            window.dispatchEvent(new CustomEvent('moveCardToExile', { detail: { card } }));
-            this.yCards.delete(cardId);
-          }
-        },
-        onMoveToDeckTop: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.cardPreview.hide();
-            this.tooltipManager.hide();
-            window.dispatchEvent(new CustomEvent('moveCardToDeckTop', { detail: { card } }));
-            this.yCards.delete(cardId);
-          }
-        },
-        onMoveToDeckBottom: (cardId) => {
-          const card = this.yCards.get(cardId);
-          if (card && card.ownerId === this.localPlayerId) {
-            this.cardPreview.hide();
-            this.tooltipManager.hide();
-            window.dispatchEvent(new CustomEvent('moveCardToDeckBottom', { detail: { card } }));
-            this.yCards.delete(cardId);
-          }
-        },
-      })
-    );
-
-    // Mount TokenHotkeysManager
-    this.tokenHotkeysRoot = createRoot(tokenHotkeysContainer);
-    this.tokenHotkeysRoot.render(
-      React.createElement(TokenHotkeysManager, {
-        onIncrement: (tokenId) => {
-          const token = this.yTokens.get(tokenId);
-          if (token && token.ownerId === this.localPlayerId) {
-            this.yTokens.set(tokenId, { ...token, count: (token.count ?? 0) + 1 });
-          }
-        },
-        onDecrement: (tokenId) => {
-          const token = this.yTokens.get(tokenId);
-          if (token && token.ownerId === this.localPlayerId) {
-            const newCount = (token.count ?? 0) - 1;
-            if (newCount <= 0) {
-              this.yTokens.delete(tokenId);
-            } else {
-              this.yTokens.set(tokenId, { ...token, count: newCount });
-            }
-          }
-        },
-        onDelete: (tokenId) => {
-          const token = this.yTokens.get(tokenId);
-          if (token && token.ownerId === this.localPlayerId) {
-            this.yTokens.delete(tokenId);
-          }
-        },
-      })
-    );
   }
 
   private setupYjsSync(): void {
@@ -1099,13 +952,5 @@ export class MultiPlayerBoardManager {
     this.boardContainerManager.destroy();
     this.zoomController.destroy();
     this.tooltipManager.destroy();
-
-    // Unmount React hotkey managers
-    if (this.battlefieldHotkeysRoot) {
-      this.battlefieldHotkeysRoot.unmount();
-    }
-    if (this.tokenHotkeysRoot) {
-      this.tokenHotkeysRoot.unmount();
-    }
   }
 }
