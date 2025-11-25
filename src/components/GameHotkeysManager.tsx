@@ -5,33 +5,14 @@
  *
  * This component doesn't render anything - it just sets up hotkey listeners
  * using the unified useAllGameHotkeys hook.
+ *
+ * Game instances are accessed from the gameInstanceStore, so no props are needed.
  */
 
 import { useAllGameHotkeys } from '@/hooks/useAllGameHotkeys';
-import type {
-  GlobalActions,
-  BattlefieldActions,
-  HandActions,
-  PileActions,
-  TokenActions,
-} from '@/types/hotkeys';
 
-interface GameHotkeysManagerProps {
-  globalActions: GlobalActions;
-  battlefieldActions: BattlefieldActions;
-  handActions: HandActions;
-  pileActions: PileActions;
-  tokenActions: TokenActions;
-}
-
-export function GameHotkeysManager(props: GameHotkeysManagerProps) {
-  useAllGameHotkeys({
-    globalActions: props.globalActions,
-    battlefieldActions: props.battlefieldActions,
-    handActions: props.handActions,
-    pileActions: props.pileActions,
-    tokenActions: props.tokenActions,
-  });
+export function GameHotkeysManager() {
+  useAllGameHotkeys();
 
   // This component doesn't render anything
   return null;

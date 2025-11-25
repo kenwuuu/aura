@@ -26,6 +26,7 @@ import {YSTATE_DECK_CARD_COUNT} from "./constants";
 import {ReactToasterRoot} from "../ReactToasterRoot";
 import {usePlayerStore} from "./stores/playerStore";
 import {RoomConnectionStatus} from "@/components/RoomConnectionStatus";
+import {useGameInstance} from "./stores/gameInstanceStore";
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -173,263 +174,20 @@ class AuraApp {
 
 
   private setupAllHotkeys(): void {
+    // Populate the game instance store for the hotkeys hook
+    useGameInstance.getState().setPlayer(this.localPlayer);
+    useGameInstance.getState().setWhiteboard(this.whiteboard);
+    useGameInstance.getState().setCardPreview(this.cardPreview);
+    useGameInstance.getState().setPlayerId(this.playerId);
+    useGameInstance.getState().setRoomManager(this.roomManager);
+
     // Create a container for the GameHotkeysManager component
     const gameHotkeysContainer = document.createElement('div');
     gameHotkeysContainer.id = 'game-hotkeys-manager';
     document.body.appendChild(gameHotkeysContainer);
 
     this.gameHotkeysRoot = createRoot(gameHotkeysContainer);
-    this.gameHotkeysRoot.render(
-      React.createElement(GameHotkeysManager, {
-        // Global actions
-        globalActions: {
-          onDraw: () => {
-            this.localPlayer.drawCard();
-            DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
-          },
-          onShuffle: () => {
-            this.localPlayer.shuffleDeck();
-            DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
-          },
-          onMulligan: () => {
-            const confirmed = window.confirm("Mulligan? Draws 7 new cards.");
-            if (confirmed) {
-              this.localPlayer.mulligan(7);
-              DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
-            }
-          },
-          onGainHealth: () => {
-            this.localPlayer.modifyHealth(1);
-          },
-          onLoseHealth: () => {
-            this.localPlayer.modifyHealth(-1);
-          },
-          onUntapAll: () => {
-            const yCards = this.whiteboard['yCards'];
-            yCards.forEach((card, cardId) => {
-              if (card.ownerId === this.playerId && card.isTapped) {
-                yCards.set(cardId, { ...card, isTapped: false });
-              }
-            });
-          },
-        },
-
-        // Battlefield actions
-        battlefieldActions: {
-          onTap: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              yCards.set(cardId, { ...card, isTapped: !card.isTapped });
-            }
-          },
-          onFlip: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              yCards.set(cardId, { ...card, isFlipped: !card.isFlipped });
-            }
-          },
-          onAddCounter: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              yCards.set(cardId, { ...card, counters: [...card.counters, 1] });
-            }
-          },
-          onRemoveCounter: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              yCards.set(cardId, { ...card, counters: [...card.counters, -1] });
-            }
-          },
-          onCopy: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card) {
-              const newCard = {
-                ...card,
-                id: `card-${Math.random().toString(36).substring(2, 11)}`,
-                ownerId: this.playerId,
-                x: card.x + 20,
-                y: card.y + 20,
-                zIndex: ++this.whiteboard['maxZIndex'],
-                counters: [...card.counters],
-              };
-              yCards.set(newCard.id, newCard);
-            }
-          },
-          onDelete: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              this.cardPreview.hide();
-              this.whiteboard.getTooltipManager().hide();
-              yCards.delete(cardId);
-            }
-          },
-          onMoveToHand: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              this.cardPreview.hide();
-              this.whiteboard.getTooltipManager().hide();
-              window.dispatchEvent(new CustomEvent('moveCardToHand', { detail: { card } }));
-              yCards.delete(cardId);
-            }
-          },
-          onMoveToDiscard: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              this.cardPreview.hide();
-              this.whiteboard.getTooltipManager().hide();
-              window.dispatchEvent(new CustomEvent('moveCardToDiscard', { detail: { card } }));
-              yCards.delete(cardId);
-            }
-          },
-          onMoveToExile: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              this.cardPreview.hide();
-              this.whiteboard.getTooltipManager().hide();
-              window.dispatchEvent(new CustomEvent('moveCardToExile', { detail: { card } }));
-              yCards.delete(cardId);
-            }
-          },
-          onMoveToDeckTop: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              this.cardPreview.hide();
-              this.whiteboard.getTooltipManager().hide();
-              window.dispatchEvent(new CustomEvent('moveCardToDeckTop', { detail: { card } }));
-              yCards.delete(cardId);
-            }
-          },
-          onMoveToDeckBottom: (cardId) => {
-            const yCards = this.whiteboard['yCards'];
-            const card = yCards.get(cardId);
-            if (card && card.ownerId === this.playerId) {
-              this.cardPreview.hide();
-              this.whiteboard.getTooltipManager().hide();
-              window.dispatchEvent(new CustomEvent('moveCardToDeckBottom', { detail: { card } }));
-              yCards.delete(cardId);
-            }
-          },
-        },
-
-        // Hand actions
-        handActions: {
-          onFlip: (cardId) => {
-            this.localPlayer.flipHandCard(cardId);
-            this.localPlayer.syncToYState();
-            this.cardPreview.hide();
-          },
-          onMoveToDiscard: (cardId) => {
-            const hand = this.localPlayer.getState().hand;
-            const card = hand.find(c => c.id === cardId);
-            if (card) {
-              this.localPlayer.removeCardFromPileById(cardId, 'hand');
-              this.localPlayer.placeCardInPile(card, 'discard');
-              this.cardPreview.hide();
-            }
-            this.localPlayer.syncToYState();
-          },
-          onMoveToExile: (cardId) => {
-            const hand = this.localPlayer.getState().hand;
-            const card = hand.find(c => c.id === cardId);
-            if (card) {
-              this.localPlayer.removeCardFromPileById(cardId, 'hand');
-              this.localPlayer.placeCardInPile(card, 'exile');
-              this.cardPreview.hide();
-            }
-            this.localPlayer.syncToYState();
-          },
-          onMoveToDeckTop: (cardId) => {
-            const hand = this.localPlayer.getState().hand;
-            const card = hand.find(c => c.id === cardId);
-            if (card) {
-              this.localPlayer.removeCardFromPileById(cardId, 'hand');
-              this.localPlayer.placeCardInPile(card, 'deck');
-              this.cardPreview.hide();
-            }
-            this.localPlayer.syncToYState();
-          },
-          onMoveToDeckBottom: (cardId) => {
-            const hand = this.localPlayer.getState().hand;
-            const card = hand.find(c => c.id === cardId);
-            if (card) {
-              this.localPlayer.removeCardFromPileById(cardId, 'hand');
-              this.localPlayer.placeCardInPile(card, 'deck', 0);
-              this.cardPreview.hide();
-            }
-            this.localPlayer.syncToYState();
-          },
-        },
-
-        // Pile actions
-        pileActions: {
-          onMoveToHand: (pileType) => {
-            const card = this.localPlayer.drawCardFromPile(pileType as 'deck' | 'exile' | 'discard');
-            if (card) this.localPlayer.placeCardInPile(card, 'hand');
-            this.localPlayer.syncToYState();
-          },
-          onMoveToDiscard: (pileType) => {
-            const card = this.localPlayer.drawCardFromPile(pileType as 'deck' | 'exile' | 'discard');
-            if (card) this.localPlayer.placeCardInPile(card, 'discard');
-            this.localPlayer.syncToYState();
-          },
-          onMoveToExile: (pileType) => {
-            const card = this.localPlayer.drawCardFromPile(pileType as 'deck' | 'exile' | 'discard');
-            if (card) this.localPlayer.placeCardInPile(card, 'exile');
-            this.localPlayer.syncToYState();
-          },
-          onMoveToDeckTop: (pileType) => {
-            const card = this.localPlayer.drawCardFromPile(pileType as 'deck' | 'exile' | 'discard');
-            if (card) this.localPlayer.placeCardInPile(card, 'deck');
-            this.localPlayer.syncToYState();
-          },
-          onMoveToDeckBottom: (pileType) => {
-            const card = this.localPlayer.drawCardFromPile(pileType as 'deck' | 'exile' | 'discard');
-            if (card) this.localPlayer.placeCardInPile(card, 'deck', 0);
-            this.localPlayer.syncToYState();
-          },
-        },
-
-        // Token actions
-        tokenActions: {
-          onIncrement: (tokenId) => {
-            const yTokens = this.whiteboard['yTokens'];
-            const token = yTokens.get(tokenId);
-            if (token && token.ownerId === this.playerId) {
-              yTokens.set(tokenId, { ...token, count: (token.count ?? 0) + 1 });
-            }
-          },
-          onDecrement: (tokenId) => {
-            const yTokens = this.whiteboard['yTokens'];
-            const token = yTokens.get(tokenId);
-            if (token && token.ownerId === this.playerId) {
-              const newCount = (token.count ?? 0) - 1;
-              if (newCount <= 0) {
-                yTokens.delete(tokenId);
-              } else {
-                yTokens.set(tokenId, { ...token, count: newCount });
-              }
-            }
-          },
-          onDelete: (tokenId) => {
-            const yTokens = this.whiteboard['yTokens'];
-            const token = yTokens.get(tokenId);
-            if (token && token.ownerId === this.playerId) {
-              yTokens.delete(tokenId);
-            }
-          },
-        },
-      })
-    );
+    this.gameHotkeysRoot.render(React.createElement(GameHotkeysManager));
   }
 
   private setupEventListeners(): void {

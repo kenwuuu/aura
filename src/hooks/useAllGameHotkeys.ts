@@ -3,34 +3,22 @@
  *
  * Replaces the repetitive individual hooks (useGlobalHotkeys, useBattlefieldCardHotkeys, etc.)
  * with a single hook that reads from the centralized hotkey configuration.
+ *
+ * This hook accesses game instances from the gameInstanceStore, eliminating the need
+ * for prop drilling.
  */
 
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useHotkeyStore } from '@/stores/hotkeyStore';
+import { useGameInstance } from '@/stores/gameInstanceStore';
 import { getKeyBindingsForAction } from '@/data/hotkeys';
-import type {
-  GlobalActions,
-  BattlefieldActions,
-  HandActions,
-  PileActions,
-  TokenActions,
-} from '@/types/hotkeys';
+import { DeckPersistenceService } from '@/services/deckPersistence';
 
-interface UseAllGameHotkeysParams {
-  globalActions: GlobalActions;
-  battlefieldActions: BattlefieldActions;
-  handActions: HandActions;
-  pileActions: PileActions;
-  tokenActions: TokenActions;
-}
+export function useAllGameHotkeys() {
+  // Get game instances from store
+  const { player, whiteboard, cardPreview, playerId, roomManager } = useGameInstance();
 
-export function useAllGameHotkeys({
-  globalActions,
-  battlefieldActions,
-  handActions,
-  pileActions,
-  tokenActions,
-}: UseAllGameHotkeysParams) {
+  // Get hover states from hotkey store
   const {
     hoveredBattlefieldCardId,
     hoveredHandCardId,
@@ -39,51 +27,85 @@ export function useAllGameHotkeys({
     isModalOpen,
   } = useHotkeyStore();
 
+  // Helper to save deck after modifications
+  const saveDeck = () => {
+    if (player && roomManager) {
+      DeckPersistenceService.saveDeckForRoom(roomManager.getRoomName(), player.getDeck());
+    }
+  };
+
   // --- Global Hotkeys (always active unless modal is open) ---
 
   useHotkeys(
     getKeyBindingsForAction('draw'),
-    globalActions.onDraw,
+    () => {
+      if (player) {
+        player.drawCard();
+        saveDeck();
+      }
+    },
     { enabled: !isModalOpen, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('shuffle'),
-    globalActions.onShuffle,
+    () => {
+      if (player) {
+        player.shuffleDeck();
+        saveDeck();
+      }
+    },
     { enabled: !isModalOpen, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('mulligan'),
-    globalActions.onMulligan,
+    () => {
+      if (player) {
+        const confirmed = window.confirm("Mulligan? Draws 7 new cards.");
+        if (confirmed) {
+          player.mulligan(7);
+          saveDeck();
+        }
+      }
+    },
     { enabled: !isModalOpen, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('gainHealth'),
-    globalActions.onGainHealth,
+    () => {
+      if (player) {
+        player.modifyHealth(1);
+      }
+    },
     { enabled: !isModalOpen, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('loseHealth'),
-    globalActions.onLoseHealth,
+    () => {
+      if (player) {
+        player.modifyHealth(-1);
+      }
+    },
     { enabled: !isModalOpen, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('untapAll'),
-    globalActions.onUntapAll,
+    () => {
+      if (whiteboard && playerId) {
+        const yCards = whiteboard['yCards'];
+        yCards.forEach((card, cardId) => {
+          if (card.ownerId === playerId && card.isTapped) {
+            yCards.set(cardId, { ...card, isTapped: false });
+          }
+        });
+      }
+    },
     { enabled: !isModalOpen, preventDefault: true }
   );
-
-  if (globalActions.onAddCard) {
-    useHotkeys(
-      getKeyBindingsForAction('addCard'),
-      globalActions.onAddCard,
-      { enabled: !isModalOpen, preventDefault: true }
-    );
-  }
 
   // --- Battlefield Card Hotkeys (active when hovering battlefield card) ---
 
@@ -91,67 +113,181 @@ export function useAllGameHotkeys({
 
   useHotkeys(
     getKeyBindingsForAction('tap'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onTap(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          yCards.set(hoveredBattlefieldCardId, { ...card, isTapped: !card.isTapped });
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('flip'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onFlip(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          yCards.set(hoveredBattlefieldCardId, { ...card, isFlipped: !card.isFlipped });
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('addCounter'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onAddCounter(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          yCards.set(hoveredBattlefieldCardId, { ...card, counters: [...card.counters, 1] });
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('removeCounter'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onRemoveCounter(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          yCards.set(hoveredBattlefieldCardId, { ...card, counters: [...card.counters, -1] });
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('copy'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onCopy(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card) {
+          const newCard = {
+            ...card,
+            id: `card-${Math.random().toString(36).substring(2, 11)}`,
+            ownerId: playerId,
+            x: card.x + 20,
+            y: card.y + 20,
+            zIndex: ++whiteboard['maxZIndex'],
+            counters: [...card.counters],
+          };
+          yCards.set(newCard.id, newCard);
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('delete'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onDelete(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          cardPreview.hide();
+          whiteboard.getTooltipManager().hide();
+          yCards.delete(hoveredBattlefieldCardId);
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToHand'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onMoveToHand(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          cardPreview.hide();
+          whiteboard.getTooltipManager().hide();
+          window.dispatchEvent(new CustomEvent('moveCardToHand', { detail: { card } }));
+          yCards.delete(hoveredBattlefieldCardId);
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToDiscard'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onMoveToDiscard(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          cardPreview.hide();
+          whiteboard.getTooltipManager().hide();
+          window.dispatchEvent(new CustomEvent('moveCardToDiscard', { detail: { card } }));
+          yCards.delete(hoveredBattlefieldCardId);
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToExile'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onMoveToExile(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          cardPreview.hide();
+          whiteboard.getTooltipManager().hide();
+          window.dispatchEvent(new CustomEvent('moveCardToExile', { detail: { card } }));
+          yCards.delete(hoveredBattlefieldCardId);
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToDeckTop'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onMoveToDeckTop(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          cardPreview.hide();
+          whiteboard.getTooltipManager().hide();
+          window.dispatchEvent(new CustomEvent('moveCardToDeckTop', { detail: { card } }));
+          yCards.delete(hoveredBattlefieldCardId);
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToDeckBottom'),
-    () => hoveredBattlefieldCardId && battlefieldActions.onMoveToDeckBottom(hoveredBattlefieldCardId),
+    () => {
+      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
+        const yCards = whiteboard['yCards'];
+        const card = yCards.get(hoveredBattlefieldCardId);
+        if (card && card.ownerId === playerId) {
+          cardPreview.hide();
+          whiteboard.getTooltipManager().hide();
+          window.dispatchEvent(new CustomEvent('moveCardToDeckBottom', { detail: { card } }));
+          yCards.delete(hoveredBattlefieldCardId);
+        }
+      }
+    },
     { enabled: battlefieldEnabled, preventDefault: true }
   );
 
@@ -161,31 +297,81 @@ export function useAllGameHotkeys({
 
   useHotkeys(
     getKeyBindingsForAction('flip'),
-    () => hoveredHandCardId && handActions.onFlip(hoveredHandCardId),
+    () => {
+      if (player && cardPreview && hoveredHandCardId) {
+        player.flipHandCard(hoveredHandCardId);
+        player.syncToYState();
+        cardPreview.hide();
+      }
+    },
     { enabled: handEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToDiscard'),
-    () => hoveredHandCardId && handActions.onMoveToDiscard(hoveredHandCardId),
+    () => {
+      if (player && cardPreview && hoveredHandCardId) {
+        const hand = player.getState().hand;
+        const card = hand.find(c => c.id === hoveredHandCardId);
+        if (card) {
+          player.removeCardFromPileById(hoveredHandCardId, 'hand');
+          player.placeCardInPile(card, 'discard');
+          cardPreview.hide();
+        }
+        player.syncToYState();
+      }
+    },
     { enabled: handEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToExile'),
-    () => hoveredHandCardId && handActions.onMoveToExile(hoveredHandCardId),
+    () => {
+      if (player && cardPreview && hoveredHandCardId) {
+        const hand = player.getState().hand;
+        const card = hand.find(c => c.id === hoveredHandCardId);
+        if (card) {
+          player.removeCardFromPileById(hoveredHandCardId, 'hand');
+          player.placeCardInPile(card, 'exile');
+          cardPreview.hide();
+        }
+        player.syncToYState();
+      }
+    },
     { enabled: handEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToDeckTop'),
-    () => hoveredHandCardId && handActions.onMoveToDeckTop(hoveredHandCardId),
+    () => {
+      if (player && cardPreview && hoveredHandCardId) {
+        const hand = player.getState().hand;
+        const card = hand.find(c => c.id === hoveredHandCardId);
+        if (card) {
+          player.removeCardFromPileById(hoveredHandCardId, 'hand');
+          player.placeCardInPile(card, 'deck');
+          cardPreview.hide();
+        }
+        player.syncToYState();
+      }
+    },
     { enabled: handEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('moveToDeckBottom'),
-    () => hoveredHandCardId && handActions.onMoveToDeckBottom(hoveredHandCardId),
+    () => {
+      if (player && cardPreview && hoveredHandCardId) {
+        const hand = player.getState().hand;
+        const card = hand.find(c => c.id === hoveredHandCardId);
+        if (card) {
+          player.removeCardFromPileById(hoveredHandCardId, 'hand');
+          player.placeCardInPile(card, 'deck', 0);
+          cardPreview.hide();
+        }
+        player.syncToYState();
+      }
+    },
     { enabled: handEnabled, preventDefault: true }
   );
 
@@ -195,41 +381,63 @@ export function useAllGameHotkeys({
 
   useHotkeys(
     getKeyBindingsForAction('moveToHand'),
-    () => hoveredPileType && pileActions.onMoveToHand(hoveredPileType),
+    () => {
+      if (player && hoveredPileType) {
+        const card = player.drawCardFromPile(hoveredPileType as 'deck' | 'exile' | 'discard');
+        if (card) player.placeCardInPile(card, 'hand');
+        player.syncToYState();
+      }
+    },
     { enabled: pileEnabled, preventDefault: true }
   );
 
-  if (pileActions.onMoveToDiscard) {
-    useHotkeys(
-      getKeyBindingsForAction('moveToDiscard'),
-      () => hoveredPileType && hoveredPileType !== 'discard' && pileActions.onMoveToDiscard?.(hoveredPileType),
-      { enabled: pileEnabled && hoveredPileType !== 'discard', preventDefault: true }
-    );
-  }
+  useHotkeys(
+    getKeyBindingsForAction('moveToDiscard'),
+    () => {
+      if (player && hoveredPileType && hoveredPileType !== 'discard') {
+        const card = player.drawCardFromPile(hoveredPileType as 'deck' | 'exile' | 'discard');
+        if (card) player.placeCardInPile(card, 'discard');
+        player.syncToYState();
+      }
+    },
+    { enabled: pileEnabled && hoveredPileType !== 'discard', preventDefault: true }
+  );
 
-  if (pileActions.onMoveToExile) {
-    useHotkeys(
-      getKeyBindingsForAction('moveToExile'),
-      () => hoveredPileType && hoveredPileType !== 'exile' && pileActions.onMoveToExile?.(hoveredPileType),
-      { enabled: pileEnabled && hoveredPileType !== 'exile', preventDefault: true }
-    );
-  }
+  useHotkeys(
+    getKeyBindingsForAction('moveToExile'),
+    () => {
+      if (player && hoveredPileType && hoveredPileType !== 'exile') {
+        const card = player.drawCardFromPile(hoveredPileType as 'deck' | 'exile' | 'discard');
+        if (card) player.placeCardInPile(card, 'exile');
+        player.syncToYState();
+      }
+    },
+    { enabled: pileEnabled && hoveredPileType !== 'exile', preventDefault: true }
+  );
 
-  if (pileActions.onMoveToDeckTop) {
-    useHotkeys(
-      getKeyBindingsForAction('moveToDeckTop'),
-      () => hoveredPileType && hoveredPileType !== 'deck' && pileActions.onMoveToDeckTop?.(hoveredPileType),
-      { enabled: pileEnabled && hoveredPileType !== 'deck', preventDefault: true }
-    );
-  }
+  useHotkeys(
+    getKeyBindingsForAction('moveToDeckTop'),
+    () => {
+      if (player && hoveredPileType && hoveredPileType !== 'deck') {
+        const card = player.drawCardFromPile(hoveredPileType as 'deck' | 'exile' | 'discard');
+        if (card) player.placeCardInPile(card, 'deck');
+        player.syncToYState();
+      }
+    },
+    { enabled: pileEnabled && hoveredPileType !== 'deck', preventDefault: true }
+  );
 
-  if (pileActions.onMoveToDeckBottom) {
-    useHotkeys(
-      getKeyBindingsForAction('moveToDeckBottom'),
-      () => hoveredPileType && hoveredPileType !== 'deck' && pileActions.onMoveToDeckBottom?.(hoveredPileType),
-      { enabled: pileEnabled && hoveredPileType !== 'deck', preventDefault: true }
-    );
-  }
+  useHotkeys(
+    getKeyBindingsForAction('moveToDeckBottom'),
+    () => {
+      if (player && hoveredPileType && hoveredPileType !== 'deck') {
+        const card = player.drawCardFromPile(hoveredPileType as 'deck' | 'exile' | 'discard');
+        if (card) player.placeCardInPile(card, 'deck', 0);
+        player.syncToYState();
+      }
+    },
+    { enabled: pileEnabled && hoveredPileType !== 'deck', preventDefault: true }
+  );
 
   // --- Token Hotkeys (active when hovering a keyword token) ---
 
@@ -237,19 +445,48 @@ export function useAllGameHotkeys({
 
   useHotkeys(
     getKeyBindingsForAction('tokenIncrement'),
-    () => hoveredTokenId && tokenActions.onIncrement(hoveredTokenId),
+    () => {
+      if (whiteboard && playerId && hoveredTokenId) {
+        const yTokens = whiteboard['yTokens'];
+        const token = yTokens.get(hoveredTokenId);
+        if (token && token.ownerId === playerId) {
+          yTokens.set(hoveredTokenId, { ...token, count: (token.count ?? 0) + 1 });
+        }
+      }
+    },
     { enabled: tokenEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('tokenDecrement'),
-    () => hoveredTokenId && tokenActions.onDecrement(hoveredTokenId),
+    () => {
+      if (whiteboard && playerId && hoveredTokenId) {
+        const yTokens = whiteboard['yTokens'];
+        const token = yTokens.get(hoveredTokenId);
+        if (token && token.ownerId === playerId) {
+          const newCount = (token.count ?? 0) - 1;
+          if (newCount <= 0) {
+            yTokens.delete(hoveredTokenId);
+          } else {
+            yTokens.set(hoveredTokenId, { ...token, count: newCount });
+          }
+        }
+      }
+    },
     { enabled: tokenEnabled, preventDefault: true }
   );
 
   useHotkeys(
     getKeyBindingsForAction('tokenDelete'),
-    () => hoveredTokenId && tokenActions.onDelete(hoveredTokenId),
+    () => {
+      if (whiteboard && playerId && hoveredTokenId) {
+        const yTokens = whiteboard['yTokens'];
+        const token = yTokens.get(hoveredTokenId);
+        if (token && token.ownerId === playerId) {
+          yTokens.delete(hoveredTokenId);
+        }
+      }
+    },
     { enabled: tokenEnabled, preventDefault: true }
   );
 }
