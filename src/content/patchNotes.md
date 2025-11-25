@@ -1,3 +1,14 @@
+## 2025 November 24
+
+### Features
+- You can now move cards to top and bottom of deck using hotkeys while viewing your deck.
+
+### Changes
+- Bought a domain, aura0.app
+- Changed how hotkeys work
+
+---
+
 ## 2025 November 23
 
 ### Features
