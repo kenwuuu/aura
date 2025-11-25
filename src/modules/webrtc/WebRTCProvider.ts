@@ -116,6 +116,7 @@ export class WebRTCProvider {
 
     console.log('yjs doc')
     console.log(yDoc)
+    console.log('fuck')
 
     this.provider = new WebrtcProvider(this.config.roomName, this.yDoc, {
       signaling: this.config.signalingServers,
