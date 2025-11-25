@@ -22,6 +22,7 @@ interface HotkeyStore {
 
   // Modal states (disable hotkeys when modals are open)
   isModalOpen: boolean;
+  addCardModalOpen: boolean;
 
   // Actions
   setActiveContext: (context: HotkeyContext) => void;
@@ -31,6 +32,7 @@ interface HotkeyStore {
   setHoveredToken: (tokenId: string | null) => void;
   setHoveredPileViewerCard: (cardId: string | null, context: HotkeyContext | null) => void;
   setModalOpen: (isOpen: boolean) => void;
+  setAddCardModalOpen: (isOpen: boolean) => void;
   reset: () => void;
 }
 
@@ -43,6 +45,7 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
   hoveredPileViewerCardId: null,
   hoveredPileViewerContext: null,
   isModalOpen: false,
+  addCardModalOpen: false,
 
   setActiveContext: (context) => set({ activeContext: context }),
 
@@ -116,6 +119,8 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
   },
 
   setModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
+
+  setAddCardModalOpen: (isOpen) => set({ addCardModalOpen: isOpen }),
 
   reset: () => set({
     activeContext: HotkeyContext.Global,

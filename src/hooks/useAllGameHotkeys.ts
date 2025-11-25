@@ -27,6 +27,7 @@ export function useAllGameHotkeys() {
     hoveredPileViewerCardId,
     hoveredPileViewerContext,
     isModalOpen,
+    setAddCardModalOpen,
   } = useHotkeyStore();
 
   // Helper to save deck after modifications
@@ -105,6 +106,14 @@ export function useAllGameHotkeys() {
           }
         });
       }
+    },
+    { enabled: !isModalOpen, preventDefault: true }
+  );
+
+  useHotkeys(
+    getKeyBindingsForAction('addCard'),
+    () => {
+      setAddCardModalOpen(true);
     },
     { enabled: !isModalOpen, preventDefault: true }
   );
