@@ -17,6 +17,8 @@ interface HotkeyStore {
   hoveredHandCardId: string | null;
   hoveredPileType: 'deck' | 'exile' | 'discard' | null;
   hoveredTokenId: string | null;
+  hoveredPileViewerCardId: string | null;
+  hoveredPileViewerContext: HotkeyContext | null;
 
   // Modal states (disable hotkeys when modals are open)
   isModalOpen: boolean;
@@ -27,6 +29,7 @@ interface HotkeyStore {
   setHoveredHandCard: (cardId: string | null) => void;
   setHoveredPile: (pileType: 'deck' | 'exile' | 'discard' | null) => void;
   setHoveredToken: (tokenId: string | null) => void;
+  setHoveredPileViewerCard: (cardId: string | null, context: HotkeyContext | null) => void;
   setModalOpen: (isOpen: boolean) => void;
   reset: () => void;
 }
@@ -37,6 +40,8 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
   hoveredHandCardId: null,
   hoveredPileType: null,
   hoveredTokenId: null,
+  hoveredPileViewerCardId: null,
+  hoveredPileViewerContext: null,
   isModalOpen: false,
 
   setActiveContext: (context) => set({ activeContext: context }),
@@ -49,6 +54,8 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
       hoveredHandCardId: null,
       hoveredPileType: null,
       hoveredTokenId: null,
+      hoveredPileViewerCardId: null,
+      hoveredPileViewerContext: null,
     });
   },
 
@@ -60,6 +67,8 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
       hoveredBattlefieldCardId: null,
       hoveredPileType: null,
       hoveredTokenId: null,
+      hoveredPileViewerCardId: null,
+      hoveredPileViewerContext: null,
     });
   },
 
@@ -75,6 +84,8 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
       hoveredBattlefieldCardId: null,
       hoveredHandCardId: null,
       hoveredTokenId: null,
+      hoveredPileViewerCardId: null,
+      hoveredPileViewerContext: null,
     });
   },
 
@@ -86,6 +97,21 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
       hoveredBattlefieldCardId: null,
       hoveredHandCardId: null,
       hoveredPileType: null,
+      hoveredPileViewerCardId: null,
+      hoveredPileViewerContext: null,
+    });
+  },
+
+  setHoveredPileViewerCard: (cardId, context) => {
+    set({
+      hoveredPileViewerCardId: cardId,
+      hoveredPileViewerContext: context,
+      activeContext: cardId && context ? context : HotkeyContext.Global,
+      // Clear other hover states
+      hoveredBattlefieldCardId: null,
+      hoveredHandCardId: null,
+      hoveredPileType: null,
+      hoveredTokenId: null,
     });
   },
 
@@ -97,5 +123,7 @@ export const useHotkeyStore = create<HotkeyStore>((set) => ({
     hoveredHandCardId: null,
     hoveredPileType: null,
     hoveredTokenId: null,
+    hoveredPileViewerCardId: null,
+    hoveredPileViewerContext: null,
   }),
 }));

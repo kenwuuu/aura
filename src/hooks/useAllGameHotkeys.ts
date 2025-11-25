@@ -11,7 +11,7 @@
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useHotkeyStore } from '@/stores/hotkeyStore';
 import { useGameInstance } from '@/stores/gameInstanceStore';
-import { getKeyBindingsForAction } from '@/data/hotkeys';
+import { getKeyBindingsForAction, HotkeyContext } from '@/data/hotkeys';
 import { DeckPersistenceService } from '@/services/deckPersistence';
 
 export function useAllGameHotkeys() {
@@ -24,6 +24,8 @@ export function useAllGameHotkeys() {
     hoveredHandCardId,
     hoveredPileType,
     hoveredTokenId,
+    hoveredPileViewerCardId,
+    hoveredPileViewerContext,
     isModalOpen,
   } = useHotkeyStore();
 
@@ -488,5 +490,69 @@ export function useAllGameHotkeys() {
       }
     },
     { enabled: tokenEnabled, preventDefault: true }
+  );
+
+  // --- Pile Viewer Card Hotkeys (active when hovering card in pile viewer modal) ---
+
+  const pileViewerEnabled = isModalOpen && !!hoveredPileViewerCardId;
+
+  useHotkeys(
+    getKeyBindingsForAction('moveToHand'),
+    () => {
+      if (hoveredPileViewerCardId) {
+        window.dispatchEvent(new CustomEvent('pileViewerCardAction', {
+          detail: { action: 'moveToHand', cardId: hoveredPileViewerCardId }
+        }));
+      }
+    },
+    { enabled: pileViewerEnabled, preventDefault: true }
+  );
+
+  useHotkeys(
+    getKeyBindingsForAction('moveToDiscard'),
+    () => {
+      if (hoveredPileViewerCardId && hoveredPileViewerContext !== HotkeyContext.Discard) {
+        window.dispatchEvent(new CustomEvent('pileViewerCardAction', {
+          detail: { action: 'moveToDiscard', cardId: hoveredPileViewerCardId }
+        }));
+      }
+    },
+    { enabled: pileViewerEnabled && hoveredPileViewerContext !== HotkeyContext.Discard, preventDefault: true }
+  );
+
+  useHotkeys(
+    getKeyBindingsForAction('moveToExile'),
+    () => {
+      if (hoveredPileViewerCardId && hoveredPileViewerContext !== HotkeyContext.Exile) {
+        window.dispatchEvent(new CustomEvent('pileViewerCardAction', {
+          detail: { action: 'moveToExile', cardId: hoveredPileViewerCardId }
+        }));
+      }
+    },
+    { enabled: pileViewerEnabled && hoveredPileViewerContext !== HotkeyContext.Exile, preventDefault: true }
+  );
+
+  useHotkeys(
+    getKeyBindingsForAction('moveToDeckTop'),
+    () => {
+      if (hoveredPileViewerCardId) {
+        window.dispatchEvent(new CustomEvent('pileViewerCardAction', {
+          detail: { action: 'moveToDeckTop', cardId: hoveredPileViewerCardId }
+        }));
+      }
+    },
+    { enabled: pileViewerEnabled, preventDefault: true }
+  );
+
+  useHotkeys(
+    getKeyBindingsForAction('moveToDeckBottom'),
+    () => {
+      if (hoveredPileViewerCardId) {
+        window.dispatchEvent(new CustomEvent('pileViewerCardAction', {
+          detail: { action: 'moveToDeckBottom', cardId: hoveredPileViewerCardId }
+        }));
+      }
+    },
+    { enabled: pileViewerEnabled, preventDefault: true }
   );
 }
