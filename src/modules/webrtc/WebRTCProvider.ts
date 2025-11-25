@@ -101,7 +101,6 @@ export class WebRTCProvider {
     this.yDoc = yDoc;
     this.config = {
       roomName: config.roomName,
-      peerId: config.peerId,
       signalingServers: config.signalingServers ?? [
         'wss://y-webrtc-eu-production-1328.up.railway.app',
       ],
@@ -115,8 +114,13 @@ export class WebRTCProvider {
     // This persists the document state locally so it survives page reloads
     this.persistence = new IndexeddbPersistence(this.config.roomName, this.yDoc);
 
+    console.log('yjs doc')
+    console.log(yDoc)
+
     this.provider = new WebrtcProvider(this.config.roomName, this.yDoc, {
       signaling: this.config.signalingServers,
+      maxConns: 100, // Increase from default 20-35 to support more simultaneous players
+      filterBcConns: false, // Allow all broadcast channel connections for better mesh connectivity
       // @ts-ignore - y-webrtc uses peerOpts which isn't in the types
       peerOpts: {
         config: {
@@ -124,12 +128,6 @@ export class WebRTCProvider {
         }
       }
     });
-
-    // Set persistent peer ID if provided
-    if (config.peerId) {
-      // @ts-ignore - peerId is not officially exposed but can be set
-      this.provider.peerId = config.peerId;
-    }
 
     this.setupEventListeners();
     this.setupAwareness();

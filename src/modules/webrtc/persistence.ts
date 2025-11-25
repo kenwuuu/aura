@@ -103,22 +103,34 @@ export function restoreAwarenessState(): AwarenessState | null {
 
 /**
  * Set up automatic awareness state persistence
- * Saves awareness state before page unload
- * @returns Cleanup function to remove the event listener
+ * Saves awareness state before page unload and when tab becomes hidden
+ * @returns Cleanup function to remove all event listeners
  */
 export function setupAwarenessStatePersistence(getState: () => AwarenessState | null): () => void {
-  const handleBeforeUnload = () => {
+  const saveState = () => {
     const state = getState();
     if (state) {
       saveAwarenessState(state);
     }
   };
 
-  window.addEventListener('beforeunload', handleBeforeUnload);
+  const handleBeforeUnload = () => {
+    saveState();
+  };
 
-  // Return cleanup function
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      saveState();
+    }
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // Return cleanup function that removes ALL event listeners
   return () => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
   };
 }
 
