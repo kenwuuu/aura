@@ -261,7 +261,7 @@ class AuraApp {
       roomElement.addEventListener("click", (event) => {
         event.preventDefault();
         navigator.clipboard
-          .writeText(baseUrl + this.webrtcProvider.getRoomName())
+          .writeText(window.location.href)
           .then(() => {
             roomElement.innerHTML = `COPIED! ${checkSVG}`;
             roomElement.style.color = '#4ade80';

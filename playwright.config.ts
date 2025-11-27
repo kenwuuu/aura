@@ -44,6 +44,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json',
         viewport: { width: 1920, height: 1080 },
+        permissions: ['clipboard-read', 'clipboard-write'],
       },
     },
 
@@ -62,6 +63,7 @@ export default defineConfig({
         ...devices['Desktop Safari'],
         storageState: 'playwright/.auth/user.json',
         viewport: { width: 1920, height: 1080 },
+        permissions: ['clipboard-read'],
       },
     },
 
