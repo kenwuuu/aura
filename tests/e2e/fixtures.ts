@@ -5,14 +5,6 @@ export const test = base.extend({
     // Navigate to the app with a specific room
     await page.goto('http://localhost:5173/?room=playwright');
 
-    // Close any initial dialogs/modals
-    const closeButton = page.getByRole('button', { name: '× Close' });
-    if (await closeButton.isVisible()) {
-      await closeButton.click();
-    }
-
-    await page.getByRole('button', { name: 'Got it' }).click();
-
     // Check that health display is visible (indicates app is loaded)
     await expect(page.getByText('40')).toBeVisible();
 
