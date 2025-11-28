@@ -45,16 +45,16 @@ test('testDragBattlefieldCardToDiscard', async ({ page }) => {
 });
 
 test('testDragBattlefieldCardToHand', async ({ page }) => {
-  const lastBoardCard = page.locator('.hand-cards .hand-card').nth(7);
+  const eighthBoardCard = page.locator('.hand-cards .hand-card').nth(7);
 
-  await expect(lastBoardCard).toBeVisible();
+  await expect(eighthBoardCard).toBeVisible();
   await dragHandCardToLocator(page.locator('#whiteboard'), page);
-  await expect(lastBoardCard).toBeHidden();
+  await expect(eighthBoardCard).toBeHidden();
 
   const boardCard: Locator = page.locator('div').filter({ hasText: '#' }).nth(3);
   await boardCard.dragTo(page.locator('.hand-cards'));
 
-  await expect(lastBoardCard).toBeVisible();
+  await expect(eighthBoardCard).toBeVisible();
 });
 
 test('testDragExileToDiscard', async ({ page }) => {
