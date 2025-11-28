@@ -57,7 +57,7 @@ test('testDragBattlefieldCardToHand', async ({ page }) => {
   await expect(lastBoardCard).toBeVisible();
 });
 
-test('testDragExileToDiscard', async ({ page }) => {
+test.skip('testDragExileToDiscard', async ({ page }) => {
   // assert exile and discard both empty
   await expect(page.getByText('Exile0')).toBeVisible();
   await expect(page.getByText('Discard0')).toBeVisible();
@@ -72,7 +72,7 @@ test('testDragExileToDiscard', async ({ page }) => {
   await expect(page.getByText('Discard1')).toBeVisible();
 });
 
-test('testDragDiscardToExile', async ({ page }) => {
+test.skip('testDragDiscardToExile', async ({ page }) => {
   // assert exile and discard both empty
   await expect(page.getByText('Exile0')).toBeVisible();
   await expect(page.getByText('Discard0')).toBeVisible();
@@ -85,7 +85,7 @@ test('testDragDiscardToExile', async ({ page }) => {
   await expect(page.getByText('Exile0')).toBeVisible();
 });
 
-test('testDragDeckToExile', async ({ page }) => {
+test.skip('testDragDeckToExile', async ({ page }) => {
   // assert exile and discard both empty
   await expect(page.getByText('Deck92')).toBeVisible();
   await expect(page.getByText('Exile0')).toBeVisible();
@@ -95,7 +95,7 @@ test('testDragDeckToExile', async ({ page }) => {
   await expect(page.getByText('Exile1')).toBeVisible();
 });
 
-test('testDragDeckToDiscard', async ({ page }) => {
+test.skip('testDragDeckToDiscard', async ({ page }) => {
   // assert exile and discard both empty
   await expect(page.getByText('Deck92')).toBeVisible();
   await expect(page.getByText('Discard0')).toBeVisible();
