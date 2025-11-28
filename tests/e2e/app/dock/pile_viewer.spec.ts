@@ -17,7 +17,7 @@ test('testDeckViewerCardToExile', async ({ page }) => {
 
   // move card to exile
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
+  setTimeout(() => {}, 100);
   await page.keyboard.press('s');
   await expect(page.getByText('Exile1')).toBeVisible();
 });
@@ -28,7 +28,7 @@ test('testDeckViewerCardToDiscard', async ({ page }) => {
 
   // move card to discard
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
+  setTimeout(() => {}, 100);
   await page.keyboard.press('d');
   await expect(page.getByText('Discard1')).toBeVisible();
 });
@@ -38,7 +38,7 @@ test('testDeckViewerCardToHand', async ({ page }) => {
 
   // move card to hand
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
+  setTimeout(() => {}, 100);
   const ninthBoardCard = page.locator('.hand-cards .hand-card').nth(8);
   await expect(ninthBoardCard).toBeHidden();
   await page.keyboard.press('h');
@@ -53,14 +53,14 @@ test('testDiscardViewerCardToExile', async ({ page }) => {
   }
 
   await expect(page.getByText('Exile0')).toBeVisible();
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open discard pile viewer
-  await page.getByText('Discard8', { exact: true }).hover();
+  await page.getByText('Discard7', { exact: true }).click();
 
   // move card to exile
+  await secondCardInGrid(page).waitFor({state: "visible"});
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
   await page.keyboard.press('s');
   await expect(page.getByText('Exile1')).toBeVisible();
 });
@@ -72,17 +72,20 @@ test('testDiscardViewerCardToDeckTop', async ({ page }) => {
     await page.keyboard.press('d');
   }
 
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Exile0')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open discard pile viewer
-  await page.getByText('Discard8', { exact: true }).hover();
+  await page.getByText('Discard7', { exact: true }).click();
 
   // move 2 cards to deck top
+  await secondCardInGrid(page).waitFor({state: "visible"});
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
   await page.keyboard.press('t');
+  await secondCardInGrid(page).waitFor({state: "visible"});
+  await secondCardInGrid(page).click();
   await page.keyboard.press('t');
-  await expect(page.getByText('Deck86')).toBeVisible();
+  await expect(page.getByText('Deck87')).toBeVisible();
 });
 
 test('testDiscardViewerCardToDeckBottom', async ({ page }) => {
@@ -92,17 +95,17 @@ test('testDiscardViewerCardToDeckBottom', async ({ page }) => {
     await page.keyboard.press('d');
   }
 
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open discard pile viewer
-  await page.getByText('Discard8', { exact: true }).hover();
+  await page.getByText('Discard7', { exact: true }).click();
 
   // move 2 cards to deck bottom
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
   await page.keyboard.press('y');
+  await secondCardInGrid(page).click();
   await page.keyboard.press('y');
-  await expect(page.getByText('Deck86')).toBeVisible();
+  await expect(page.getByText('Deck87')).toBeVisible();
 });
 
 test('testDiscardViewerCardToHand', async ({ page }) => {
@@ -112,14 +115,14 @@ test('testDiscardViewerCardToHand', async ({ page }) => {
     await page.keyboard.press('d');
   }
 
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open discard pile viewer
-  await page.getByText('Discard8', { exact: true }).hover();
+  await page.getByText('Discard7', { exact: true }).click();
 
   // move card to hand
+  await page.waitForTimeout(150);
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
   const ninthBoardCard = page.locator('.hand-cards .hand-card').nth(8);
   await expect(ninthBoardCard).toBeHidden();
   await page.keyboard.press('h');
@@ -134,14 +137,14 @@ test('testExileViewerCardToDiscard', async ({ page }) => {
   }
 
   await expect(page.getByText('Discard0')).toBeVisible();
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open exile pile viewer
-  await page.getByText('Exile8', { exact: true }).hover();
+  await page.getByText('Exile7', { exact: true }).click();
 
   // move card to discard
+  await page.waitForTimeout(150);
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
   await page.keyboard.press('d');
   await expect(page.getByText('Discard1')).toBeVisible();
 });
@@ -153,17 +156,19 @@ test('testExileViewerCardToDeckTop', async ({ page }) => {
     await page.keyboard.press('s');
   }
 
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open exile pile viewer
-  await page.getByText('Exile8', { exact: true }).hover();
+  await page.getByText('Exile7', { exact: true }).click();
 
   // move 2 cards to deck top
+  await page.waitForTimeout(350);
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
   await page.keyboard.press('t');
+  await page.waitForTimeout(350);
+  await secondCardInGrid(page).click();
   await page.keyboard.press('t');
-  await expect(page.getByText('Deck86')).toBeVisible();
+  await expect(page.getByText('Deck87')).toBeVisible();
 });
 
 test('testExileViewerCardToDeckBottom', async ({ page }) => {
@@ -173,17 +178,19 @@ test('testExileViewerCardToDeckBottom', async ({ page }) => {
     await page.keyboard.press('s');
   }
 
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open exile pile viewer
-  await page.getByText('Exile8', { exact: true }).hover();
+  await page.getByText('Exile7', { exact: true }).click();
 
   // move 2 cards to deck bottom
+  await page.waitForTimeout(350);
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
   await page.keyboard.press('y');
+  await page.waitForTimeout(350);
+  await secondCardInGrid(page).click();
   await page.keyboard.press('y');
-  await expect(page.getByText('Deck86')).toBeVisible();
+  await expect(page.getByText('Deck87')).toBeVisible();
 });
 
 test('testExileViewerCardToHand', async ({ page }) => {
@@ -193,16 +200,16 @@ test('testExileViewerCardToHand', async ({ page }) => {
     await page.keyboard.press('s');
   }
 
-  await expect(page.getByText('Deck84')).toBeVisible();
+  await expect(page.getByText('Deck85')).toBeVisible();
 
   // open exile pile viewer
-  await page.getByText('Exile8', { exact: true }).hover();
+  await page.getByText('Exile7', { exact: true }).click();
 
   // move card to hand
+  await page.waitForTimeout(350);
   await secondCardInGrid(page).click();
-  setTimeout(() => {}, 50);
-  const ninthBoardCard = page.locator('.hand-cards .hand-card').nth(8);
-  await expect(ninthBoardCard).toBeHidden();
+  const ninthHandCard = page.locator('.hand-cards .hand-card').nth(8);
+  await expect(ninthHandCard).toBeHidden();
   await page.keyboard.press('h');
-  await expect(ninthBoardCard).toBeVisible();
+  await expect(ninthHandCard).toBeVisible();
 });
