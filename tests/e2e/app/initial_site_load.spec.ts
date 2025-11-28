@@ -1,5 +1,5 @@
 import { Page } from 'playwright/test';
-import {test, expect} from './fixtures';
+import {test, expect} from '../fixtures';
 
 test.beforeEach(async ({page, context}) => {
   await page.goto('/', {waitUntil: 'networkidle'});
