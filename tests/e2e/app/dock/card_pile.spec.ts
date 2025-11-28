@@ -57,7 +57,7 @@ test('testDragBattlefieldCardToHand', async ({ page }) => {
   await expect(lastBoardCard).toBeVisible();
 });
 
-test.skip('testDragExileToDiscard', async ({ page }) => {
+test('testDragExileToDiscard', async ({ page }) => {
   // assert exile and discard both empty
   await expect(page.getByText('Exile0')).toBeVisible();
   await expect(page.getByText('Discard0')).toBeVisible();
@@ -82,11 +82,10 @@ test.skip('testDragDiscardToExile', async ({ page }) => {
 
   await dragPileToPile('Discard', 'Exile', page);
   await expect(page.getByText('Discard0')).toBeVisible();
-  await expect(page.getByText('Exile0')).toBeVisible();
+  await expect(page.getByText('Exile1')).toBeVisible();
 });
 
 test.skip('testDragDeckToExile', async ({ page }) => {
-  // assert exile and discard both empty
   await expect(page.getByText('Deck92')).toBeVisible();
   await expect(page.getByText('Exile0')).toBeVisible();
 
@@ -96,11 +95,38 @@ test.skip('testDragDeckToExile', async ({ page }) => {
 });
 
 test.skip('testDragDeckToDiscard', async ({ page }) => {
-  // assert exile and discard both empty
   await expect(page.getByText('Deck92')).toBeVisible();
   await expect(page.getByText('Discard0')).toBeVisible();
 
   await dragPileToPile('Deck', 'Discard', page);
   await expect(page.getByText('Deck91')).toBeVisible();
   await expect(page.getByText('Discard1')).toBeVisible();
+});
+
+test.skip('testDragExileToDeck', async ({ page }) => {
+  await expect(page.getByText('Deck92')).toBeVisible();
+  await expect(page.getByText('Exile0')).toBeVisible();
+
+  // load exile with a card
+  await dragHandCardToLocator(page.getByText('Exile0'), page);
+  await expect(page.getByText('Exile1')).toBeVisible();
+
+  // drag exile card to deck
+  await dragPileToPile('Exile', 'Deck', page);
+  await expect(page.getByText('Exile0')).toBeVisible();
+  await expect(page.getByText('Deck93')).toBeVisible();
+});
+
+test.skip('testDragDiscardToDeck', async ({ page }) => {
+  await expect(page.getByText('Deck92')).toBeVisible();
+  await expect(page.getByText('Discard0')).toBeVisible();
+
+  // load discard with a card
+  await dragHandCardToLocator(page.getByText('Discard0'), page);
+  await expect(page.getByText('Discard1')).toBeVisible();
+
+  // drag discard card to deck
+  await dragPileToPile('Discard', 'Deck', page);
+  await expect(page.getByText('Discard0')).toBeVisible();
+  await expect(page.getByText('Deck93')).toBeVisible();
 });
