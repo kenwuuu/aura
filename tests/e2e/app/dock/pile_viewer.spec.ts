@@ -44,7 +44,7 @@ test('testDeckViewerCardToDiscard', async ({ page }) => {
   await secondCardInGrid(page).click();
   await waitForCardGridStable(page);
   await page.keyboard.press('d');
-  await expect(page.getByTestId('discard-count')).toHaveText('1');
+  await expect(page.getByText('Discard1')).toBeVisible();
 });
 
 test('testDeckViewerCardToHand', async ({ page }) => {
@@ -99,8 +99,10 @@ test('testDiscardViewerCardToDeckTop', async ({ page }) => {
   await waitForCardGridStable(page);
   await secondCardInGrid(page).click();
   await page.keyboard.press('t');
+  await waitForCardGridStable(page);
   await secondCardInGrid(page).click();
   await page.keyboard.press('t');
+  await waitForCardGridStable(page);
   const deckCounter = page.getByText('Deck87Draw', { exact: true });
   await deckCounter.waitFor({ state: 'visible' });
 });
