@@ -386,14 +386,12 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
 
   // Get initial order
   const initialOrder = await getCardOrder();
-  console.log('Initial order:', initialOrder);
 
   // Verify we have 5 cards
   expect(initialOrder).toHaveLength(5);
 
   // Store initial card names for verification
   const initialCardNames = initialOrder.map(c => c.cardName);
-  console.log('Initial card names:', initialCardNames);
 
   // Drag the first card (index 0) to the third position (index 2)
   const firstCard = gridItems.nth(0);
@@ -416,7 +414,6 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
 
   // Get order after first drag
   const orderAfterFirstDrag = await getCardOrder();
-  console.log('Order after first drag:', orderAfterFirstDrag);
   const cardNamesAfterFirstDrag = orderAfterFirstDrag.map(c => c.cardName);
 
   expect(cardNamesAfterFirstDrag[0]).toBe(initialCardNames[1]);
@@ -446,7 +443,6 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
 
   // Get final order
   const finalOrder = await getCardOrder();
-  console.log('Final order after second drag:', finalOrder);
   const finalCardNames = finalOrder.map(c => c.cardName);
 
   expect(finalCardNames[0]).toBe(initialCardNames[1]);
