@@ -455,3 +455,321 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
   expect(finalCardNames[3]).toBe(initialCardNames[0]);
   expect(finalCardNames[4]).toBe(initialCardNames[3]);
 });
+
+test.skip('testDeckViewerDragCardToDiscard', async ({ page }) => {
+  await expect(page.getByText('Discard0')).toBeVisible();
+
+  // Open deck viewer
+  await page.getByText('Deck', { exact: true }).click();
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Discard pile element
+  const discardPile = page.getByText('Discard0', { exact: true });
+  const discardBox = await discardPile.boundingBox();
+
+  if (!discardBox) {
+    throw new Error('Could not get discard pile bounding box');
+  }
+
+  // Drag card from deck viewer to discard pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(discardBox.x + discardBox.width / 2, discardBox.y + discardBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify discard pile count increased
+  await expect(page.getByText('Discard1')).toBeVisible();
+});
+
+test.skip('testDeckViewerDragCardToExile', async ({ page }) => {
+  await expect(page.getByText('Exile0')).toBeVisible();
+
+  // Open deck viewer
+  await page.getByText('Deck', { exact: true }).click();
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Exile pile element
+  const exilePile = page.getByText('Exile0', { exact: true });
+  const exileBox = await exilePile.boundingBox();
+
+  if (!exileBox) {
+    throw new Error('Could not get exile pile bounding box');
+  }
+
+  // Drag card from deck viewer to exile pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(exileBox.x + exileBox.width / 2, exileBox.y + exileBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify exile pile count increased
+  await expect(page.getByText('Exile1')).toBeVisible();
+});
+
+test.skip('testDiscardViewerDragCardToExile', async ({ page }) => {
+  // Load discard with cards from deck
+  await page.getByText('Deck92Draw', { exact: true }).hover();
+  for (let i = 0; i < 7; i++) {
+    await page.keyboard.press('d');
+  }
+
+  await expect(page.getByText('Exile0')).toBeVisible();
+  await expect(page.getByText('Discard7')).toBeVisible();
+
+  // Open discard pile viewer
+  await page.getByText('Discard7', { exact: true }).click();
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Exile pile element
+  const exilePile = page.getByText('Exile0', { exact: true });
+  const exileBox = await exilePile.boundingBox();
+
+  if (!exileBox) {
+    throw new Error('Could not get exile pile bounding box');
+  }
+
+  // Drag card from discard viewer to exile pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(exileBox.x + exileBox.width / 2, exileBox.y + exileBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify exile pile count increased and discard decreased
+  await expect(page.getByText('Exile1')).toBeVisible();
+  await expect(page.getByText('Discard6')).toBeVisible();
+});
+
+test.skip('testDiscardViewerDragCardToDeck', async ({ page }) => {
+  // Load discard with cards from deck
+  await page.getByText('Deck92Draw', { exact: true }).hover();
+  for (let i = 0; i < 7; i++) {
+    await page.keyboard.press('d');
+  }
+
+  await expect(page.getByText('Deck85')).toBeVisible();
+  await expect(page.getByText('Discard7')).toBeVisible();
+
+  // Open discard pile viewer
+  await page.getByText('Discard7', { exact: true }).click();
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Deck pile element
+  const deckPile = page.getByText('Deck85', { exact: true });
+  const deckBox = await deckPile.boundingBox();
+
+  if (!deckBox) {
+    throw new Error('Could not get deck pile bounding box');
+  }
+
+  // Drag card from discard viewer to deck pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(deckBox.x + deckBox.width / 2, deckBox.y + deckBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify deck pile count increased and discard decreased
+  await expect(page.getByText('Deck86Draw')).toBeVisible();
+  await expect(page.getByText('Discard6')).toBeVisible();
+});
+
+test.skip('testExileViewerDragCardToDiscard', async ({ page }) => {
+  // Load exile with cards from deck
+  await page.getByText('Deck92Draw', { exact: true }).hover();
+  for (let i = 0; i < 7; i++) {
+    await page.keyboard.press('s');
+  }
+
+  await expect(page.getByText('Discard0')).toBeVisible();
+  await expect(page.getByText('Exile7')).toBeVisible();
+
+  // Open exile pile viewer
+  await page.getByText('Exile7', { exact: true }).click();
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Discard pile element
+  const discardPile = page.getByText('Discard0', { exact: true });
+  const discardBox = await discardPile.boundingBox();
+
+  if (!discardBox) {
+    throw new Error('Could not get discard pile bounding box');
+  }
+
+  // Drag card from exile viewer to discard pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(discardBox.x + discardBox.width / 2, discardBox.y + discardBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify discard pile count increased and exile decreased
+  await expect(page.getByText('Discard1')).toBeVisible();
+  await expect(page.getByText('Exile6')).toBeVisible();
+});
+
+test.skip('testExileViewerDragCardToDeck', async ({ page }) => {
+  // Load exile with cards from deck
+  await page.getByText('Deck92Draw', { exact: true }).hover();
+  for (let i = 0; i < 7; i++) {
+    await page.keyboard.press('s');
+  }
+
+  await expect(page.getByText('Deck85')).toBeVisible();
+  await expect(page.getByText('Exile7')).toBeVisible();
+
+  // Open exile pile viewer
+  await page.getByText('Exile7', { exact: true }).click();
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Deck pile element
+  const deckPile = page.getByText('Deck85', { exact: true });
+  const deckBox = await deckPile.boundingBox();
+
+  if (!deckBox) {
+    throw new Error('Could not get deck pile bounding box');
+  }
+
+  // Drag card from exile viewer to deck pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(deckBox.x + deckBox.width / 2, deckBox.y + deckBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify deck pile count increased and exile decreased
+  await expect(page.getByText('Deck86Draw')).toBeVisible();
+  await expect(page.getByText('Exile6')).toBeVisible();
+});
+
+test.skip('testScryViewerDragCardToDiscard', async ({ page }) => {
+  await expect(page.getByText('Discard0')).toBeVisible();
+
+  // Open scry modal and scry 5 cards
+  await page.getByRole('button', { name: 'Scry' }).click();
+  await page.getByRole('textbox').fill('5');
+  await page.getByRole('button', { name: 'Scry' }).click();
+
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Discard pile element
+  const discardPile = page.getByText('Discard0', { exact: true });
+  const discardBox = await discardPile.boundingBox();
+
+  if (!discardBox) {
+    throw new Error('Could not get discard pile bounding box');
+  }
+
+  // Drag card from scry viewer to discard pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(discardBox.x + discardBox.width / 2, discardBox.y + discardBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify discard pile count increased
+  await expect(page.getByText('Discard1')).toBeVisible();
+});
+
+test.skip('testScryViewerDragCardToDeck', async ({ page }) => {
+  await expect(page.getByText('Deck92')).toBeVisible();
+
+  // Open scry modal and scry 5 cards
+  await page.getByRole('button', { name: 'Scry' }).click();
+  await page.getByRole('textbox').fill('5');
+  await page.getByRole('button', { name: 'Scry' }).click();
+
+  await waitForCardGridStable(page);
+
+  // Get the second card in the grid
+  const secondCard = secondCardInGrid(page);
+  const secondCardBox = await secondCard.boundingBox();
+
+  if (!secondCardBox) {
+    throw new Error('Could not get card bounding box');
+  }
+
+  // Get the Deck pile element (Deck87 after scrying 5)
+  const deckPile = page.getByText('Deck87', { exact: true });
+  const deckBox = await deckPile.boundingBox();
+
+  if (!deckBox) {
+    throw new Error('Could not get deck pile bounding box');
+  }
+
+  // Drag card from scry viewer to deck pile
+  await page.mouse.move(secondCardBox.x + secondCardBox.width / 2, secondCardBox.y + secondCardBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(deckBox.x + deckBox.width / 2, deckBox.y + deckBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
+
+  // Verify deck pile count increased
+  await expect(page.getByText('Deck88Draw')).toBeVisible();
+});
