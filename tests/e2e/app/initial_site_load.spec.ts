@@ -1,11 +1,6 @@
 import { Page } from 'playwright/test';
 import {test, expect} from '../fixtures';
 
-test.beforeEach(async ({page, context}) => {
-  await page.goto('/', {waitUntil: 'networkidle'});
-  await page.evaluate(() => localStorage.clear());
-});
-
 test('testPlayerDraws8CardsOnLoad', async ({page}) => {
   await expect(page.getByText('92')).toBeVisible();
 });

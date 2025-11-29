@@ -2,11 +2,6 @@ import {expect, test} from "../../fixtures";
 import {Page} from "playwright/test";
 import {Locator} from "@playwright/test";
 
-test.beforeEach(async ({page, context}) => {
-  await page.goto('/', {waitUntil: 'networkidle'});
-  await page.evaluate(() => localStorage.clear());
-});
-
 async function dragHandCardToLocator(locator: Locator, page: Page) {
   await page.locator('div').filter({hasText: '#'}).nth(4).dragTo(locator);
   await expect(page.locator('div').filter({hasText: '#'}).nth(3)).toBeVisible();

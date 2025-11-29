@@ -1,10 +1,5 @@
 import { test } from '../../fixtures';
 
-test.beforeEach(async ({page}) => {
-  await page.goto('/', {waitUntil: 'networkidle'});
-  await page.evaluate(() => localStorage.clear());
-});
-
 test('testScryDoesNotDuplicateCards', async ({page}) => {
   await page.getByText('Deck92Draw').hover();
   await page.getByRole('button', { name: 'Scry' }).click();
