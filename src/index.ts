@@ -2,7 +2,7 @@ import * as Y from 'yjs';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { Deck } from './modules/deck';
-import { MultiPlayerBoardManager } from './modules/whiteboard';
+import { MultiPlayerBoardManager, KeyboardHandlerCallbacks } from './modules/whiteboard';
 import { WebRTCProvider } from './modules/webrtc';
 import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/webrtc/persistence';
 import { Player } from './modules/player';
@@ -52,7 +52,9 @@ Sentry.init({
   enableLogs: true,
 });
 
-const baseUrl = "https://aura-dqp.pages.dev/?room=";
+const baseUrl = "https://aura0.app/?room=";
+
+const isDevEnv = import.meta.env.MODE === 'development';
 
 class AuraApp {
   private yDoc: Y.Doc;
@@ -248,7 +250,7 @@ class AuraApp {
       roomElement.addEventListener("click", (event) => {
         event.preventDefault();
         navigator.clipboard
-          .writeText(baseUrl + this.webrtcProvider.getRoomName())
+          .writeText(window.location.href)
           .then(() => {
             roomElement.innerHTML = `COPIED! ${checkSVG}`;
             roomElement.style.color = '#4ade80';
@@ -276,8 +278,13 @@ class AuraApp {
     const FIRST_LOAD_KEY = 'aura-first-load-completed';
     const hasLoadedBefore = localStorage.getItem(FIRST_LOAD_KEY);
 
-    if (!hasLoadedBefore) {
+    if (!hasLoadedBefore || isDevEnv) {
       // First load ever - add default deck if no decks exist
+      // ---
+      // isDevEnv will force this statement to load decks during
+      // Playwright testing. Without it, the browser won't load
+      // the default deck for some reason.
+
       const deckCount = await storage.getDeckCount();
 
       if (deckCount === 0) {
@@ -303,6 +310,8 @@ class AuraApp {
     welcomeModalRoot.id = 'welcome-modal-root';
     document.body.appendChild(welcomeModalRoot);
     const welcomeRoot = createRoot(welcomeModalRoot);
+
+    if (isDevEnv) return;  // don't show modals, for Playwright testing
     welcomeRoot.render(React.createElement(WelcomeModal));
 
     // Setup patch notes modal (shows after welcome modal if there are new notes)

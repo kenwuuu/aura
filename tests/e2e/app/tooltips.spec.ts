@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures';
+import { test, expect } from '../fixtures';
 
 test('testTooltipShowsOnDeck', async ({page}) => {
   await page.getByText('Deck', { exact: true }).hover();

@@ -1,6 +1,7 @@
 import { Card } from '../deck';
 import {CARD_HEIGHT, CARD_WIDTH, DEFAULT_CARD_BACK, YDOC_CARDS_ON_BOARD, YDOC_KEYWORD_TOKENS} from '../../constants';
 import { WhiteboardCard, DragState } from './types';
+import { KeyboardHandler, KeyboardHandlerCallbacks } from './KeyboardHandler';
 import { CardPreview } from '../cardPreview';
 import { TooltipManager } from './TooltipManager';
 import { ZoomController } from './ZoomController';

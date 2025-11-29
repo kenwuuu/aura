@@ -209,6 +209,8 @@ export function PileViewerReact({
           callbacks.onMoveToDeckBottom?.(card);
           break;
       }
+
+      setHoveredCard(null);
     };
 
     window.addEventListener('pileViewerCardAction', handlePileViewerAction);

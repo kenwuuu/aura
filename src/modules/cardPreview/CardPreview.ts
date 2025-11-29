@@ -1,12 +1,12 @@
 import { Card } from '../deck';
-import { DEFAULT_CARD_BACK } from '@/constants';
+import { DEFAULT_CARD_BACK } from '../../constants';
 
 export class CardPreview {
   // Constants
-  private static readonly BASE_WIDTH = 26;
-  private static readonly BASE_HEIGHT = 59; // Maintain Magic card aspect ratio (~1.4:1)
-  private static DISPLAY_WIDTH = 26; // Maintain Magic card aspect ratio (~1.4:1)
-  private static DISPLAY_HEIGHT = 59; // Maintain Magic card aspect ratio (~1.4:1)
+  private static readonly BASE_WIDTH = 500;
+  private static readonly BASE_HEIGHT = 698; // Maintain Magic card aspect ratio (~1.4:1)
+  private static DISPLAY_WIDTH = 500; // Maintain Magic card aspect ratio (~1.4:1)
+  private static DISPLAY_HEIGHT = 698; // Maintain Magic card aspect ratio (~1.4:1)
   private static readonly BORDER_RADIUS = '12px';
   private static readonly Z_INDEX = '10000';
   private static readonly BOX_SHADOW = '0 8px 16px rgba(0, 0, 0, 0.6)';
@@ -62,8 +62,8 @@ export class CardPreview {
     CardPreview.DISPLAY_WIDTH = CardPreview.BASE_WIDTH * this.zoomLevel;
     CardPreview.DISPLAY_HEIGHT = CardPreview.BASE_HEIGHT * this.zoomLevel;
 
-    this.previewElement.style.width = `${CardPreview.DISPLAY_WIDTH}vw`;
-    this.previewElement.style.height = `${CardPreview.DISPLAY_HEIGHT}vh`;
+    this.previewElement.style.width = `${CardPreview.DISPLAY_WIDTH}px`;
+    this.previewElement.style.height = `${CardPreview.DISPLAY_HEIGHT}px`;
   }
 
   public show(card: Card): void {

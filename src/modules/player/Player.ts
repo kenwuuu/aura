@@ -248,6 +248,10 @@ export class Player {
     return this.discard;
   }
 
+  public getScryPile(): CardPile {
+    return this.scry;
+  }
+
   public moveCardToDeckTop(card: Card): void {
     this.deck.addCardToTop(card);
     this.syncToYState();

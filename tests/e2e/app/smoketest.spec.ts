@@ -1,4 +1,4 @@
-import {expect, test} from "./fixtures";
+import {expect, test} from "../fixtures";
 import {Locator} from "@playwright/test";
 
 test('testImportDeck', async ({ page }) => {
@@ -39,7 +39,7 @@ test('testImportDeck', async ({ page }) => {
 
   // Confirm dragging card to exile places it in exile
   await boardCard2.click();
-  await boardCard2.dragTo(page.getByText('Exile'));
+  await boardCard2.dragTo(page.locator('#local-dock').getByText('Exile'));
   await expect(page.getByText('1').nth(1)).toBeVisible();
 
   // Confirm dragging card to discard places it in discard
