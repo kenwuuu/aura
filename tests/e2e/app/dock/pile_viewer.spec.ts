@@ -1,11 +1,6 @@
 import {expect, test} from "../../fixtures";
 import {Locator, Page} from "@playwright/test";
 
-test.beforeEach(async ({page, context}) => {
-  await page.goto('/', {waitUntil: 'networkidle'});
-  await page.evaluate(() => localStorage.clear());
-});
-
 function secondCardInGrid(page) {
   const secondCardInGrid: Locator = page.getByRole('img', {name: 'Card Back'}).nth(1);
   return secondCardInGrid;
@@ -128,11 +123,12 @@ test('testDiscardViewerCardToDeckTop', async ({ page }) => {
   // move 2 cards to deck top
   await waitForCardGridStable(page);
   await secondCardInGrid(page).click();
+  await waitForCardGridStable(page);
   await page.keyboard.press('t');
   await waitForCardGridStable(page);
   await secondCardInGrid(page).click();
-  await page.keyboard.press('t');
   await waitForCardGridStable(page);
+  await page.keyboard.press('t');
   const deckCounter = page.getByText('Deck87Draw', { exact: true });
   await deckCounter.waitFor({ state: 'visible' });
 });
