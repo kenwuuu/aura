@@ -395,12 +395,10 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
   const initialCardNames = initialOrder.map(c => c.cardName);
   console.log('Initial card names:', initialCardNames);
 
-  // Drag the first card to the third position
-  // Use mouse events for dnd-kit compatibility
+  // Drag the first card (index 0) to the third position (index 2)
   const firstCard = gridItems.nth(0);
   const thirdCard = gridItems.nth(2);
 
-  // Get bounding boxes for drag operation
   const firstBox = await firstCard.boundingBox();
   const thirdBox = await thirdCard.boundingBox();
 
@@ -408,7 +406,7 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
     throw new Error('Could not get card bounding boxes');
   }
 
-  // Perform drag with mouse events (dnd-kit requires 8px movement threshold)
+  // Perform first drag with mouse events (dnd-kit requires 8px movement threshold)
   await page.mouse.move(firstBox.x + firstBox.width / 2, firstBox.y + firstBox.height / 2);
   await page.mouse.down();
   await page.mouse.move(thirdBox.x + thirdBox.width / 2, thirdBox.y + thirdBox.height / 2, { steps: 10 });
@@ -416,21 +414,18 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
   await page.mouse.up();
   await page.waitForTimeout(500); // Wait for drag animation
 
-  // Get new order after first drag
+  // Get order after first drag
   const orderAfterFirstDrag = await getCardOrder();
   console.log('Order after first drag:', orderAfterFirstDrag);
-
-  // Verify we still have 5 cards
-  expect(orderAfterFirstDrag).toHaveLength(5);
-
-  // Verify card names changed order (first card should now be in a different position)
   const cardNamesAfterFirstDrag = orderAfterFirstDrag.map(c => c.cardName);
-  expect(cardNamesAfterFirstDrag).not.toEqual(initialCardNames);
 
-  // The first card should have moved
-  expect(cardNamesAfterFirstDrag[0]).not.toBe(initialCardNames[0]);
+  expect(cardNamesAfterFirstDrag[0]).toBe(initialCardNames[1]);
+  expect(cardNamesAfterFirstDrag[1]).toBe(initialCardNames[2]);
+  expect(cardNamesAfterFirstDrag[2]).toBe(initialCardNames[0]);
+  expect(cardNamesAfterFirstDrag[3]).toBe(initialCardNames[3]);
+  expect(cardNamesAfterFirstDrag[4]).toBe(initialCardNames[4]);
 
-  // Drag another card - drag the card now in position 4 to position 1
+  // Second drag: drag the card at position 4 to position 1
   const fifthCard = gridItems.nth(4);
   const secondCard = gridItems.nth(1);
 
@@ -441,7 +436,7 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
     throw new Error('Could not get card bounding boxes for second drag');
   }
 
-  // Perform second drag with mouse events
+  // Perform second drag
   await page.mouse.move(fifthBox.x + fifthBox.width / 2, fifthBox.y + fifthBox.height / 2);
   await page.mouse.down();
   await page.mouse.move(secondBox.x + secondBox.width / 2, secondBox.y + secondBox.height / 2, { steps: 10 });
@@ -452,17 +447,11 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
   // Get final order
   const finalOrder = await getCardOrder();
   console.log('Final order after second drag:', finalOrder);
-
-  // Verify we still have 5 cards
-  expect(finalOrder).toHaveLength(5);
-
-  // Verify the order changed again
   const finalCardNames = finalOrder.map(c => c.cardName);
-  expect(finalCardNames).not.toEqual(cardNamesAfterFirstDrag);
 
-  // All original cards should still be present (no cards lost)
-  const finalCardNamesSet = new Set(finalCardNames);
-  initialCardNames.forEach(name => {
-    expect(finalCardNamesSet.has(name)).toBeTruthy();
-  });
+  expect(finalCardNames[0]).toBe(initialCardNames[1]);
+  expect(finalCardNames[1]).toBe(initialCardNames[4]);
+  expect(finalCardNames[2]).toBe(initialCardNames[2]);
+  expect(finalCardNames[3]).toBe(initialCardNames[0]);
+  expect(finalCardNames[4]).toBe(initialCardNames[3]);
 });
