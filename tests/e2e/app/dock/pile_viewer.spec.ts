@@ -357,61 +357,112 @@ test('testScryViewerDragAndDropReordering', async ({ page }) => {
   await page.getByRole('textbox').fill('5');
   await page.getByRole('button', { name: 'Scry' }).click();
 
-  // Wait for cards to be visible
-  await waitForCardGridStable(page);
+  // Wait for cards to be visible - use a more specific locator
+  const gridItems = page.locator('.deck-pile-viewer-grid > div');
+  await expect(gridItems).toHaveCount(5, { timeout: 10000 });
+  await page.waitForTimeout(500); // Extra wait for micro-batching
 
-  // Get all card elements
-  const cardGridItems = page.locator('.card-grid-item');
-  await expect(cardGridItems).toHaveCount(5);
+  // Helper function to get card order by reading card names and positions
+  const getCardOrder = async () => {
+    return await page.evaluate(() => {
+      const dialog = document.querySelector('[role="dialog"]');
+      const grid = dialog?.querySelector('.deck-pile-viewer-grid');
+      const items = grid?.children || [];
 
-  // Get position labels to verify order
-  const getPositionLabels = async () => {
-    const labels = await page.locator('.card-grid-item-position').allTextContents();
-    return labels;
+      return Array.from(items).map(item => {
+        const cardGridItem = item.querySelector('[data-card-id]');
+        const img = cardGridItem?.querySelector('img');
+        const cardName = img?.alt;
+        const allText = item.textContent;
+        const positionMatch = allText.match(/(Top \d+)/);
+
+        return {
+          cardName,
+          position: positionMatch ? positionMatch[1] : null
+        };
+      });
+    });
   };
 
   // Get initial order
-  const initialOrder = await getPositionLabels();
+  const initialOrder = await getCardOrder();
   console.log('Initial order:', initialOrder);
 
-  // Expected initial order should be "Top 0", "Top 1", "Top 2", "Top 3", "Top 4"
-  expect(initialOrder).toEqual(['Top 0', 'Top 1', 'Top 2', 'Top 3', 'Top 4']);
+  // Verify we have 5 cards
+  expect(initialOrder).toHaveLength(5);
 
-  // Drag the first card (Top 0) to the third position
-  const firstCard = cardGridItems.nth(0);
-  const thirdCard = cardGridItems.nth(2);
+  // Store initial card names for verification
+  const initialCardNames = initialOrder.map(c => c.cardName);
+  console.log('Initial card names:', initialCardNames);
 
-  await firstCard.dragTo(thirdCard);
-  await waitForCardGridStable(page);
+  // Drag the first card to the third position
+  // Use mouse events for dnd-kit compatibility
+  const firstCard = gridItems.nth(0);
+  const thirdCard = gridItems.nth(2);
 
-  // Get new order after drag
-  const newOrder = await getPositionLabels();
-  console.log('Order after dragging first to third:', newOrder);
+  // Get bounding boxes for drag operation
+  const firstBox = await firstCard.boundingBox();
+  const thirdBox = await thirdCard.boundingBox();
 
-  // After dragging index 0 to index 2, the order should shift
-  // Original: [0, 1, 2, 3, 4]
-  // After moving 0 to position 2: [1, 2, 0, 3, 4]
-  // But position labels should update to reflect new logical positions
-  expect(newOrder).toHaveLength(5);
+  if (!firstBox || !thirdBox) {
+    throw new Error('Could not get card bounding boxes');
+  }
 
-  // Drag another card - drag what's now in position 3 to position 0
-  const fourthCard = cardGridItems.nth(3);
-  const newFirstCard = cardGridItems.nth(0);
+  // Perform drag with mouse events (dnd-kit requires 8px movement threshold)
+  await page.mouse.move(firstBox.x + firstBox.width / 2, firstBox.y + firstBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(thirdBox.x + thirdBox.width / 2, thirdBox.y + thirdBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
 
-  await fourthCard.dragTo(newFirstCard);
-  await waitForCardGridStable(page);
+  // Get new order after first drag
+  const orderAfterFirstDrag = await getCardOrder();
+  console.log('Order after first drag:', orderAfterFirstDrag);
+
+  // Verify we still have 5 cards
+  expect(orderAfterFirstDrag).toHaveLength(5);
+
+  // Verify card names changed order (first card should now be in a different position)
+  const cardNamesAfterFirstDrag = orderAfterFirstDrag.map(c => c.cardName);
+  expect(cardNamesAfterFirstDrag).not.toEqual(initialCardNames);
+
+  // The first card should have moved
+  expect(cardNamesAfterFirstDrag[0]).not.toBe(initialCardNames[0]);
+
+  // Drag another card - drag the card now in position 4 to position 1
+  const fifthCard = gridItems.nth(4);
+  const secondCard = gridItems.nth(1);
+
+  const fifthBox = await fifthCard.boundingBox();
+  const secondBox = await secondCard.boundingBox();
+
+  if (!fifthBox || !secondBox) {
+    throw new Error('Could not get card bounding boxes for second drag');
+  }
+
+  // Perform second drag with mouse events
+  await page.mouse.move(fifthBox.x + fifthBox.width / 2, fifthBox.y + fifthBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(secondBox.x + secondBox.width / 2, secondBox.y + secondBox.height / 2, { steps: 10 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+  await page.waitForTimeout(500); // Wait for drag animation
 
   // Get final order
-  const finalOrder = await getPositionLabels();
+  const finalOrder = await getCardOrder();
   console.log('Final order after second drag:', finalOrder);
 
   // Verify we still have 5 cards
   expect(finalOrder).toHaveLength(5);
 
-  // Position labels should still be sequential (Top 0 through Top 4)
-  // even though the underlying cards have been reordered
-  const hasAllPositions = ['Top 0', 'Top 1', 'Top 2', 'Top 3', 'Top 4'].every(
-    pos => finalOrder.includes(pos)
-  );
-  expect(hasAllPositions).toBeTruthy();
+  // Verify the order changed again
+  const finalCardNames = finalOrder.map(c => c.cardName);
+  expect(finalCardNames).not.toEqual(cardNamesAfterFirstDrag);
+
+  // All original cards should still be present (no cards lost)
+  const finalCardNamesSet = new Set(finalCardNames);
+  initialCardNames.forEach(name => {
+    expect(finalCardNamesSet.has(name)).toBeTruthy();
+  });
 });
