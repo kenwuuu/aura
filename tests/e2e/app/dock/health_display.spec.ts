@@ -1,4 +1,4 @@
-import { test } from '../../fixtures';
+import { test, expect } from '../../fixtures';
 
 test('testScryDoesNotDuplicateCards', async ({page}) => {
   await page.getByText('Deck92Draw').hover();
@@ -8,3 +8,75 @@ test('testScryDoesNotDuplicateCards', async ({page}) => {
   await page.getByRole('button', { name: '× Close' }).click();
   await page.getByText('Deck92Draw').hover();
 });
+
+test('testLoseHealthButton', async ({page}) => {
+  expect(page.getByText('40', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '-' }).first().click();
+  expect(page.getByText('39', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '-' }).first().click();
+  expect(page.getByText('38', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '-' }).first().click();
+  expect(page.getByText('37', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '-' }).first().click();
+  expect(page.getByText('36', { exact: true })).toBeVisible();
+})
+
+test('testLoseHealthHotkey1', async ({page}) => {
+  expect(page.getByText('40', { exact: true })).toBeVisible();
+  await page.keyboard.press('-');
+  expect(page.getByText('39', { exact: true })).toBeVisible();
+  await page.keyboard.press('_');
+  expect(page.getByText('38', { exact: true })).toBeVisible();
+  await page.keyboard.press('-');
+  expect(page.getByText('37', { exact: true })).toBeVisible();
+  await page.keyboard.press('-');
+  expect(page.getByText('36', { exact: true })).toBeVisible();
+})
+
+test('testLoseHealthHotkey2', async ({page}) => {
+  expect(page.getByText('40', { exact: true })).toBeVisible();
+  await page.keyboard.press('_');
+  expect(page.getByText('39', { exact: true })).toBeVisible();
+  await page.keyboard.press('_');
+  expect(page.getByText('38', { exact: true })).toBeVisible();
+  await page.keyboard.press('_');
+  expect(page.getByText('37', { exact: true })).toBeVisible();
+  await page.keyboard.press('_');
+  expect(page.getByText('36', { exact: true })).toBeVisible();
+})
+
+test('testGainHealthButton', async ({page}) => {
+  expect(page.getByText('40', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '+' }).first().click();
+  expect(page.getByText('41', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '+' }).first().click();
+  expect(page.getByText('42', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '+' }).first().click();
+  expect(page.getByText('43', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '+' }).first().click();
+  expect(page.getByText('44', { exact: true })).toBeVisible();
+})
+
+test('testGainHealthHotkey', async ({page}) => {
+  expect(page.getByText('40', { exact: true })).toBeVisible();
+  await page.keyboard.press('=');
+  expect(page.getByText('41', { exact: true })).toBeVisible();
+  await page.keyboard.press('=');
+  expect(page.getByText('42', { exact: true })).toBeVisible();
+  await page.keyboard.press('=');
+  expect(page.getByText('43', { exact: true })).toBeVisible();
+  await page.keyboard.press('=');
+  expect(page.getByText('44', { exact: true })).toBeVisible();
+})
+
+test('testGainHealthHotkey2', async ({page}) => {
+  expect(page.getByText('40', { exact: true })).toBeVisible();
+  await page.keyboard.press('+');
+  expect(page.getByText('41', { exact: true })).toBeVisible();
+  await page.keyboard.press('+');
+  expect(page.getByText('42', { exact: true })).toBeVisible();
+  await page.keyboard.press('+');
+  expect(page.getByText('43', { exact: true })).toBeVisible();
+  await page.keyboard.press('+');
+  expect(page.getByText('44', { exact: true })).toBeVisible();
+})
