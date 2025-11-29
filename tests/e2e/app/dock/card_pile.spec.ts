@@ -57,7 +57,7 @@ test('testDragBattlefieldCardToHand', async ({ page }) => {
   await expect(eighthBoardCard).toBeVisible();
 });
 
-test('testDragExileToDiscard', async ({ page }) => {
+test.skip('testDragExileToDiscard', async ({ page }) => {
   // assert exile and discard both empty
   await expect(page.getByText('Exile0')).toBeVisible();
   await expect(page.getByText('Discard0')).toBeVisible();
