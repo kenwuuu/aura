@@ -20,7 +20,7 @@ export const HotkeyContext = {
 
 export type HotkeyContext = typeof HotkeyContext[keyof typeof HotkeyContext];
 
-export interface HotkeyDefinition {
+export interface Hotkey {
   key: string; // Display name for UI (e.g., "Space", "+  or  =")
   keys: string[]; // Actual key bindings for react-hotkeys-hook (e.g., ["space"], ["+", "="])
   context: HotkeyContext[];
@@ -29,7 +29,7 @@ export interface HotkeyDefinition {
   action: string; // Unique action identifier (e.g., "tap", "draw", "addCounter")
 }
 
-export const HOTKEYS: HotkeyDefinition[] = [
+export const HOTKEYS: Hotkey[] = [
   // Global shortcuts (work anywhere)
   {
     key: 'C',
@@ -65,7 +65,7 @@ export const HOTKEYS: HotkeyDefinition[] = [
   },
   {
     key: '+  or  =',
-    keys: ['+', '='],
+    keys: ['shift+equal', 'equal'],
     context: ['global', "health"],
     shortDescription: '+1 life',
     longDescription: 'Gain 1 life',
@@ -73,7 +73,7 @@ export const HOTKEYS: HotkeyDefinition[] = [
   },
   {
     key: '-  or  _',
-    keys: ['-', '_'],
+    keys: ['minus', 'shift+minus'],
     context: ['global', "health"],
     shortDescription: '-1 life',
     longDescription: 'Lose 1 life',
@@ -208,7 +208,7 @@ export const HOTKEYS: HotkeyDefinition[] = [
 /**
  * Get hotkeys relevant to a specific context
  */
-export function getHotkeysForContext(context: HotkeyContext): HotkeyDefinition[] {
+export function getHotkeysForContext(context: HotkeyContext): Hotkey[] {
   return HOTKEYS.filter(hotkey => hotkey.context.includes(context));
 }
 
@@ -226,6 +226,6 @@ export function getAllHotkeysWithLongDescriptions(): Array<{ key: string; action
  * Get key bindings for a specific action (for react-hotkeys-hook)
  */
 export function getKeyBindingsForAction(action: string): string[] {
-  const hotkey = HOTKEYS.find(h => h.action === action);
+  const hotkey = HOTKEYS.find((h) => h.action === action);
   return hotkey?.keys ?? [];
 }

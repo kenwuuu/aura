@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { HotkeyTooltip } from '../../components';
-import { HotkeyContext, HotkeyDefinition } from '../../data/hotkeys';
+import { HotkeyContext, Hotkey } from '../../data/hotkeys';
 
 /**
  * Manages hotkey tooltip display for the battlefield
@@ -10,7 +10,7 @@ export class TooltipManager {
   private tooltipRoot: Root | null = null;
   private tooltipContainer: HTMLElement | null = null;
   private clickedCardId: string | null = null;
-  private onHotkeyClick: ((hotkey: HotkeyDefinition, cardId: string) => void) | null = null;
+  private onHotkeyClick: ((hotkey: Hotkey, cardId: string) => void) | null = null;
   private hoverTimeout: number | null = null;
   private hideTimeout: number | null = null;
   private isTooltipHovered: boolean = false;
@@ -20,7 +20,7 @@ export class TooltipManager {
   /**
    * Initialize tooltip container and event listeners
    */
-  setup(onHotkeyClick?: (hotkey: HotkeyDefinition, cardId: string) => void): void {
+  setup(onHotkeyClick?: (hotkey: Hotkey, cardId: string) => void): void {
     // Create tooltip container
     this.tooltipContainer = document.createElement('div');
     this.tooltipContainer.className = 'hotkey-tooltip-container-battlefield';
@@ -92,7 +92,7 @@ export class TooltipManager {
         mouseX: clickX,
         mouseY: clickY,
         title: title,
-        onHotkeyClick: (hotkey: HotkeyDefinition) => {
+        onHotkeyClick: (hotkey: Hotkey) => {
           if (this.onHotkeyClick && this.clickedCardId) {
             this.onHotkeyClick(hotkey, this.clickedCardId);
           }

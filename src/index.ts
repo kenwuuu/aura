@@ -166,7 +166,7 @@ class AuraApp {
 
     this.setupEventListeners();
     this.setupConnectionStatus();
-    this.setupAllHotkeys(); // Unified hotkey system using react-hotkeys-hook
+    this.setupAllHotkeys();
     this.setupDeckManager();
     this.setupHelpModal();
     this.setupDiscordButton();

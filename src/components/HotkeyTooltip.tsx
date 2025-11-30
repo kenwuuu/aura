@@ -1,12 +1,12 @@
 import React, {useState, useRef, useLayoutEffect} from 'react';
-import { HotkeyContext, getHotkeysForContext, HotkeyDefinition } from '../data/hotkeys';
+import { HotkeyContext, getHotkeysForContext, Hotkey } from '../data/hotkeys';
 
 interface HotkeyTooltipProps {
   context: HotkeyContext;
   mouseX: number;
   mouseY: number;
   isMouseDown?: boolean;
-  onHotkeyClick?: (hotkey: HotkeyDefinition) => void;
+  onHotkeyClick?: (hotkey: Hotkey) => void;
   title?: string;
 }
 
@@ -100,7 +100,7 @@ export const HotkeyTooltip: React.FC<HotkeyTooltipProps> = ({ context, mouseX, m
     return null;
   }
 
-  const handleHotkeyClick = (hotkey: HotkeyDefinition, e: React.MouseEvent) => {
+  const handleHotkeyClick = (hotkey: Hotkey, e: React.MouseEvent) => {
     e.stopPropagation();
     if (onHotkeyClick) {
       onHotkeyClick(hotkey);

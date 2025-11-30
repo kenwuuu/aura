@@ -14,7 +14,7 @@ import * as React from 'react';
 import * as Y from 'yjs';
 import { Card } from '../../deck';
 import { TooltipManager } from '../../whiteboard/TooltipManager';
-import { HotkeyContext, HotkeyDefinition } from '@/data/hotkeys';
+import { HotkeyContext, Hotkey } from '@/data/hotkeys';
 import {
   Dialog,
   DialogContent,
@@ -158,7 +158,7 @@ export function PileViewerReact({
     if (!isOpen) return;
 
     tooltipManagerRef.current = new TooltipManager();
-    tooltipManagerRef.current.setup((hotkey: HotkeyDefinition, cardId: string) => {
+    tooltipManagerRef.current.setup((hotkey: Hotkey, cardId: string) => {
       const card = cards.find((c) => c.id === cardId);
       if (!card) return;
 
