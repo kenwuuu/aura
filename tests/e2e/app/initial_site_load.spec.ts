@@ -2,13 +2,13 @@ import { Page } from 'playwright/test';
 import {test, expect} from '../fixtures';
 
 test('testPlayerDraws8CardsOnLoad', async ({page}) => {
-  await page.getByText('92').waitFor({ state: 'visible', timeout: 5000})
-  await expect(page.getByText('92')).toBeVisible();
+  await page.getByText('92', { exact: true }).waitFor({ state: 'visible', timeout: 5000})
+  await expect(page.getByText('92', { exact: true })).toBeVisible();
 });
 
 test('testPlayerStartsWith40Health', async ({page}) => {
-  await page.getByText('40').waitFor({ state: 'visible', timeout: 5000})
-  await expect(page.getByText('40', {exact: true})).toBeVisible();
+  await page.getByText('40', { exact: true }).waitFor({ state: 'visible', timeout: 5000})
+  await expect(page.getByText('40', { exact: true })).toBeVisible();
 });
 
 test('testChooseDeck', async ({page}) => {
