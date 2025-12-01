@@ -21,6 +21,44 @@ export function parseDecklist(text: string): DeckLineItem[] {
     .filter(entry => !isNaN(entry.count) && entry.name.length > 0);
 }
 
+/**
+ * Validate if text is in decklist format
+ * Format: "<count> <card name>" per line
+ * Example: "4 Lightning Bolt" or "4x Lightning Bolt"
+ */
+export function validateFormat(text: string): boolean {
+  if (!text || text.trim().length === 0) {
+    return false;
+  }
+
+  const lines = text.trim().split('\n').filter(line => line.trim().length > 0);
+  if (lines.length === 0) {
+    return false;
+  }
+
+  // Check if at least one line matches the expected format
+  const validLines = lines.filter(line => {
+    const trimmed = line.trim();
+    // Must start with a digit
+    if (!/^\d/.test(trimmed)) {
+      return false;
+    }
+
+    const parts = trimmed.split(/\s+/);
+    let firstPart = parts[0];
+
+    // Handle 'x' notation
+    if (firstPart.toLowerCase().endsWith('x')) {
+      firstPart = firstPart.slice(0, -1);
+    }
+
+    const count = parseInt(firstPart, 10);
+    return !isNaN(count) && count > 0 && parts.length > 1;
+  });
+
+  return validLines.length > 0;
+}
+
 function parseCount(firstPart: string): number {
   // Handle 'x' notation (e.g., "20x" -> "20")
   if (firstPart.toLowerCase().endsWith('x')) {

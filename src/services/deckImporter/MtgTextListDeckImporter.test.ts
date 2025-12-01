@@ -273,49 +273,4 @@ SIDEBOARD
 //       expect(result.errors).toBeUndefined();
 //     });
 //   });
-
-  describe('validateFormat', () => {
-    it('should validate deck with x notation', () => {
-      const deckText = `4x Lightning Bolt
-20x Mountain`;
-
-      const result = importer.validateFormat(deckText);
-
-      expect(result).toBe(true);
-    });
-
-    it('should validate deck with mixed notation', () => {
-      const deckText = `4x Lightning Bolt
-20 Mountain`;
-
-      const result = importer.validateFormat(deckText);
-
-      expect(result).toBe(true);
-    });
-
-    it('should invalidate empty deck', () => {
-      const result = importer.validateFormat('');
-      expect(result).toBe(false);
-    });
-
-    it('should invalidate deck with only section headers', () => {
-      const deckText = `SIDEBOARD:
-COMMANDER:`;
-
-      const result = importer.validateFormat(deckText);
-
-      expect(result).toBe(false);
-    });
-
-//     it('should validate deck even if it contains lines to be ignored', () => {
-//       const deckText = `# Comment
-// 4 Lightning Bolt
-// Some text
-// 20 Mountain`;
-//
-//       const result = importer.validateFormat(deckText);
-//
-//       expect(result).toBe(true);
-//     });
-  });
 });

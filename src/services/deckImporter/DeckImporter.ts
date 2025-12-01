@@ -13,11 +13,4 @@ export abstract class DeckImporter {
    * @returns Promise resolving to import result with cards and metadata
    */
   public abstract importFromText(text: string): Promise<DeckImportResult>;
-
-  /**
-   * Validate if the provided text is in the correct format
-   * @param text The text to validate
-   * @returns true if the format is valid
-   */
-  public abstract validateFormat(text: string): boolean;
 }

@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach} from 'vitest';
-import {parseDecklist} from './DeckListParser';
+import {parseDecklist, validateFormat} from './DeckListParser';
 
 describe('DeckListParser', () => {
   describe('parseDecklist', () => {
@@ -431,5 +431,50 @@ SIDEBOARD:
         expect(result[2]).toEqual({ count: 1, name: 'Zuran Orb', setCode: 'PTC', collectorNumber: 'et350' });
       });
     });
+  });
+
+  describe('validateFormat', () => {
+    it('should validate deck with x notation', () => {
+      const deckText = `4x Lightning Bolt
+20x Mountain`;
+
+      const result = validateFormat(deckText);
+
+      expect(result).toBe(true);
+    });
+
+    it('should validate deck with mixed notation', () => {
+      const deckText = `4x Lightning Bolt
+20 Mountain`;
+
+      const result = validateFormat(deckText);
+
+      expect(result).toBe(true);
+    });
+
+    it('should invalidate empty deck', () => {
+      const result = validateFormat('');
+      expect(result).toBe(false);
+    });
+
+    it('should invalidate deck with only section headers', () => {
+      const deckText = `SIDEBOARD:
+COMMANDER:`;
+
+      const result = validateFormat(deckText);
+
+      expect(result).toBe(false);
+    });
+
+//     it('should validate deck even if it contains lines to be ignored', () => {
+//       const deckText = `# Comment
+// 4 Lightning Bolt
+// Some text
+// 20 Mountain`;
+//
+//       const result = validateFormat(deckText);
+//
+//       expect(result).toBe(true);
+//     });
   });
 });
