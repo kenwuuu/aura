@@ -1,12 +1,12 @@
 import { DeckImporter, DeckImportResult } from './DeckImporter';
-import {DeckLineItem, parseDecklist} from "@/services/deckImporter/DeckListParser";
-import {CardDataResult, ScryfallApiService} from '../scryfall';
+import { DeckLineItem, parseDecklist, validateFormat } from "@/services/deckImporter/DeckListParser";
+import { CardDataResult, ScryfallApiService } from '../scryfall';
 import { Card } from '@/modules/deck';
 import * as Sentry from "@sentry/browser";
 
 export class MtgTextListDeckImporter extends DeckImporter {
   private scryfallApi: ScryfallApiService;
-  private onProgress?: (current: number, total: number) => void;
+  private readonly onProgress?: (current: number, total: number) => void;
 
   constructor(onProgress?: (current: number, total: number) => void) {
     super();
@@ -23,7 +23,7 @@ export class MtgTextListDeckImporter extends DeckImporter {
       metadata: {},
     }
 
-    if (!this.validateFormat(text)) {
+    if (!validateFormat(text)) {
       deck.errors = ["Invalid deck format. Expected format: \"[count] [card name]\" per line"];
       return deck;
     }
@@ -105,44 +105,6 @@ export class MtgTextListDeckImporter extends DeckImporter {
     }
 
     return sectionHeaders;
-  }
-
-  /**
-   * Validate if text is in decklist format
-   * Format: "<count> <card name>" per line
-   * Example: "4 Lightning Bolt" or "4x Lightning Bolt"
-   */
-  public validateFormat(text: string): boolean {
-    if (!text || text.trim().length === 0) {
-      return false;
-    }
-
-    const lines = text.trim().split('\n').filter(line => line.trim().length > 0);
-    if (lines.length === 0) {
-      return false;
-    }
-
-    // Check if at least one line matches the expected format
-    const validLines = lines.filter(line => {
-      const trimmed = line.trim();
-      // Must start with a digit
-      if (!/^\d/.test(trimmed)) {
-        return false;
-      }
-
-      const parts = trimmed.split(/\s+/);
-      let firstPart = parts[0];
-
-      // Handle 'x' notation
-      if (firstPart.toLowerCase().endsWith('x')) {
-        firstPart = firstPart.slice(0, -1);
-      }
-
-      const count = parseInt(firstPart, 10);
-      return !isNaN(count) && count > 0 && parts.length > 1;
-    });
-
-    return validLines.length > 0;
   }
 
   private parseResultsIntoDeck(deckImportResult: DeckImportResult, results: CardDataResult[]) {
