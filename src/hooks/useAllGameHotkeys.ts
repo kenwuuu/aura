@@ -13,6 +13,7 @@ import { useHotkeyStore } from '@/stores/hotkeyStore';
 import { useGameInstance } from '@/stores/gameInstanceStore';
 import { getKeyBindingsForAction, HotkeyContext } from '@/data/hotkeys';
 import { DeckPersistenceService } from '@/services/deckPersistence';
+import { executeBattlefieldCardAction } from '@/actions/battlefieldCardActions';
 
 export function useAllGameHotkeys() {
   // Get game instances from store
@@ -126,11 +127,7 @@ export function useAllGameHotkeys() {
     getKeyBindingsForAction('tap'),
     () => {
       if (whiteboard && playerId && hoveredBattlefieldCardId) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          yCards.set(hoveredBattlefieldCardId, { ...card, isTapped: !card.isTapped });
-        }
+        executeBattlefieldCardAction('tap', hoveredBattlefieldCardId, whiteboard, playerId);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -140,11 +137,7 @@ export function useAllGameHotkeys() {
     getKeyBindingsForAction('flip'),
     () => {
       if (whiteboard && playerId && hoveredBattlefieldCardId) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          yCards.set(hoveredBattlefieldCardId, { ...card, isFlipped: !card.isFlipped });
-        }
+        executeBattlefieldCardAction('flip', hoveredBattlefieldCardId, whiteboard, playerId);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -154,11 +147,7 @@ export function useAllGameHotkeys() {
     getKeyBindingsForAction('addCounter'),
     () => {
       if (whiteboard && playerId && hoveredBattlefieldCardId) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          yCards.set(hoveredBattlefieldCardId, { ...card, counters: [...card.counters, 1] });
-        }
+        executeBattlefieldCardAction('addCounter', hoveredBattlefieldCardId, whiteboard, playerId);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -168,11 +157,7 @@ export function useAllGameHotkeys() {
     getKeyBindingsForAction('removeCounter'),
     () => {
       if (whiteboard && playerId && hoveredBattlefieldCardId) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          yCards.set(hoveredBattlefieldCardId, { ...card, counters: [...card.counters, -1] });
-        }
+        executeBattlefieldCardAction('removeCounter', hoveredBattlefieldCardId, whiteboard, playerId);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -182,20 +167,7 @@ export function useAllGameHotkeys() {
     getKeyBindingsForAction('copy'),
     () => {
       if (whiteboard && playerId && hoveredBattlefieldCardId) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card) {
-          const newCard = {
-            ...card,
-            id: `card-${Math.random().toString(36).substring(2, 11)}`,
-            ownerId: playerId,
-            x: card.x + 20,
-            y: card.y + 20,
-            zIndex: ++whiteboard['maxZIndex'],
-            counters: [...card.counters],
-          };
-          yCards.set(newCard.id, newCard);
-        }
+        executeBattlefieldCardAction('copy', hoveredBattlefieldCardId, whiteboard, playerId);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -204,14 +176,8 @@ export function useAllGameHotkeys() {
   useHotkeys(
     getKeyBindingsForAction('delete'),
     () => {
-      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          cardPreview.hide();
-          whiteboard.getTooltipManager().hide();
-          yCards.delete(hoveredBattlefieldCardId);
-        }
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        executeBattlefieldCardAction('delete', hoveredBattlefieldCardId, whiteboard, playerId, cardPreview);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -220,15 +186,8 @@ export function useAllGameHotkeys() {
   useHotkeys(
     getKeyBindingsForAction('moveToHand'),
     () => {
-      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          cardPreview.hide();
-          whiteboard.getTooltipManager().hide();
-          window.dispatchEvent(new CustomEvent('moveCardToHand', { detail: { card } }));
-          yCards.delete(hoveredBattlefieldCardId);
-        }
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        executeBattlefieldCardAction('moveToHand', hoveredBattlefieldCardId, whiteboard, playerId, cardPreview);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -237,15 +196,8 @@ export function useAllGameHotkeys() {
   useHotkeys(
     getKeyBindingsForAction('moveToDiscard'),
     () => {
-      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          cardPreview.hide();
-          whiteboard.getTooltipManager().hide();
-          window.dispatchEvent(new CustomEvent('moveCardToDiscard', { detail: { card } }));
-          yCards.delete(hoveredBattlefieldCardId);
-        }
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        executeBattlefieldCardAction('moveToDiscard', hoveredBattlefieldCardId, whiteboard, playerId, cardPreview);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -254,15 +206,8 @@ export function useAllGameHotkeys() {
   useHotkeys(
     getKeyBindingsForAction('moveToExile'),
     () => {
-      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          cardPreview.hide();
-          whiteboard.getTooltipManager().hide();
-          window.dispatchEvent(new CustomEvent('moveCardToExile', { detail: { card } }));
-          yCards.delete(hoveredBattlefieldCardId);
-        }
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        executeBattlefieldCardAction('moveToExile', hoveredBattlefieldCardId, whiteboard, playerId, cardPreview);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -271,15 +216,8 @@ export function useAllGameHotkeys() {
   useHotkeys(
     getKeyBindingsForAction('moveToDeckTop'),
     () => {
-      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          cardPreview.hide();
-          whiteboard.getTooltipManager().hide();
-          window.dispatchEvent(new CustomEvent('moveCardToDeckTop', { detail: { card } }));
-          yCards.delete(hoveredBattlefieldCardId);
-        }
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        executeBattlefieldCardAction('moveToDeckTop', hoveredBattlefieldCardId, whiteboard, playerId, cardPreview);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }
@@ -288,15 +226,8 @@ export function useAllGameHotkeys() {
   useHotkeys(
     getKeyBindingsForAction('moveToDeckBottom'),
     () => {
-      if (whiteboard && playerId && hoveredBattlefieldCardId && cardPreview) {
-        const yCards = whiteboard['yCards'];
-        const card = yCards.get(hoveredBattlefieldCardId);
-        if (card && card.ownerId === playerId) {
-          cardPreview.hide();
-          whiteboard.getTooltipManager().hide();
-          window.dispatchEvent(new CustomEvent('moveCardToDeckBottom', { detail: { card } }));
-          yCards.delete(hoveredBattlefieldCardId);
-        }
+      if (whiteboard && playerId && hoveredBattlefieldCardId) {
+        executeBattlefieldCardAction('moveToDeckBottom', hoveredBattlefieldCardId, whiteboard, playerId, cardPreview);
       }
     },
     { enabled: battlefieldEnabled, preventDefault: true }

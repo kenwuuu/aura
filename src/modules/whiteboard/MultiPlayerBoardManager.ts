@@ -1,20 +1,20 @@
 import { Card } from '../deck';
-import {CARD_HEIGHT, CARD_WIDTH, DEFAULT_CARD_BACK, YDOC_CARDS_ON_BOARD, YDOC_KEYWORD_TOKENS} from '../../constants';
+import { DEFAULT_CARD_BACK, YDOC_CARDS_ON_BOARD, YDOC_KEYWORD_TOKENS } from '@/constants';
 import { WhiteboardCard, DragState } from './types';
-import { KeyboardHandler, KeyboardHandlerCallbacks } from './KeyboardHandler';
 import { CardPreview } from '../cardPreview';
 import { TooltipManager } from './TooltipManager';
 import { ZoomController } from './ZoomController';
 import { BoardContainerManager, BOARD_HEIGHT } from './BoardContainerManager';
 import * as Y from 'yjs';
 import React from 'react';
-import { createRoot, Root } from 'react-dom/client';
-import { CardCounter } from '../../components';
-import {OpponentCoordinateTransformer} from "./OpponentCoordinateTransformer";
-import {HotkeyContext} from "../../data/hotkeys";
+import { createRoot } from 'react-dom/client';
+import { CardCounter } from '@/components';
+import { OpponentCoordinateTransformer } from "./OpponentCoordinateTransformer";
+import { HotkeyContext } from "@/data/hotkeys";
 import { KeywordToken } from '@/modules/keywordTokens/types';
 import { KeywordTokenFactory } from '@/modules/keywordTokens/KeywordTokenFactory';
 import { useHotkeyStore } from '@/stores/hotkeyStore';
+import { executeBattlefieldCardAction } from '@/actions/battlefieldCardActions';
 
 const DEFAULT_OPPONENT_OPACITY = 1.0;
 const FOCUSED_OPACITY = 1.0;
@@ -82,19 +82,7 @@ export class MultiPlayerBoardManager {
     // Initialize tooltip manager
     this.tooltipManager = new TooltipManager();
     this.tooltipManager.setup((hotkey, cardId) => {
-      // Simulate hotkey press by temporarily setting hovered card and triggering event
-      const originalHoveredCard = useHotkeyStore.getState().hoveredBattlefieldCardId;
-      useHotkeyStore.getState().setHoveredBattlefieldCard(cardId);
-
-      // Create and dispatch a keyboard event
-      const key = hotkey.keys?.[0] || hotkey.key.toLowerCase();
-      const event = new KeyboardEvent('keydown', { key });
-      document.dispatchEvent(event);
-
-      // Restore original hover state
-      setTimeout(() => {
-        useHotkeyStore.getState().setHoveredBattlefieldCard(originalHoveredCard);
-      }, 0);
+      executeBattlefieldCardAction(hotkey.action, cardId, this, this.localPlayerId, this.cardPreview);
     });
   }
 
