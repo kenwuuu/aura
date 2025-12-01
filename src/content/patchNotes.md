@@ -1,3 +1,14 @@
+## 2025 November 30
+
+### Changes
+- Added a lot of automated quality checks and tests that run before 
+deploying a new patch.
+- Centralize hotkey logic to clear a path towards adding custom hotkeys.
+
+### Bug Fixes
+- Fixed "Copy Game Link" using old URL. Now just copies directly from browser.
+- Fix card duplication when closing Scry with cards still in the window.
+
 ## 2025 November 24
 
 ### Features
