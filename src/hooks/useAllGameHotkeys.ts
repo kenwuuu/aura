@@ -100,12 +100,7 @@ export function useAllGameHotkeys() {
     getKeyBindingsForAction('untapAll'),
     () => {
       if (whiteboard && playerId) {
-        const yCards = whiteboard['yCards'];
-        yCards.forEach((card, cardId) => {
-          if (card.ownerId === playerId && card.isTapped) {
-            yCards.set(cardId, { ...card, isTapped: false });
-          }
-        });
+        executeBattlefieldCardAction('untapAll', '', whiteboard, playerId);
       }
     },
     { enabled: !isModalOpen, preventDefault: true }

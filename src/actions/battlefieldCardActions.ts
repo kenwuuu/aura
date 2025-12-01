@@ -17,6 +17,16 @@ export function executeBattlefieldCardAction(
 ) {
   const yCards = whiteboard['yCards'];
   const card = yCards.get(cardId);
+
+  if (action === 'untapAll') {
+    yCards.forEach((c, cId) => {
+      if (c.ownerId === playerId && c.isTapped) {
+        yCards.set(cId, { ...c, isTapped: false });
+      }
+    });
+    return;
+  }
+
   if (!card || card.ownerId !== playerId) return;
 
   switch (action) {
