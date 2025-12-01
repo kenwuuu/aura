@@ -56,6 +56,10 @@ export const CardGridItemReact = React.memo(function CardGridItemReact({
     tooltipManager?.hideOnLeave();
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    tooltipManager?.setMouseLocation(e.clientX, e.clientY);
+  };
+
   const handleClick = (e: React.MouseEvent) => {
     tooltipManager?.show(card.id, hotkeyContext, e.clientX, e.clientY);
   };
@@ -70,6 +74,7 @@ export const CardGridItemReact = React.memo(function CardGridItemReact({
       className={styles.cardGridItem}
       data-card-id={card.id}
       tabIndex={0}
+      onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}

@@ -153,7 +153,7 @@ export function PileViewerReact({
     }
   }, [isOpen, pileType, yPlayerState]);
 
-  // Setup tooltip manager
+  // Setup tooltip manager when modal opens
   React.useEffect(() => {
     if (!isOpen) return;
 
@@ -176,12 +176,17 @@ export function PileViewerReact({
         callbacks.onMoveToDeckBottom(card);
       }
     });
-
-    return () => {
-      tooltipManagerRef.current?.destroy();
-      tooltipManagerRef.current = null;
-    };
   }, [isOpen, cards, callbacks, pileType]);
+
+  // Cleanup tooltip manager when modal closes
+  React.useEffect(() => {
+    return () => {
+      if (!isOpen) {
+        tooltipManagerRef.current?.destroy();
+        tooltipManagerRef.current = null;
+      }
+    };
+  }, [isOpen]);
 
   // Listen for centralized hotkey events
   React.useEffect(() => {
