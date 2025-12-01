@@ -12,6 +12,15 @@ export type DeckLineItem = {
   commander?: boolean;
 }
 
+export function parseDecklist(text: string): DeckLineItem[] {
+  return text
+    .trim()
+    .split('\n')
+    .filter(isValidDeckLine)
+    .map(parseLine)
+    .filter(entry => !isNaN(entry.count) && entry.name.length > 0);
+}
+
 function parseCount(firstPart: string): number {
   // Handle 'x' notation (e.g., "20x" -> "20")
   if (firstPart.toLowerCase().endsWith('x')) {
@@ -74,13 +83,4 @@ function parseLine(line: string): DeckLineItem {
 function isValidDeckLine(line: string): boolean {
   const trimmed = line.trim();
   return trimmed.length > 0 && /^\d/.test(trimmed);
-}
-
-export function parseDecklist(text: string): DeckLineItem[] {
-  return text
-    .trim()
-    .split('\n')
-    .filter(isValidDeckLine)
-    .map(parseLine)
-    .filter(entry => !isNaN(entry.count) && entry.name.length > 0);
 }
