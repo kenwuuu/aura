@@ -6,7 +6,8 @@ deploying a new patch.
 - Centralize hotkey logic to clear a path towards adding custom hotkeys.
 
 ### Bug Fixes
-- Fixed "Copy Game Link" using old URL. Now just copies directly from browser.
+- Fix interactive tooltip when viewing card piles.
+- Fix "Copy Game Link" using old URL. Now copies link directly from browser instead of generating it.
 - Fix card duplication when closing Scry with cards still in the window.
 
 ## 2025 November 24
