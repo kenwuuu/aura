@@ -10,7 +10,7 @@ import {
   YDOC_PLAYER,
   YSTATE_CUSTOM_COUNTERS,
   YSTATE_DECK, YDOC_KEYWORD_TOKENS
-} from "../../constants";
+} from "@/constants";
 import {PileType} from "../gameResourcesDock/components";
 import { CardPile } from './CardPile';
 import {SavedDeck} from "@/modules/deck/types";
