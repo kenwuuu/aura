@@ -74,6 +74,13 @@ class AuraApp {
   constructor() {
     this.yDoc = new Y.Doc();
 
+    // Log size of Yjs incremental update. We want to eventually reduce the size and volume of updates
+    // from drawing a card (70KB) and moving a card on board (hundreds of updates for a single drag).
+    this.yDoc.on('update', (update, origin, doc) => {
+      // `update` is a Uint8Array
+      console.debug(`Yjs incremental update of size: ${update.byteLength} bytes`)
+    })
+
     // Get or create persistent player ID (survives page reloads)
     this.playerId = getOrCreatePlayerId();
     console.log('Player ID:', this.playerId);
