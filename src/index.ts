@@ -27,6 +27,7 @@ import {ReactToasterRoot} from "../ReactToasterRoot";
 import {usePlayerStore} from "./stores/playerStore";
 import {RoomConnectionStatus} from "@/components/RoomConnectionStatus";
 import {useGameInstance} from "./stores/gameInstanceStore";
+import {WebsocketProvider} from "y-websocket";
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -59,6 +60,7 @@ const isDevEnv = import.meta.env.MODE === 'development';
 class AuraApp {
   private yDoc: Y.Doc;
   private webrtcProvider!: WebRTCProvider;
+  private websocketProvider!: WebsocketProvider;
   private whiteboard!: MultiPlayerBoardManager;
   private localPlayer!: Player;
   private localDock!: GameResourcesDock;
@@ -94,10 +96,20 @@ class AuraApp {
     const peerId = getOrCreatePeerId();
 
     // Initialize WebRTC provider with CloudFlare TURN servers
-    this.webrtcProvider = await WebRTCProvider.create(this.yDoc, {
+    // this.webrtcProvider = await WebRTCProvider.create(this.yDoc, {
+    //   roomName: this.roomManager.getRoomName(),
+    //   peerId, // Pass persistent peer ID
+    // });
+
+    // Initialize WS provider
+    this.websocketProvider = await WebRTCProvider.createWsYjs(this.yDoc, {
       roomName: this.roomManager.getRoomName(),
       peerId, // Pass persistent peer ID
     });
+
+    this.websocketProvider.on('status', event => {
+      console.log('websocket: ', event.status) // logs "connected" or "disconnected"
+    })
 
     // Initialize local player deck - restore from localStorage if available for this room
     const restoredDeck: Deck | null = DeckPersistenceService.restoreDeckForRoom(this.roomManager.getRoomName());
@@ -270,7 +282,7 @@ class AuraApp {
     }
 
     const statusRoot = createRoot(statusElement);
-    statusRoot.render(React.createElement(RoomConnectionStatus, { webrtcProvider: this.webrtcProvider }));
+    // statusRoot.render(React.createElement(RoomConnectionStatus, { webrtcProvider: this.webrtcProvider }));
   }
 
   private async setupDeckManager(): Promise<void> {

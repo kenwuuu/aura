@@ -19,6 +19,11 @@ export interface WebRTCConfig {
   peerId?: string; // Optional persistent peer ID
 }
 
+export interface WebsocketConfig {
+  roomName: string;
+  peerId?: string; // Optional persistent peer ID
+}
+
 /**
  * Real-time connection status
  *
