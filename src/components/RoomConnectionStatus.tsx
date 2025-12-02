@@ -11,15 +11,16 @@ export const RoomConnectionStatus: React.FC<ConnectionStatusProps> = ({webrtcPro
 
   const [connected, setConnected] = useState(false);
 
-  webrtcProvider.onStatusChange((status) => {
-     setConnected(status.isConnected)
-  });
-
-  return (
-    <div style={{ color: connected ? '#4ade80' : '#facc15' }}>
-      {connected ?
-        getConnectedString(webrtcProvider.getConnectionStatus()) :
-        notConnectedString}
-    </div>
-  )
+  // webrtcProvider.onStatusChange((status) => {
+  //    setConnected(status.isConnected)
+  // });
+  //
+  // return (
+  //   <div style={{ color: connected ? '#4ade80' : '#facc15' }}>
+  //     {connected ?
+  //       getConnectedString(webrtcProvider.getConnectionStatus()) :
+  //       notConnectedString}
+  //   </div>
+  // )
+  return (<></>)
 }
