@@ -82,7 +82,6 @@ export class WebRTCProvider {
   private wsProvider: WebsocketProvider;
   private persistence: IndexeddbPersistence;
   private config: WebRTCConfig;
-  private statusCallbacks: Set<(status: ConnectionStatus) => void> = new Set();
   private cleanupAwarenessPersistence?: () => void;
 
   /**
@@ -148,60 +147,48 @@ export class WebRTCProvider {
       this.provider.peerId = config.peerId;
     }
 
-    // this.setupEventListeners();
-    // this.setupAwareness();
+    this.setupEventListeners();
+    this.setupAwareness();
   }
 
-  // private setupEventListeners(): void {
-  //   this.provider.on('peers', (event: { added: string[]; removed: string[]; webrtcPeers: string[] }) => {
-  //     const status: ConnectionStatus = {
-  //       isConnected: event.webrtcPeers.length > 0,
-  //       peersCount: event.webrtcPeers.length
-  //     };
-  //     this.notifyStatusChange(status);
-  //   });
-  //
-  //   this.provider.on('synced', (event: { synced: boolean }) => {
-  //     console.log('Yjs synced:', event.synced);
-  //   });
-  //
-  //   // Log when IndexedDB persistence is ready
-  //   this.persistence.whenSynced.then(() => {
-  //     console.log('Document loaded from IndexedDB');
-  //   });
-  // }
-  //
-  // /**
-  //  * Set up awareness state persistence and restoration
-  //  */
-  // private setupAwareness(): void {
-  //   const awareness = this.provider.awareness;
-  //
-  //   // Restore previous awareness state if available
-  //   const savedState = restoreAwarenessState();
-  //   if (savedState) {
-  //     awareness.setLocalState(savedState);
-  //     console.log('Restored awareness state from previous session');
-  //   }
-  //
-  //   // Set up automatic persistence on page unload
-  //   this.cleanupAwarenessPersistence = setupAwarenessStatePersistence(() => {
-  //     return awareness.getLocalState() as AwarenessState | null;
-  //   });
-  // }
-  //
-  // public onStatusChange(callback: (status: ConnectionStatus) => void): void {
-  //   this.statusCallbacks.add(callback);
-  // }
-  //
-  // public offStatusChange(callback: (status: ConnectionStatus) => void): void {
-  //   this.statusCallbacks.delete(callback);
-  // }
-  //
-  // private notifyStatusChange(status: ConnectionStatus): void {
-  //   this.statusCallbacks.forEach(callback => callback(status));
-  // }
-  //
+  private setupEventListeners(): void {
+    // this.wsprovider.on('peers', (event: { added: string[]; removed: string[]; webrtcPeers: string[] }) => {
+    //   const status: ConnectionStatus = {
+    //     isConnected: event.webrtcPeers.length > 0,
+    //     peersCount: event.webrtcPeers.length
+    //   };
+    //   this.notifyStatusChange(status);
+    // });
+    //
+    // this.provider.on('synced', (event: { synced: boolean }) => {
+    //   console.log('Yjs synced:', event.synced);
+    // });
+
+    // Log when IndexedDB persistence is ready
+    this.persistence.whenSynced.then(() => {
+      console.log('Document loaded from IndexedDB');
+    });
+  }
+
+  /**
+   * Set up awareness state persistence and restoration
+   */
+  private setupAwareness(): void {
+    const awareness = this.wsProvider.awareness;
+
+    // Restore previous awareness state if available
+    const savedState = restoreAwarenessState();
+    if (savedState) {
+      awareness.setLocalState(savedState);
+      console.log('Restored awareness state from previous session');
+    }
+
+    // Set up automatic persistence on page unload
+    this.cleanupAwarenessPersistence = setupAwarenessStatePersistence(() => {
+      return awareness.getLocalState() as AwarenessState | null;
+    });
+  }
+
   // public getConnectionStatus(): ConnectionStatus {
   //   const peersCount = this.provider.room?.webrtcConns.size ?? 0;
   //   return {
@@ -209,7 +196,7 @@ export class WebRTCProvider {
   //     peersCount
   //   };
   // }
-  //
+
   // public getRoomName(): string {
   //   return this.config.roomName;
   // }
@@ -217,15 +204,15 @@ export class WebRTCProvider {
   // public getAwareness() {
   //   return this.provider.awareness;
   // }
-  //
-  // public destroy(): void {
-  //   // Clean up awareness persistence listener
-  //   if (this.cleanupAwarenessPersistence) {
-  //     this.cleanupAwarenessPersistence();
-  //   }
-  //
-  //   this.provider.destroy();
-  //   this.persistence.destroy();
-  //   this.statusCallbacks.clear();
-  // }
+
+  public destroy(): void {
+    // Clean up awareness persistence listener
+    if (this.cleanupAwarenessPersistence) {
+      this.cleanupAwarenessPersistence();
+    }
+
+    // this.provider.destroy();
+    this.persistence.destroy();
+    // this.statusCallbacks.clear();
+  }
 }
