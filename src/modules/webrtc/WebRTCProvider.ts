@@ -101,7 +101,7 @@ export class WebRTCProvider {
 
   static async createWsYjs(yDoc: Y.Doc, config: WebRTCConfig): Promise<WebsocketProvider> {
     return new WebsocketProvider(
-      'ws://3.142.249.56:47964',
+      'wss://3.151.83.118:47964',
       config.roomName,
       yDoc,
     );
