@@ -41,8 +41,10 @@ export class yjsNetworkFactory {
     const lastChar = roomName.charAt(roomName.length - 1);
     const firstNineLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
     if (firstNineLetters.includes(lastChar)) {
+      console.log('Using Websockets')
       return new WebsocketProvider(yDoc, config);
     } else {
+      console.log('Using WebRTC')
       return new WebRTCProvider(yDoc, {
         ...config,
         iceServers
