@@ -1,26 +1,32 @@
 import React, {useState} from 'react';
-import {ConnectionStatus, WebRTCProvider} from "@/modules/webrtc";
+import {WebsocketProvider} from "y-websocket";
 
 interface ConnectionStatusProps {
-  webrtcProvider: WebRTCProvider,
+  webrtcProvider: WebsocketProvider,
 }
 
 export const RoomConnectionStatus: React.FC<ConnectionStatusProps> = ({webrtcProvider}) => {
-  const getConnectedString = (status: ConnectionStatus) => `Connected (${status.peersCount} player${status.peersCount !== 1 ? 's' : ''})`;
+  const getConnectedString = 'Connected';
   const notConnectedString = 'Waiting for players...';
 
   const [connected, setConnected] = useState(false);
 
-  // webrtcProvider.onStatusChange((status) => {
-  //    setConnected(status.isConnected)
-  // });
-  //
-  // return (
-  //   <div style={{ color: connected ? '#4ade80' : '#facc15' }}>
-  //     {connected ?
-  //       getConnectedString(webrtcProvider.getConnectionStatus()) :
-  //       notConnectedString}
-  //   </div>
-  // )
+  webrtcProvider.on('status', event => {
+    console.log('WebSocket status changed:', event.status); // Logs "connected" or "disconnected"
+
+    if (event.status === 'connected') {
+      setConnected(true);
+    } else if (event.status === 'disconnected') {
+      setConnected(false);
+    }
+  });
+
+  return (
+    <div style={{ color: connected ? '#4ade80' : '#facc15' }}>
+      {connected ?
+        getConnectedString :
+        notConnectedString}
+    </div>
+  )
   return (<></>)
 }

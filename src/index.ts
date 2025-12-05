@@ -2,9 +2,9 @@ import * as Y from 'yjs';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { Deck } from './modules/deck';
-import { MultiPlayerBoardManager, KeyboardHandlerCallbacks } from './modules/whiteboard';
-import { WebRTCProvider } from './modules/webrtc';
-import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/webrtc/persistence';
+import { MultiPlayerBoardManager } from './modules/whiteboard';
+import { WebRTCProvider } from './modules/yjs-networking';
+import { getOrCreatePlayerId, getOrCreatePeerId } from 'src/modules/yjs-networking';
 import { Player } from './modules/player';
 import { GameResourcesDock } from './modules/gameResourcesDock';
 import { WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal, GameHotkeysManager } from './components';
@@ -12,7 +12,7 @@ import { DeckManager } from './deck_manager';
 import { OpponentHealthList } from './components/health/OpponentHealthList';
 import { SavedDeck } from './modules/deck/types';
 import { TokenService } from './services/scryfall';
-import { ScryfallApiService } from './services/scryfall/ScryfallApiService';
+import { ScryfallApiService } from '@/services/scryfall';
 import { CardPreview } from './modules/cardPreview';
 import { DeckStorageService } from './services/deckStorage';
 import { DeckPersistenceService } from './services/deckPersistence';
@@ -25,9 +25,9 @@ import * as Sentry from "@sentry/react";
 import {YSTATE_DECK_CARD_COUNT} from "./constants";
 import {ReactToasterRoot} from "../ReactToasterRoot";
 import {usePlayerStore} from "./stores/playerStore";
-import {RoomConnectionStatus} from "@/components/RoomConnectionStatus";
 import {useGameInstance} from "./stores/gameInstanceStore";
 import {WebsocketProvider} from "y-websocket";
+import {RoomConnectionStatus} from "@/components/RoomConnectionStatus";
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -59,7 +59,6 @@ const isDevEnv = import.meta.env.MODE === 'development';
 
 class AuraApp {
   private yDoc: Y.Doc;
-  private webrtcProvider!: WebRTCProvider;
   private websocketProvider!: WebsocketProvider;
   private whiteboard!: MultiPlayerBoardManager;
   private localPlayer!: Player;
@@ -95,21 +94,11 @@ class AuraApp {
     // Get or create persistent peer ID for WebRTC
     const peerId = getOrCreatePeerId();
 
-    // Initialize WebRTC provider with CloudFlare TURN servers
-    // this.webrtcProvider = await WebRTCProvider.create(this.yDoc, {
-    //   roomName: this.roomManager.getRoomName(),
-    //   peerId, // Pass persistent peer ID
-    // });
-
     // Initialize WS provider
     this.websocketProvider = await WebRTCProvider.createWsYjs(this.yDoc, {
       roomName: this.roomManager.getRoomName(),
       peerId, // Pass persistent peer ID
     });
-
-    this.websocketProvider.on('status', event => {
-      console.log('websocket: ', event.status) // logs "connected" or "disconnected"
-    })
 
     // Initialize local player deck - restore from localStorage if available for this room
     const restoredDeck: Deck | null = DeckPersistenceService.restoreDeckForRoom(this.roomManager.getRoomName());
@@ -282,7 +271,7 @@ class AuraApp {
     }
 
     const statusRoot = createRoot(statusElement);
-    // statusRoot.render(React.createElement(RoomConnectionStatus, { webrtcProvider: this.webrtcProvider }));
+    statusRoot.render(React.createElement(RoomConnectionStatus, { webrtcProvider: this.websocketProvider }));
   }
 
   private async setupDeckManager(): Promise<void> {
