@@ -1,4 +1,4 @@
-import {ROOM_PREFIX} from "../../constants";
+import {ROOM_PREFIX} from "@/constants";
 
 /**
  * Service for managing room state and tracking
@@ -18,6 +18,19 @@ export class RoomManager {
     // Update URL with room name if not present
     if (!urlParams.get('room')) {
       window.history.replaceState({}, '', `?room=${this.roomName}`);
+    }
+
+    // if user is at aura0.app, don't redirect to pages.dev for websocket testing
+    // because decks don't transfer between domains
+    const currentUrl = window.location.href;
+    if (currentUrl.includes('pages.dev')) {
+      // redirect 25% of pages.dev traffic to use websockets. 25% = (9/36); 36 = 10 numbers + 26 letters
+      const lastIndex: number = this.roomName.length - 1;
+      const firstChar: string = this.roomName.charAt(lastIndex).toLowerCase();
+      const firstNineLetters: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+      if (firstNineLetters.includes(firstChar)) {
+        window.location.href = `https://y-websocket-test.aura-dqp.pages.dev/?room=${this.roomName}`;
+      }
     }
   }
 
