@@ -272,7 +272,7 @@ class AuraApp {
     }
 
     const statusRoot = createRoot(statusElement);
-    statusRoot.render(React.createElement(RoomConnectionStatus, { webrtcProvider: this.yjsNetworkProvider }));
+    statusRoot.render(React.createElement(RoomConnectionStatus, { yjsNetworkProvider: this.yjsNetworkProvider }));
   }
 
   private async setupDeckManager(): Promise<void> {

@@ -44,7 +44,13 @@ export class WebsocketProvider implements YjsNetworkProvider{
   private cleanupAwarenessPersistence?: () => void;
 
   status(): string {
-    return '';
+    return this.provider.wsconnected ? 'connected' : 'connecting';
+  }
+
+  public on(event: 'status', callback: (event: { status: string }) => void): void {
+    this.provider.on('status', (wsEvent: { status: string }) => {
+      callback({ status: wsEvent.status });
+    });
   }
 
   constructor(yDoc: Y.Doc, config: WebRTCConfig) {

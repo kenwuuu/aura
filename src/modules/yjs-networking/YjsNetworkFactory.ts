@@ -5,6 +5,7 @@ import {WebsocketProvider} from "@/modules/yjs-networking/WebsocketProvider";
 
 export interface YjsNetworkProvider{
   status(): string;
+  on(event: 'status', callback: (event: { status: string }) => void): void;
 }
 
 /**

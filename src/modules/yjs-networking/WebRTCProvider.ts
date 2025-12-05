@@ -82,7 +82,14 @@ export class WebRTCProvider implements YjsNetworkProvider{
   private cleanupAwarenessPersistence?: () => void;
 
   status(): string {
-    return '';
+    return this.provider.connected ? 'connected' : 'connecting';
+  }
+
+  public on(event: 'status', callback: (event: { status: string }) => void): void {
+    this.provider.on('peers', (peersEvent: { webrtcPeers: string[] }) => {
+      const status = peersEvent.webrtcPeers.length > 0 ? 'connected' : 'disconnected';
+      callback({ status });
+    });
   }
 
   constructor(yDoc: Y.Doc, config: WebRTCConfig) {
