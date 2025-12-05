@@ -4,7 +4,7 @@ import { createRoot, Root } from 'react-dom/client';
 import { Deck } from './modules/deck';
 import { MultiPlayerBoardManager } from './modules/whiteboard';
 import { yjsNetworkFactory } from './modules/yjs-networking';
-import { getOrCreatePlayerId, getOrCreatePeerId } from 'src/modules/yjs-networking';
+import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/yjs-networking';
 import { Player } from './modules/player';
 import { GameResourcesDock } from './modules/gameResourcesDock';
 import { WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal, GameHotkeysManager } from './components';
@@ -26,8 +26,9 @@ import {YSTATE_DECK_CARD_COUNT} from "./constants";
 import {ReactToasterRoot} from "../ReactToasterRoot";
 import {usePlayerStore} from "./stores/playerStore";
 import {useGameInstance} from "./stores/gameInstanceStore";
-import {WebsocketProvider} from "y-websocket";
 import {RoomConnectionStatus} from "@/components/RoomConnectionStatus";
+import {YjsNetworkProvider} from "@/modules/yjs-networking/YjsNetworkFactory";
+
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -59,7 +60,7 @@ const isDevEnv = import.meta.env.MODE === 'development';
 
 class AuraApp {
   private yDoc: Y.Doc;
-  private websocketProvider!: WebsocketProvider;
+  private yjsNetworkProvider!: YjsNetworkProvider;
   private whiteboard!: MultiPlayerBoardManager;
   private localPlayer!: Player;
   private localDock!: GameResourcesDock;
@@ -94,8 +95,8 @@ class AuraApp {
     // Get or create persistent peer ID for WebRTC
     const peerId = getOrCreatePeerId();
 
-    // Initialize WS provider
-    this.websocketProvider = await yjsNetworkFactory.createWsYjs(this.yDoc, {
+    // Initialize WebRTC provider
+    this.yjsNetworkProvider = await yjsNetworkFactory.create(this.yDoc, {
       roomName: this.roomManager.getRoomName(),
       peerId, // Pass persistent peer ID
     });
@@ -271,7 +272,7 @@ class AuraApp {
     }
 
     const statusRoot = createRoot(statusElement);
-    statusRoot.render(React.createElement(RoomConnectionStatus, { webrtcProvider: this.websocketProvider }));
+    statusRoot.render(React.createElement(RoomConnectionStatus, { webrtcProvider: this.yjsNetworkProvider }));
   }
 
   private async setupDeckManager(): Promise<void> {
