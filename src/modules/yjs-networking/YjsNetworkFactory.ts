@@ -75,7 +75,7 @@ async function fetchCloudFlareIceServers(): Promise<RTCIceServer[]> {
  * Main WebRTC provider class that manages peer-to-peer connections
  * and document persistence
  */
-export class WebRTCProvider {
+export class yjsNetworkFactory {
   private yDoc: Y.Doc;
   private provider: WebrtcProvider;
   private persistence: IndexeddbPersistence;
@@ -87,11 +87,11 @@ export class WebRTCProvider {
    * Static factory method to create a WebRTCProvider with CloudFlare ICE servers
    * Fetches TURN configuration before initializing the provider
    */
-  static async create(yDoc: Y.Doc, config: WebRTCConfig): Promise<WebRTCProvider> {
+  static async create(yDoc: Y.Doc, config: WebRTCConfig): Promise<yjsNetworkFactory> {
     // Fetch CloudFlare ICE servers if not explicitly provided
     const iceServers = config.iceServers ?? await fetchCloudFlareIceServers();
 
-    return new WebRTCProvider(yDoc, {
+    return new yjsNetworkFactory(yDoc, {
       ...config,
       iceServers
     });

@@ -1,4 +1,4 @@
-export { WebRTCProvider } from './WebRTCProvider';
+export { yjsNetworkFactory } from './YjsNetworkFactory';
 export type { WebRTCConfig, ConnectionStatus } from './types';
 export {
   getOrCreatePlayerId,

@@ -3,7 +3,7 @@ import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { Deck } from './modules/deck';
 import { MultiPlayerBoardManager } from './modules/whiteboard';
-import { WebRTCProvider } from './modules/yjs-networking';
+import { yjsNetworkFactory } from './modules/yjs-networking';
 import { getOrCreatePlayerId, getOrCreatePeerId } from 'src/modules/yjs-networking';
 import { Player } from './modules/player';
 import { GameResourcesDock } from './modules/gameResourcesDock';
@@ -95,7 +95,7 @@ class AuraApp {
     const peerId = getOrCreatePeerId();
 
     // Initialize WS provider
-    this.websocketProvider = await WebRTCProvider.createWsYjs(this.yDoc, {
+    this.websocketProvider = await yjsNetworkFactory.createWsYjs(this.yDoc, {
       roomName: this.roomManager.getRoomName(),
       peerId, // Pass persistent peer ID
     });
