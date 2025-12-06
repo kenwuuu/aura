@@ -40,8 +40,11 @@ export class yjsNetworkFactory {
 
     const roomName = config.roomName;
     const lastChar = roomName.charAt(roomName.length - 1);
-    const firstNineLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
-    if (firstNineLetters.includes(lastChar)) {
+    const firstEighteenLetters = [
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+      'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r'
+    ];
+    if (firstEighteenLetters.includes(lastChar)) {
       console.log('Using Websockets')
       return new WebsocketProvider(yDoc, config);
     } else {
