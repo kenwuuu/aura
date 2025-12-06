@@ -124,7 +124,7 @@ export const HOTKEYS: Hotkey[] = [
   {
     key: 'K',
     keys: ['k'],
-    context: ['battlefield', 'EnemyBattlefieldCard'],
+    context: ['battlefield'],
     shortDescription: 'Copy/clone',
     longDescription: 'Create copy of card',
     action: 'copy',

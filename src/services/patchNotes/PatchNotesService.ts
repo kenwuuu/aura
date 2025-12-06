@@ -9,7 +9,7 @@ export class PatchNotesService {
 
   // Update this version whenever you add new patch notes
   // Format: YYYYMMDD for easy comparison
-  private static readonly CURRENT_VERSION = 20251204.3;
+  private static readonly CURRENT_VERSION = 20251205;
 
   /**
    * Check if the user should see the patch notes modal

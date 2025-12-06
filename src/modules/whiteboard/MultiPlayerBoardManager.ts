@@ -435,8 +435,7 @@ export class MultiPlayerBoardManager {
       cardPreview.show(latestCard);
 
       // Show tooltip menu on hover (delayed)
-      const context = card.ownerId === this.localPlayerId ? HotkeyContext.Battlefield : HotkeyContext.EnemyBattlefieldCard;
-      this.tooltipManager.showOnHover(card.id, context);
+      this.tooltipManager.showOnHover(card.id, HotkeyContext.Battlefield);
     });
 
     cardElement.addEventListener('mousemove', (e: MouseEvent) => {
@@ -463,8 +462,7 @@ export class MultiPlayerBoardManager {
         // If mouse moved less than threshold and wasn't dragging, treat as click
         if (distance < this.DRAG_THRESHOLD && !this.isDragging) {
           // Show tooltip menu
-          const context = card.ownerId === this.localPlayerId ? HotkeyContext.Battlefield : HotkeyContext.EnemyBattlefieldCard;
-          this.tooltipManager.show(card.id, context, e.clientX, e.clientY);
+          this.tooltipManager.show(card.id, HotkeyContext.Battlefield, e.clientX, e.clientY);
         }
       }
       // Always clear drag state after click handler

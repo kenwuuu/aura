@@ -1,3 +1,11 @@
+## 2025 December 5
+
+### Changes
+- Remove restrictions on manipulating opponent cards. We want to provide just a 
+smooth, fast tabletop, not a rules engine.
+
+---
+
 ## 2025 December 4
 
 ### Features
