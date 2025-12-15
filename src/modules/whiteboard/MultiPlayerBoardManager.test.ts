@@ -20,14 +20,6 @@ vi.mock('./KeyboardHandler', () => ({
   })),
 }));
 
-vi.mock('./TooltipManager', () => ({
-  TooltipManager: vi.fn().mockImplementation(() => ({
-    setup: vi.fn(),
-    update: vi.fn(),
-    destroy: vi.fn(),
-  })),
-}));
-
 vi.mock('./ZoomController', () => ({
   ZoomController: vi.fn().mockImplementation(() => ({
     setupControls: vi.fn(),
@@ -74,7 +66,6 @@ describe.skip('MultiPlayerBoardManager - Container Management', () => {
 
     // Create Yjs doc
     yDoc = new Y.Doc();
-    cardPreview = new CardPreview();
 
     // Create manager instance
     manager = new MultiPlayerBoardManager(
@@ -82,7 +73,6 @@ describe.skip('MultiPlayerBoardManager - Container Management', () => {
       yDoc,
       localPlayerId,
       '#1a1a1a',
-      cardPreview
     );
   });
 
