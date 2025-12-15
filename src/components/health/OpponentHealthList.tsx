@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as Y from 'yjs';
-import { toast } from 'sonner';
 import { HealthDisplay } from './HealthDisplay';
 import { CustomCounter } from '@/modules/player/types';
 import { Card } from '@/modules/deck';
@@ -13,6 +12,7 @@ import {
   YSTATE_EXILE_PILE,
   YSTATE_HAND, YSTATE_HEALTH
 } from "../../constants";
+import { setupNotificationObserver } from '@/utils/notifications';
 
 interface OpponentHealthListProps {
   yDoc: Y.Doc;
@@ -42,6 +42,19 @@ export const OpponentHealthList: React.FC<OpponentHealthListProps> = ({
       detail: { opponentCount: opponents.length }
     }));
   }, [opponents.length]);
+
+  // Setup notification observer
+  useEffect(() => {
+    const cleanup = setupNotificationObserver({
+      yDoc,
+      localPlayerId,
+      position: 'bottom-center',
+      style: { marginBottom: '200px' },
+      richColors: true
+    });
+
+    return cleanup;
+  }, [yDoc, localPlayerId]);
 
   useEffect(() => {
     const updateOpponents = () => {

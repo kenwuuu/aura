@@ -32,6 +32,7 @@ import { CardGrid } from './CardGrid';
 import { usePlayerStore } from '@/stores/playerStore';
 import { useHotkeyStore } from '@/stores/hotkeyStore';
 import {useTooltipStore} from "@/stores/uiStore";
+import { sendNotification } from '@/utils/notifications';
 
 export type PileType = 'deck' | 'exile' | 'discard' | 'hand' | 'scry';
 
@@ -62,6 +63,8 @@ export function PileViewerReact({
   callbacks = {},
 }: PileViewerReactProps) {
   const yPlayerState = usePlayerStore((state) => state.yPlayerState);
+  const yDoc = usePlayerStore((state) => state.yDoc);
+  const playerId = usePlayerStore((state) => state.playerId);
   const setModalOpen = useHotkeyStore((state) => state.setModalOpen);
   const setHoveredPileViewerCard = useHotkeyStore((state) => state.setHoveredPileViewerCard);
   const tooltipManager = useTooltipStore((state) => state.tooltipManager);
@@ -118,24 +121,8 @@ export function PileViewerReact({
       setSearchQuery('');
       setSortOrder('top-to-bottom');
       setHoveredCard(null);
-
-      // Initialize reveal state from yPlayerState
-      if (pileType === 'deck' && yPlayerState) {
-        const deckRevealCount = yPlayerState.get('deckRevealCount') ?? 0;
-        if (deckRevealCount === -1) {
-          setRevealAll(true);
-          setRevealCount(0);
-        } else if (deckRevealCount > 0) {
-          setRevealAll(false);
-          setRevealCount(deckRevealCount);
-        } else {
-          setRevealAll(false);
-          setRevealCount(0);
-        }
-      } else {
-        setRevealAll(pileType !== 'deck');
-        setRevealCount(0);
-      }
+      setRevealAll(pileType !== 'deck');
+      setRevealCount(0);
     } else {
       // Reset state when closing
       setSearchQuery('');
@@ -143,13 +130,8 @@ export function PileViewerReact({
       setHoveredCard(null);
       setRevealAll(false);
       setRevealCount(0);
-
-      // Clear deck reveal count in Yjs when closing
-      if (pileType === 'deck' && yPlayerState) {
-        yPlayerState.set('deckRevealCount', 0);
-      }
     }
-  }, [isOpen, pileType, yPlayerState]);
+  }, [isOpen, pileType]);
 
   // Setup tooltip manager when modal opens
   React.useEffect(() => {
@@ -240,14 +222,13 @@ export function PileViewerReact({
   // Handle reveal all change
   const handleRevealAllChange = (checked: boolean) => {
     setRevealAll(checked);
-    if (checked) {
-      setRevealCount(0);
-      if (yPlayerState) {
-        yPlayerState.set('deckRevealCount', -1);
-      }
-    } else {
-      if (yPlayerState) {
-        yPlayerState.set('deckRevealCount', 0);
+    setRevealCount(0);
+
+    if (yDoc && playerId) {
+      if (checked) {
+        sendNotification(yDoc, playerId, `${playerId} revealed their entire deck`, 'warning');
+      } else {
+        sendNotification(yDoc, playerId, `${playerId} hid their deck`, 'info');
       }
     }
   };
@@ -257,14 +238,18 @@ export function PileViewerReact({
     const count = parseInt(value) || 0;
     const boundedCount = Math.max(0, Math.min(cards.length, count));
     setRevealCount(boundedCount);
-    if (boundedCount > 0) {
-      setRevealAll(false);
-      if (yPlayerState) {
-        yPlayerState.set('deckRevealCount', boundedCount);
-      }
-    } else {
-      if (yPlayerState) {
-        yPlayerState.set('deckRevealCount', 0);
+
+    if (yDoc && playerId) {
+      if (boundedCount > 0) {
+        setRevealAll(false);
+        sendNotification(
+          yDoc,
+          playerId,
+          `${playerId} revealed the top ${boundedCount} card${boundedCount > 1 ? 's' : ''} of their deck`,
+          'warning'
+        );
+      } else {
+        sendNotification(yDoc, playerId, `${playerId} hid their deck`, 'info');
       }
     }
   };

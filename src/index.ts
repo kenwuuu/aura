@@ -109,8 +109,10 @@ class AuraApp {
       initialHealth: 40,
     });
 
-    // Initialize Zustand store with yPlayerState for global access
+    // Initialize Zustand store with yPlayerState, yDoc, and playerId for global access
     usePlayerStore.getState().setYPlayerState(this.localPlayer.yPlayerState);
+    usePlayerStore.getState().setYDoc(this.yDoc);
+    usePlayerStore.getState().setPlayerId(this.playerId);
 
     // Initialize multi-player board manager
     const whiteboardContainer = document.getElementById('whiteboard');
