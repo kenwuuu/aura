@@ -97,5 +97,35 @@ npm install pm2 -g
 pm2 start networking/websocket/ecosystem.config.cjs  # run server with pm2
 ```
 
+Install Caddy which we use to reverse proxy HTTPS traffic so that we don't have 
+to think about SSL certs and writing a certificate wrapper for y-websocket server
+```bash
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+chmod o+r /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+``` 
+
+Edit the Caddyfile configuration:
+```bash
+nano /etc/caddy/Caddyfile
+```
+
+Then edit the Caddyfile:
+```bash
+digitalocean-ws-ipv4.aura0.app {  # this is whatever DNS record points to our y-websocket serve
+        reverse_proxy localhost:47964  # the port we specified when running server, i.e. the port in ecosystem.config.cjs
+}
+```
+
+Finally, have Caddy reload its configuration and ping the server:
+```bash
+sudo caddy reload --config /etc/caddy/Caddyfile
+wscat -c wss://digitalocean-ws-ipv4.aura0.app
+```
+
 ## Thanks To...
 Andrew Gioia's [Mana](https://github.com/andrewgioia/mana) project on GitHub for icons and symbol SVGs.

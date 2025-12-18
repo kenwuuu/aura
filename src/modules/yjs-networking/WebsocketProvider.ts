@@ -65,7 +65,7 @@ export class WebsocketProvider implements YjsNetworkProvider{
     this.persistence = new IndexeddbPersistence(this.config.roomName, this.yDoc);
 
     this.provider = new WsProvider(
-      'wss://ws.aura0.app',
+      'wss://digitalocean-ws-ipv4.aura0.app',
       config.roomName,
       yDoc,
     )
