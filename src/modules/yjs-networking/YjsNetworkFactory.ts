@@ -36,23 +36,6 @@ async function fetchCloudFlareIceServers(): Promise<RTCIceServer[]> {
  */
 export class yjsNetworkFactory {
   static async create(yDoc: Y.Doc, config: WebRTCConfig): Promise<YjsNetworkProvider> {
-    const iceServers = config.iceServers ?? await fetchCloudFlareIceServers();
-
-    const roomName = config.roomName;
-    const lastChar = roomName.charAt(roomName.length - 1);
-    const firstEighteenLetters = [
-      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
-      'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r'
-    ];
-    // if (firstEighteenLetters.includes(lastChar)) {
-    //   console.log('Using Websockets')
-    //   return new WebsocketProvider(yDoc, config);
-    // } else {
-    console.log('Using WebRTC')
-    return new WebRTCProvider(yDoc, {
-      ...config,
-      iceServers
-    });
-    // }
+    return new WebsocketProvider(yDoc, config);
   }
 }
