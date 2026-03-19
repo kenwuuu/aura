@@ -6,3 +6,4 @@ export * from './HotkeyTooltip';
 export * from './AddCardManager';
 export * from './PatchNotesModal';
 export * from './GameHotkeysManager';
+export * from './AnnouncementModal';

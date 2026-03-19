@@ -7,7 +7,7 @@ import { yjsNetworkFactory } from './modules/yjs-networking';
 import { getOrCreatePlayerId, getOrCreatePeerId } from './modules/yjs-networking';
 import { Player } from './modules/player';
 import { GameResourcesDock } from './modules/gameResourcesDock';
-import { WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal, GameHotkeysManager } from './components';
+import { WelcomeModal, HotkeysModal, HelpModal, AddCardManager, PatchNotesModal, GameHotkeysManager, AnnouncementModal } from './components';
 import { DeckManager } from './deck_manager';
 import { OpponentHealthList } from './components/health/OpponentHealthList';
 import { SavedDeck } from './modules/deck/types';
@@ -28,6 +28,7 @@ import {usePlayerStore} from "./stores/playerStore";
 import {useGameInstance} from "./stores/gameInstanceStore";
 import {RoomConnectionStatus} from "@/components/RoomConnectionStatus";
 import {YjsNetworkProvider} from "@/modules/yjs-networking/YjsNetworkFactory";
+import {AnnouncementsService} from "@/services/announcements/PatchNotesService";
 
 
 Sentry.init({
@@ -315,11 +316,13 @@ class AuraApp {
     document.body.appendChild(welcomeModalRoot);
     const welcomeRoot = createRoot(welcomeModalRoot);
 
+    this.setupAnnouncementsModal();
     if (isDevEnv) return;  // don't show modals, for Playwright testing
     welcomeRoot.render(React.createElement(WelcomeModal));
 
     // Setup patch notes modal (shows after welcome modal if there are new notes)
     this.setupPatchNotesModal();
+    this.setupAnnouncementsModal();
   }
 
   private async loadDeckOnStart(storage: DeckStorageService) {
@@ -510,6 +513,26 @@ class AuraApp {
     root.render(
       React.createElement(PatchNotesModal, {
         onClose: () => PatchNotesService.markPatchNotesAsSeen(),
+      })
+    );
+  }
+
+  private setupAnnouncementsModal(): void {
+    // Only show announcements if there are new updates
+    if (!AnnouncementsService.shouldShowAnnouncement()) {
+      console.log('No new announcements to show');
+      return;
+    }
+
+    console.log('Rnnouncements to show');
+
+    const announcementsModalRoot = document.createElement('div');
+    document.body.appendChild(announcementsModalRoot);
+
+    const root = createRoot(announcementsModalRoot);
+    root.render(
+      React.createElement(AnnouncementModal, {
+        onClose: () => AnnouncementsService.markAnnouncementAsSeen(),
       })
     );
   }

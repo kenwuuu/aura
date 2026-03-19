@@ -1,0 +1,1 @@
+export { PatchNotesService } from './PatchNotesService';
