@@ -18,8 +18,9 @@ export class PatchNotesService {
   static shouldShowPatchNotes(): boolean {
     const lastSeenVersion = parseFloat(<string>localStorage.getItem(this.STORAGE_KEY));
 
-    // First time user or new version available
-    return !lastSeenVersion || lastSeenVersion < this.CURRENT_VERSION;
+    // !!lastSeenVersion prevents new users from seeing patch notes because we have a lot of popups, don't want to inundate
+    // second comparison returns true if new version is available
+    return !!lastSeenVersion || lastSeenVersion < this.CURRENT_VERSION;
   }
 
   /**
