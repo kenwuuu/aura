@@ -35,40 +35,68 @@ export class MtgTextListDeckImporter extends DeckImporter {
       return deck;
     }
 
-    // call Scryfall API
+    let entries: DeckLineItem[] = [];
+
     try {
-      const entries: DeckLineItem[] = parseDecklist(text);
-      const results: CardDataResult[] = await this.scryfallApi.fetchImagesForList(entries, this.onProgress);
-
-      // Create cards from CardDataResult
-      this.parseResultsIntoDeck(deck, results);
-
-      // set import metadata
-      deck.metadata = {
-        source: 'scryfall',
-        cardCount: deck.cards.length,
-        importedAt: new Date(),
-        lastModified: new Date(),
-      }
-
-      if (deck.errors && deck.errors.length > 0) {
-        Sentry.captureMessage("Error when importing deck. ", {
-          level: "error",
-          extra: {
-            deck: deck
-          }
-      });
-      }
-
-      return deck;
+      entries = parseDecklist(text);
     } catch (e) {
-      Sentry.captureMessage("Error when importing deck. Full text import:", {
+      const message = e instanceof Error ? e.message : String(e);
+      deck.errors = [`Failed to parse decklist: ${message}`];
+      Sentry.captureException(e, {
         level: "error",
+        extra: { stage: "parseDecklist", text },
+      });
+      return deck;
+    }
+
+    if (entries.length === 0) {
+      deck.errors = ["No valid card entries found. Make sure each line starts with a quantity, e.g. \"4 Lightning Bolt\"."];
+      return deck;
+    }
+
+    let results: CardDataResult[];
+    try {
+      results = await this.scryfallApi.fetchImagesForList(entries, this.onProgress);
+    } catch (e) {
+      // Unexpected throw from fetchImagesForList itself (not per-card errors,
+      // which are returned as CardDataResult.error — this is a catastrophic failure)
+      const message = e instanceof Error ? e.message : String(e);
+      deck.errors = [`Card data fetch failed: ${message}. Please try again.`];
+      Sentry.captureException(e, {
+        level: "error",
+        extra: { stage: "fetchImagesForList", entries },
+      });
+      return deck;
+    }
+
+    // Build deck and collect per-card errors
+    this.parseResultsIntoDeck(deck, results);
+
+    deck.metadata = {
+      source: 'scryfall',
+      cardCount: deck.cards.length,
+      importedAt: new Date(),
+      lastModified: new Date(),
+    };
+
+    // Report partial failures to Sentry with structured context
+    if (deck.errors && deck.errors.length > 0) {
+      const failedCards = results
+        .filter(r => r.error)
+        .map(r => ({ name: r.name, error: r.error }));
+
+      Sentry.captureMessage("Partial deck import failure", {
+        level: "warning",
         extra: {
-          text: text
-        }
+          stage: "parseResultsIntoDeck",
+          totalRequested: entries.length,
+          totalImported: deck.cards.length,
+          totalFailed: failedCards.length,
+          failedCards,
+        },
       });
     }
+
     return deck;
   }
 
