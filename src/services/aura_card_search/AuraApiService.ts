@@ -34,7 +34,7 @@ export type CardDataResult = {
 
 export class AuraApiService {
   private queue: PQueue;
-  private static readonly BASE_URL = 'http://138.197.78.138:8000/v1';
+  private static readonly BASE_URL = 'https://digitalocean-ws-ipv4.aura0.app/v1';
   private static readonly RATE_LIMIT_INTERVAL = 1000; // 1 second
   private static readonly RATE_LIMIT_CAP = 200; // 200 requests per interval
 
