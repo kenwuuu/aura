@@ -58,7 +58,7 @@ export class KeyboardHandler {
   public executeHotkey(key: string, cardId: string | null = null): void {
     // Normalize key (handle special cases and display strings)
     let normalizedKey = key.toLowerCase().trim();
-    
+
     // Handle display strings from hotkeys.ts
     if (normalizedKey === 'space') {
       normalizedKey = ' ';
@@ -109,7 +109,7 @@ export class KeyboardHandler {
   private handleKeyDown(e: KeyboardEvent): void {
     // Ignore if modifier keys are held
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    
+
     // Ignore if typing in an input
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       return;
@@ -140,14 +140,14 @@ export class KeyboardHandler {
     }
 
     // lose health / subtract health
-    if (key === '-' || key === '_' ) {
+    if (key === '-' || key === '_') {
       e.preventDefault();
       this.callbacks.loseHealth();
       return;
     }
 
     // gain health / add health
-    if (key === '=' || key === '+' ) {
+    if (key === '=' || key === '+') {
       e.preventDefault();
       this.callbacks.gainHealth();
       return;
@@ -391,13 +391,23 @@ export class KeyboardHandler {
   }
 
   private addPositiveCounter(card: WhiteboardCard): void {
-    const updatedCard = { ...card, counters: [...card.counters, 1] };
-    this.yCards.set(card.id, updatedCard);
+    this.adjustCounters(card, 1);
   }
 
   private addNegativeCounter(card: WhiteboardCard): void {
-    const updatedCard = { ...card, counters: [...card.counters, -1] };
-    this.yCards.set(card.id, updatedCard);
+    this.adjustCounters(card, -1);
+  }
+
+  /**
+   * This method calculates the net counters on a card and updates the Y.Map with the new counters array.
+   * Positive and negative counters cancel each other out, so we sum them to get the net effect. 
+   * @param card 
+   * @param delta 
+   */
+  private adjustCounters(card: WhiteboardCard, delta: number): void {
+    const net = card.counters.reduce((sum, c) => sum + c, 0) + delta;
+    const counters = Array.from({ length: Math.abs(net) }, () => Math.sign(net));
+    this.yCards.set(card.id, { ...card, counters });
   }
 
   private removeCard(cardId: string): void {
@@ -409,7 +419,7 @@ export class KeyboardHandler {
 
     // Reset multiplier if copying a different card OR if enough time passed
     if (this.lastCopiedCardId !== card.id ||
-        now - this.lastCopyTime > this.COPY_RESET_DELAY) {
+      now - this.lastCopyTime > this.COPY_RESET_DELAY) {
       this.copyOffsetMultiplier = 0;
     }
 

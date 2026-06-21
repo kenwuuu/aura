@@ -342,13 +342,11 @@ export class MultiPlayerBoardManager {
         existingCounters.remove();
       }
 
-      if (card.counters && card.counters.length > 0) {
+      const net = (card.counters ?? []).reduce((s, c) => s + c, 0);
+      if (net !== 0) {
         const countersContainer = document.createElement('div');
         countersContainer.className = 'card-counters';
-        card.counters.forEach((counterValue, index) => {
-          const counter = this.createCounterElement(card, index, counterValue);
-          countersContainer.appendChild(counter);
-        });
+        countersContainer.appendChild(this.createCounterElement(card, 0, net));
         cardElement.appendChild(countersContainer);
       }
     }
@@ -414,14 +412,12 @@ export class MultiPlayerBoardManager {
       cardElement.appendChild(badge);
     }
 
-    // Add counters container
-    if (card.counters && card.counters.length > 0) {
+    // Add counters container (single badge showing net + / - total)
+    const counterNet = (card.counters ?? []).reduce((s, c) => s + c, 0);
+    if (counterNet !== 0) {
       const countersContainer = document.createElement('div');
       countersContainer.className = 'card-counters';
-      card.counters.forEach((counterValue, index) => {
-        const counter = this.createCounterElement(card, index, counterValue);
-        countersContainer.appendChild(counter);
-      });
+      countersContainer.appendChild(this.createCounterElement(card, 0, counterNet));
       cardElement.appendChild(countersContainer);
     }
 
@@ -501,21 +497,15 @@ export class MultiPlayerBoardManager {
     return counterContainer;
   }
 
-  private modifyCounter(cardId: string, index: number, delta: number): void {
+  private modifyCounter(cardId: string, _index: number, delta: number): void {
     // Get the latest card from Yjs to avoid stale closures
     const card = this.yCards.get(cardId);
     if (!card) return;
 
-    const updatedCounters = [...card.counters];
-    updatedCounters[index] = updatedCounters[index] + delta;
-
-    // Remove counter if it reaches 0
-    if (updatedCounters[index] === 0) {
-      updatedCounters.splice(index, 1);
-    }
-
-    const updatedCard = { ...card, counters: updatedCounters };
-    this.yCards.set(cardId, updatedCard);
+    // + and - cancel out; card holds a single net value (one sign).
+    const net = (card.counters ?? []).reduce((s: number, c: number) => s + c, 0) + delta;
+    const counters = Array.from({ length: Math.abs(net) }, () => Math.sign(net));
+    this.yCards.set(cardId, { ...card, counters });
   }
 
   private updateCardPosition(element: HTMLElement, card: WhiteboardCard): void {
