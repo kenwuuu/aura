@@ -131,6 +131,7 @@ export class MtgTextListDeckImporter extends DeckImporter {
           totalRequested: entries.length,
           totalImported: deck.cards.length,
           totalFailed: failedCards.length,
+          deckError: deck.errors,
           failedCards,
         },
       });
