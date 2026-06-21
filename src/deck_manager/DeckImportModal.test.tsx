@@ -40,7 +40,7 @@ describe('DeckImportModal - Help Dialog Integration', () => {
       />
     );
 
-    expect(screen.queryByText('Import Deck from Scryfall')).not.toBeInTheDocument();
+    expect(screen.queryByText('Import Deck')).not.toBeInTheDocument();
   });
 
   it('should render when isOpen is true', () => {
@@ -52,7 +52,7 @@ describe('DeckImportModal - Help Dialog Integration', () => {
       />
     );
 
-    expect(screen.getByText('Import Deck from Scryfall')).toBeInTheDocument();
+    expect(screen.getAllByText('Import Deck')[1]).toBeInTheDocument();
   });
 
   it('should have a Help button', () => {
@@ -99,7 +99,7 @@ describe('DeckImportModal - Help Dialog Integration', () => {
     await user.click(helpButton);
 
     // Both modals should be visible
-    expect(screen.getByText('Import Deck from Scryfall')).toBeInTheDocument();
+    expect(screen.getAllByText('Import Deck')[1]).toBeInTheDocument();
     expect(screen.getByText('Deck Import Guide')).toBeInTheDocument();
   });
 
@@ -124,7 +124,7 @@ describe('DeckImportModal - Help Dialog Integration', () => {
     await user.click(gotItButton);
 
     // Import modal should still be open
-    expect(screen.getByText('Import Deck from Scryfall')).toBeInTheDocument();
+    expect(screen.getAllByText('Import Deck')[1]).toBeInTheDocument();
 
     // Help dialog should be closed
     await waitFor(() => {
@@ -160,7 +160,7 @@ describe('DeckImportModal - Help Dialog Integration', () => {
     }
 
     // Import modal should still be open
-    expect(screen.getByText('Import Deck from Scryfall')).toBeInTheDocument();
+    expect(screen.getAllByText('Import Deck')[1]).toBeInTheDocument();
 
     // Import modal's onClose should NOT have been called
     expect(mockOnClose).not.toHaveBeenCalled();

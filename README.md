@@ -73,7 +73,7 @@ npm run preview
 
 ##### Pinging websockets to test connection
 ```bash
-wscat -c ws://3.151.83.118:47964
+wscat -c ws://138.197.78.138:47964  # should output: Connected (press CTRL+C to quit)
 wscat -c wss://ws.aura.app
 ```
 

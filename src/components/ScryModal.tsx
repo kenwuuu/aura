@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import posthog from 'posthog-js';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ export const ScryModal: React.FC<ScryModalProps> = ({
   const handleConfirm = () => {
     const numCards = parseInt(count, 10);
     if (!isNaN(numCards) && numCards > 0 && numCards <= maxCards) {
+      posthog.capture('scry_performed', { cards_scryed: numCards, max_cards: maxCards });
       onConfirm(numCards);
     }
   };

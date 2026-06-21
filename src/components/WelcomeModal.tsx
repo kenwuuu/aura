@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 
 const VISIT_COUNT_KEY = 'aura-visit-count';
+const VIEW_COUNT_KEY = 'aura-welcome-modal-view-count';
 const DISMISSED_KEY = 'aura-welcome-dismissed';
 
 export const WelcomeModal: React.FC = () => {
@@ -22,12 +23,18 @@ export const WelcomeModal: React.FC = () => {
     if (isDismissed) return;
 
     // Track visit count
+    let viewCount = parseInt(localStorage.getItem(VIEW_COUNT_KEY) || '0', 10);
+
+    // Copy over old visit numbers to new cookie, so we can use visit to track visits, and not Welcome views
+    // safe to remove the following 2 lines of code after june 15th 2026
     const visitCount = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10);
-    const newVisitCount = visitCount + 1;
-    localStorage.setItem(VISIT_COUNT_KEY, newVisitCount.toString());
+    if (viewCount === 0) viewCount = visitCount;
+
+    const newViewCount = viewCount + 1;
+    localStorage.setItem(VIEW_COUNT_KEY, newViewCount.toString());
 
     // Show "Don't show again" button from third visit onwards
-    if (newVisitCount >= 3) {
+    if (newViewCount >= 3) {
       setShowDontShowAgain(true);
     }
 
@@ -46,6 +53,10 @@ export const WelcomeModal: React.FC = () => {
         <DialogHeader className="border-none px-8 pt-8">
           <DialogTitle>Welcome to Aura</DialogTitle>
           <DialogDescription className="space-y-3 pt-2 text-md text-gray-200">
+            <p>
+              <strong >Start a game</strong> by sharing a game link with friends by clicking
+              the <strong>Copy Game Link</strong> button on the top right.
+            </p>
             <p>
               Import a new deck using the <strong className="text-white">Choose Deck</strong> button in the top left.
             </p>

@@ -1,11 +1,13 @@
 import * as Y from 'yjs';
+import posthog from 'posthog-js';
 import { Player } from '@/modules/player';
 import { MultiPlayerBoardManager } from '@/modules/whiteboard';
-import { TokenService } from '../scryfall';
+import {TokenCreationResult, TokenService} from '../scryfall';
 import {CARD_HEIGHT, CARD_WIDTH, YDOC_CARDS_ON_BOARD, YDOC_KEYWORD_TOKENS} from '@/constants';
 import {getBoardLeftOffset, getBoardTopOffset} from "@/modules/whiteboard/BoardContainerManager";
 import {PileType} from "@/modules/gameResourcesDock/components";
 import {tokenDiameter} from "@/modules/keywordTokens/KeywordTokenFactory";
+import {Card} from "@/modules/deck";
 
 /**
  * Handles drag-and-drop events between the whiteboard and other game zones
@@ -117,26 +119,34 @@ export class WhiteboardEventHandlers {
         card.x = e.clientX - boardLeft - ((CARD_WIDTH / 2) * this.whiteboard.getZoomLevel());
         card.y = e.clientY - boardTop - ((CARD_HEIGHT / 2) * this.whiteboard.getZoomLevel()) - 60;
         this.whiteboard.addCard(card, this.playerId);
+        posthog.capture('card_played_to_battlefield', {
+          card_name: card.name,
+          is_flipped: card.isFlipped,
+        });
 
         // Search for and create any tokens related to card
-        if (card.scryfallId) {
-          const result = await this.tokenService.createTokensForCard(
-            card.scryfallId,
-            { x: card.x, y: card.y } // Place tokens to the right of the card
-          );
-
-          // Add tokens to battlefield
-          result.tokens.forEach(token => {
-            this.whiteboard.addCard(token, this.playerId);
-          });
-
-          // Log any errors
-          if (result.errors.length > 0) {
-            console.warn(`Token creation errors for ${card.name}:`, result.errors);
-          }
-        }
+        await this.createRelatedTokens(card);
       }
     });
+  }
+
+  private async createRelatedTokens(card: Card) {
+    if (card.scryfallId) {
+      const result: TokenCreationResult = await this.tokenService.createTokensForCard(
+        card.scryfallId,
+        {x: card.x, y: card.y} // Place tokens to the right of the card
+      );
+
+      // Add tokens to battlefield
+      result.tokens.forEach(token => {
+        this.whiteboard.addCard(token, this.playerId);
+      });
+
+      // Log any errors
+      if (result.errors.length > 0) {
+        console.warn(`Token creation errors for ${card.name}:`, result.errors);
+      }
+    }
   }
 
   /**

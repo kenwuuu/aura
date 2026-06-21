@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import posthog from 'posthog-js';
 import { AddCardModal } from './AddCardModal';
 import { ScryfallApiService } from '@/services/scryfall';
 import { toCard } from '@/services/scryfall/ScryfallCardAdapter';
@@ -27,6 +28,7 @@ export const AddCardManager: React.FC<AddCardManagerProps> = ({
     const scryfallCard = await scryfallApiService.fetchCardByName(cardName);
     const card = toCard(scryfallCard, -1); // -1 indicates dynamically added card
     onAddCard(card);
+    posthog.capture('card_added_to_hand', { card_name: cardName });
     console.log(`Added ${cardName} to hand`);
   };
 

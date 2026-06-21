@@ -731,6 +731,10 @@ body {
   gap: 12px;
 }
 
+#deck-list::placeholder {
+  color: #afafaf;  /* darker/more muted gray */
+}
+
 .deck-item {
   background-color: #2d2d2d;
   border: 2px solid #3d3d3d;

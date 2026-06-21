@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import posthog from 'posthog-js';
 import { DeckImportModal } from './DeckImportModal';
 import { DeckSelectionModal } from './DeckSelectionModal';
 import { SavedDeck } from '../modules/deck/types';
@@ -16,6 +17,11 @@ export function DeckManager({ onDeckSelected }: DeckManagerProps) {
   };
 
   const handleDeckImported = (deck: SavedDeck) => {
+    posthog.capture('deck_imported', {
+      deck_name: deck.metadata.name,
+      card_count: deck.cards.length,
+      deck_format: deck.metadata.format,
+    });
     setShowImportModal(false);
     onDeckSelected(deck);
   };

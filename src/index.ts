@@ -22,14 +22,21 @@ import { PatchNotesService } from './services/patchNotes';
 import { DEFAULT_DECK } from './data/defaultDeck';
 import './style.css';
 import * as Sentry from "@sentry/react";
+import posthog from 'posthog-js';
 import {YSTATE_DECK_CARD_COUNT} from "./constants";
 import {ReactToasterRoot} from "../ReactToasterRoot";
 import {usePlayerStore} from "./stores/playerStore";
 import {useGameInstance} from "./stores/gameInstanceStore";
 import {RoomConnectionStatus} from "@/components/RoomConnectionStatus";
 import {YjsNetworkProvider} from "@/modules/yjs-networking/YjsNetworkFactory";
-import {AnnouncementsService} from "@/services/announcements/PatchNotesService";
+import {AnnouncementsService} from "@/services/announcements/AnnouncementsService";
+import {MobileWarningModal} from "@/components/MobileWarningModal";
 
+
+posthog.init('phc_yVFqMSYG88kEXYf4vcMJgS7YuHpjRyYCD4aWicRXuJtF', {
+  api_host: 'https://us.i.posthog.com',
+  defaults: '2026-01-30',
+});
 
 Sentry.init({
   environment: process.env.NODE_ENV || "development",
@@ -58,6 +65,8 @@ Sentry.init({
 const baseUrl = "https://aura0.app/?room=";
 
 const isDevEnv = import.meta.env.MODE === 'development';
+
+const VISIT_COUNT_KEY = 'aura-visit-count';
 
 class AuraApp {
   private yDoc: Y.Doc;
@@ -177,6 +186,7 @@ class AuraApp {
     this.setupDiscordButton();
     this.setupHotkeyHintsModal();
     this.setupAddCardModal();
+    this.trackVisitCount();
   }
 
 
@@ -257,6 +267,7 @@ class AuraApp {
         navigator.clipboard
           .writeText(window.location.href)
           .then(() => {
+            posthog.capture('room_link_copied', { room: this.roomManager.getRoomName() });
             roomElement.innerHTML = `COPIED! ${checkSVG}`;
             roomElement.style.color = '#4ade80';
             setTimeout(() => {
@@ -311,6 +322,13 @@ class AuraApp {
     );
 
     // Setup welcome modal
+    const mobileWarningDiv = document.createElement('div');
+    mobileWarningDiv.id = 'mobile-warning-root';
+    document.body.appendChild(mobileWarningDiv);
+    const mobileWarningRoot = createRoot(mobileWarningDiv);
+    mobileWarningRoot.render(React.createElement(MobileWarningModal));
+
+    // Setup welcome modal
     const welcomeModalRoot = document.createElement('div');
     welcomeModalRoot.id = 'welcome-modal-root';
     document.body.appendChild(welcomeModalRoot);
@@ -320,15 +338,15 @@ class AuraApp {
     if (isDevEnv) return;  // don't show modals, for Playwright testing
     welcomeRoot.render(React.createElement(WelcomeModal));
 
-    // Setup patch notes modal (shows after welcome modal if there are new notes)
-    this.setupPatchNotesModal();
+    // we haven't been making many changes, disabling patch notes because
+    // there's some weird bug where patch notes keep showing in prod
+    // this.setupPatchNotesModal();
     this.setupAnnouncementsModal();
   }
 
   private async loadDeckOnStart(storage: DeckStorageService) {
     // Only auto-load deck when entering a NEW room, not when reconnecting
     const isRecentRoom = this.roomManager.isRecentRoom();
-
     if (isRecentRoom) {
       console.log('Reconnecting to recent room - skipping auto-load to preserve game state');
       return;
@@ -336,6 +354,7 @@ class AuraApp {
 
     // Mark this room as visited
     this.roomManager.markRoomAsVisited();
+    posthog.capture('game_session_started', { room: this.roomManager.getRoomName() });
     console.log('New room detected - will auto-load deck');
 
     // Auto-load the first available deck on entering a new room
@@ -391,6 +410,12 @@ class AuraApp {
       // Save the deck state for this room so it persists on refresh
       DeckPersistenceService.saveDeckForRoom(this.roomManager.getRoomName(), this.localPlayer.getDeck());
 
+      posthog.capture('deck_loaded', {
+        deck_name: savedDeck.metadata.name,
+        card_count: savedDeck.cards.length,
+        deck_format: savedDeck.metadata.format,
+        room: this.roomManager.getRoomName(),
+      });
       console.log(`Deck "${savedDeck.metadata.name}" loaded successfully!`);
     });
   }
@@ -524,7 +549,7 @@ class AuraApp {
       return;
     }
 
-    console.log('Rnnouncements to show');
+    console.log('Announcements to show');
 
     const announcementsModalRoot = document.createElement('div');
     document.body.appendChild(announcementsModalRoot);
@@ -535,6 +560,13 @@ class AuraApp {
         onClose: () => AnnouncementsService.markAnnouncementAsSeen(),
       })
     );
+  }
+
+  private trackVisitCount(): void {
+    // Track visit count
+    const visitCount = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10);
+    const newVisitCount = visitCount + 1;
+    localStorage.setItem(VISIT_COUNT_KEY, newVisitCount.toString());
   }
 }
 

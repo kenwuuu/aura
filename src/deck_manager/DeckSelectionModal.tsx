@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import posthog from 'posthog-js';
 import { DeckStorageService } from '@/services/deckStorage';
 import { DeckMetadata, SavedDeck } from '@/modules/deck/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -85,6 +86,7 @@ export function DeckSelectionModal({
     try {
       const storage = new DeckStorageService();
       await storage.deleteDeck(deckId);
+      posthog.capture('deck_deleted', { deck_id: deckId });
       await loadDecks();
     } catch (err) {
       console.error('Error deleting deck:', err);

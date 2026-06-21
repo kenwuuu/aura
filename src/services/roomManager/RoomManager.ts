@@ -1,4 +1,5 @@
 import {ROOM_PREFIX} from "../../constants";
+import posthog from "posthog-js";
 
 /**
  * Service for managing room state and tracking
@@ -18,6 +19,10 @@ export class RoomManager {
     // Update URL with room name if not present
     if (!urlParams.get('room')) {
       window.history.replaceState({}, '', `?room=${this.roomName}`);
+    } else { // if room name is present, user is joining an existing game
+      posthog.capture('player_joined_existing_room', {
+        room_id: this.roomName
+      })
     }
   }
 

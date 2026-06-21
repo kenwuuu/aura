@@ -1,7 +1,7 @@
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
 import {CardImages, CardImageUris} from '@/modules/deck/types';
-import {toCardDataResult} from './ScryfallCardAdapter';
+import {toCardDataResult} from '../scryfall/ScryfallCardAdapter';
 import {DeckLineItem} from "@/services/deckImporter/DeckListParser";
 
 export type ScryfallCard = {
@@ -32,16 +32,18 @@ export type CardDataResult = {
   error?: string;
 }
 
-export class ScryfallApiService {
+export class AuraApiService {
   private queue: PQueue;
-  private static readonly BASE_URL = 'https://api.scryfall.com';
+  private static readonly BASE_URL = import.meta.env.DEV
+    ? 'http://localhost:8000/v1'
+    : 'https://digitalocean-ws-ipv4.aura0.app/v1';
   private static readonly RATE_LIMIT_INTERVAL = 1000; // 1 second
-  private static readonly RATE_LIMIT_CAP = 2; // 10 requests per interval
+  private static readonly RATE_LIMIT_CAP = 200; // 200 requests per interval
 
   constructor() {
     this.queue = new PQueue({
-      interval: ScryfallApiService.RATE_LIMIT_INTERVAL,
-      intervalCap: ScryfallApiService.RATE_LIMIT_CAP,
+      interval: AuraApiService.RATE_LIMIT_INTERVAL,
+      intervalCap: AuraApiService.RATE_LIMIT_CAP,
       timeout: 30000, // 30 second timeout for whole import
     });
   }
@@ -51,9 +53,9 @@ export class ScryfallApiService {
    */
   private async fetchCardDataByName(cardLineItem: DeckLineItem, retries: number = 3): Promise<ScryfallCard> {
     const cardName = cardLineItem.name;
-    const exactUrl = `${ScryfallApiService.BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`;
-    const fuzzyUrl = `${ScryfallApiService.BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`;
-    const attemptNumberToSwitchToFuzzySearch = 2;
+    const exactUrl = `${AuraApiService.BASE_URL}/cards/${encodeURIComponent(cardName)}`;
+    const fuzzyUrl = `${AuraApiService.BASE_URL}/cards/${encodeURIComponent(cardName)}`;
+    const attemptNumberToSwitchToFuzzySearch = 1;
 
     return await this.queue.add(() =>
       pRetry(
@@ -88,7 +90,8 @@ export class ScryfallApiService {
     const encodedSetCode = encodeURIComponent(cardLineItem.setCode!);
     const encodedCollectorNumber = encodeURIComponent(cardLineItem.collectorNumber!);
 
-    const url = `${ScryfallApiService.BASE_URL}/cards/${encodedSetCode}/${encodedCollectorNumber}/en`;
+    const url = `${AuraApiService.BASE_URL}/cards/${encodedSetCode}${encodedCollectorNumber}`;
+    console.log(`fetching url: ${url}`)
 
     return await this.queue.add(() =>
       pRetry(
@@ -120,16 +123,19 @@ export class ScryfallApiService {
   public async fetchImagesForList(
     entries: DeckLineItem[],
     onProgress?: (current: number, total: number) => void
-  ): Promise<CardDataResult[]> {
+  ): Promise<{ results: CardDataResult[]; failedLineItems: DeckLineItem[] }> {
     const results: CardDataResult[] = [];
+    const failedLineItems: DeckLineItem[] = [];
     let completed = 0;
 
     for (const entry of entries) {
       let cardObj: ScryfallCard | undefined;
       try {
         if (entry.setCode && entry.collectorNumber) {
-          cardObj = await this.fetchCardDataBySet(entry, 2);
+          console.log(`Fetching by set: ${entry.setCode} && ${entry.collectorNumber}`)
+          cardObj = await this.fetchCardDataBySet(entry, 1);
         } else { // fall back to using name
+          console.log(`Fetching by name: ${entry.name}`)
           cardObj = await this.fetchCardDataByName(entry, 1);
         }
       } catch (err) {
@@ -145,6 +151,8 @@ export class ScryfallApiService {
         // If cardObj is still undefined, both attempts failed
         if (!cardObj) {
           console.error(`Error fetching card. Name: "${entry.name}". Full line: ${entry.count} ${entry.name} ${entry.setCode} ${entry.collectorNumber} `, err);
+
+          failedLineItems.push(entry);
           results.push({
             count: entry.count,
             name: entry.name,
@@ -169,7 +177,7 @@ export class ScryfallApiService {
       onProgress?.(completed, entries.length);
     }
 
-    return results;
+    return {results, failedLineItems};
   }
 
   /**
@@ -190,7 +198,7 @@ export class ScryfallApiService {
    * Fetch card data by Scryfall ID
    */
   public async fetchCardById(scryfallId: string): Promise<ScryfallCard> {
-    const url = `${ScryfallApiService.BASE_URL}/cards/${scryfallId}`;
+    const url = `${AuraApiService.BASE_URL}/cards/${scryfallId}`;
 
     return await this.queue.add(() =>
       pRetry(

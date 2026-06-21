@@ -167,7 +167,7 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
         <Dialog.Overlay style={styles.overlay} />
         <Dialog.Content style={styles.content}>
           <div style={styles.header}>
-            <Dialog.Title style={styles.title}>Import Deck from Scryfall</Dialog.Title>
+            <Dialog.Title style={styles.title}>Import Deck</Dialog.Title>
             <Dialog.Close style={styles.closeButton} onClick={handleClose}>×</Dialog.Close>
           </div>
 
@@ -187,11 +187,9 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
 
           <Alert className={"mb-4"}>
             <InfoIcon />
-            <AlertTitle>Set imports available now!</AlertTitle>
+            <AlertTitle>To automatically draw your commander...</AlertTitle>
             <AlertDescription>
-              Must include set code in parentheses and collector number.
-              <br/>
-              Example: 1 Rhystic Study (WOT) 71
+              Make sure your commander is on the last line.
             </AlertDescription>
           </Alert>
 
@@ -201,9 +199,8 @@ export function DeckImportModal({ isOpen, onClose, onDeckImported }: DeckImportM
               id="deck-list"
               value={deckText}
               onChange={(e) => setDeckText(e.target.value)}
-              placeholder={`Place your commander in the last line.
-              Enter your deck list (one card per line):
-              \n\n1 Rhystic Study (WOT) 71\n4 Lightning Bolt\n20 Mountain`}
+              placeholder={`Enter your deck list (one card per line):
+              \n1 Rhystic Study (WOT) 71\n4 Lightning Bolt\n20 Mountain`}
               rows={15}
               disabled={isImporting}
             />

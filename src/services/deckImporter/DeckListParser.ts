@@ -85,6 +85,12 @@ function extractSetInfo(line: string): { setCode: string; collectorNumber: strin
 }
 
 function extractCardName(line: string, parts: string[]): string {
+  // if name has a slash, remove the slash and anything after
+  let slashIndex: number = parts.indexOf('/');
+  const doubleSlashIndex: number = parts.indexOf('//');
+  slashIndex = Math.min(slashIndex, doubleSlashIndex)
+  if (slashIndex !== -1) parts = parts.slice(0, slashIndex);
+
   const setInfo = extractSetInfo(line);
 
   if (setInfo) {
@@ -111,9 +117,11 @@ function parseLine(line: string): DeckLineItem {
   console.log(`Parsing line: setCode = ${setInfo?.setCode}; collectorNumber = ${setInfo?.collectorNumber}`);
 
   if (setInfo) {
+    console.log(`Returning set and code for = ${name}`)
     return { count, name, setCode: setInfo.setCode, collectorNumber: setInfo.collectorNumber };
   }
 
+  console.log(`Returning parsed name for = ${name}`)
   return { count, name };
 }
 

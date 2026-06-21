@@ -10,30 +10,64 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+const VISIT_COUNT_KEY = 'aura-visit-count';
+
 interface AnnouncementModalProps {
   onClose: () => void;
 }
 
 export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [canClose, setCanClose] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(10);
+
+  const visitCount = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10);
+  const personalizedContent = announcementContent
+    .replace('{{VISIT_COUNT}}', String(visitCount));
 
   useEffect(() => {
-    // Auto-open on mount
     setIsOpen(true);
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsLeft(s => {
+        if (s <= 1) {
+          clearInterval(timer);
+          setCanClose(true);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleOpenChange = (open: boolean) => {
+    if (!open && !canClose) return; // block closing of the dialog
     setIsOpen(open);
-    if (!open) {
-      onClose();
-    }
+    if (!open) onClose();
   };
 
+  useEffect(() => {
+    setIsOpen(true);
+  }, []);
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className={`min-w-[45vw] max-h-[65vh] flex flex-col`}>
+      <DialogContent
+        onEscapeKeyDown={e => { if (!canClose) e.preventDefault(); }}
+        onInteractOutside={e => { if (!canClose) e.preventDefault(); }}
+        className={!canClose ? '[&_[data-slot=dialog-close]]:hidden' : ''}
+      >
         <DialogHeader>
-          <DialogTitle>March 19th, 2026</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            Today, {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+            {!canClose && (
+              <span className="text-sm font-normal text-gray-400 mr-10">
+                Please read… {secondsLeft}s
+              </span>
+            )}
+          </DialogTitle>
         </DialogHeader>
         <ScrollArea className={`p-6 pt-0 flex-1 overflow-y-auto`}>
           <ReactMarkdown
@@ -52,7 +86,7 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ onClose })
               hr: () => <hr className="mb-5 border-gray-700" />,
             }}
           >
-            {announcementContent}
+            {personalizedContent}
           </ReactMarkdown>
         </ScrollArea>
       </DialogContent>

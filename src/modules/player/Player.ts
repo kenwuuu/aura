@@ -1,4 +1,5 @@
 import * as Y from 'yjs';
+import posthog from 'posthog-js';
 import { Card, Deck } from '../deck';
 import { PlayerState, PlayerConfig, CustomCounter } from './types';
 import {
@@ -14,6 +15,7 @@ import {
 import {PileType} from "../gameResourcesDock/components";
 import { CardPile } from './CardPile';
 import {SavedDeck} from "@/modules/deck/types";
+import {trackHealthChange} from "@/services/analytics/PosthogFunctions"
 
 export class Player {
   private playerId: string;
@@ -27,6 +29,9 @@ export class Player {
   private discard: CardPile;
   private scry: CardPile;
   private piles: Record<PileType, CardPile>;
+
+  // posthog
+  private healthEventTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     playerId: string,
@@ -126,12 +131,18 @@ export class Player {
     this.hand.addCardToTop(card);
     this.syncToYState();
 
+    posthog.capture('card_drawn', {
+      hand_size: this.hand.getCards().length,
+      deck_size: this.deck.getCards().length,
+    });
+
     return card;
   }
 
   // move board to hand. move hand, discard, and exile to deck. keep deck loaded. reset health
   // equivalent to resetting in IRL game
   public reset() {
+    posthog.capture('game_reset');
     // Step 1: Move all battlefield cards owned by this player back to deck
     const battlefieldCards: Card[] = [];
     this.yCardsOnBoard.forEach((card: any, cardId: string) => {
@@ -198,8 +209,14 @@ export class Player {
   }
 
   public modifyHealth(delta: number): void {
-    const currentHealth = this.yPlayerState.get(YSTATE_HEALTH) ?? this.config.initialHealth;
+    const currentHealth: number = this.yPlayerState.get(YSTATE_HEALTH) ?? this.config.initialHealth;
     this.yPlayerState.set(YSTATE_HEALTH, currentHealth + delta);
+
+    if (this.healthEventTimer) clearTimeout(this.healthEventTimer);
+    this.healthEventTimer = setTimeout(() => {
+      trackHealthChange(this.yPlayerState.get(YSTATE_HEALTH))
+      this.healthEventTimer = null;
+    }, 1000);
   }
 
   public shuffleDeck(): void {
@@ -207,6 +224,11 @@ export class Player {
   }
 
   public mulligan(cardsToDraw: number = 7): void {
+    const handSizeBefore = this.hand.getCards().length;
+    posthog.capture('mulligan_taken', {
+      hand_size_before: handSizeBefore,
+      cards_to_draw: cardsToDraw,
+    });
     // Move all cards from hand back to deck
     this.hand.getCards().forEach((card: Card) => {
       this.deck.addCardToBottom(card);

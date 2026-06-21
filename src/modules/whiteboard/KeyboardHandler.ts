@@ -1,5 +1,6 @@
 import { WhiteboardCard } from './types';
 import * as Y from 'yjs';
+import posthog from 'posthog-js';
 
 export interface KeyboardHandlerCallbacks {
   onMoveToHand: (card: WhiteboardCard) => void;
@@ -210,6 +211,7 @@ export class KeyboardHandler {
 
       case 'v': // V - Shuffle deck
         this.callbacks.onShuffleDeck();
+        posthog.capture('deck_shuffled');
         break;
 
       case 'e': // E - End turn (boilerplate)
@@ -262,6 +264,7 @@ export class KeyboardHandler {
         if (card) {
           this.hideCardDependents();
           this.callbacks.onMoveToGraveyard(card);
+          posthog.capture('card_sent_to_graveyard', { card_name: card.name, source: 'battlefield' });
           this.removeCard(card.id);
         }
         break;
@@ -269,8 +272,8 @@ export class KeyboardHandler {
       case 's': // S - Move to exile
         if (card) {
           this.hideCardDependents();
-
           this.callbacks.onMoveToExile(card);
+          posthog.capture('card_exiled', { card_name: card.name, source: 'battlefield' });
           this.removeCard(card.id);
         }
         break;
